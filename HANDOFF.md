@@ -200,6 +200,8 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
   - **Arenas** lock the exits, run `start`, then waves, then `done`.
     - Every boss is an arena, so losing your cool reloads the map and the fight re-triggers. Don't spawn a boss straight from a story script: dying there used to soft-lock.
     - An arena waits for `start` to finish before it can clear.
+    - Each loss in an arena bumps `C2.nerf[flag]`; on the retry `focusNerf` cuts the boss's HP 15% per loss (up to 45%) with a FOCUS GROUP banner.
+    - Spawns that land in a wall are moved to open floor, anything overlapping a wall may walk out of it, and loot bounces off walls. Keep boss minions away from shelves and doorways anyway.
   - Player controls: A throws the equipped bong (holding A keeps your facing), B talks or rolls, tap C smokes (haze), hold C at a full meter to turn HU-MAN.
   - Enemy AIs: `chase shoot roll hop orbit float`.
   - Companions: Garfield ACCUSEs (double damage) and Bruce CHOMPs.
