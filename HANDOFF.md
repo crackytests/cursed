@@ -116,6 +116,12 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
   4. Release keys between presses.
   5. Don't set `anyKey`, or boot will run over your test.
 
+## Publishing
+
+- The public repo is https://github.com/crackytests/cursed (branch `main`). GitHub Pages serves it at **https://crackytests.github.io/cursed/**, with each game under `pk/`, `linda/`, `ghost/` and `tp/`.
+- **Pushing to `main` updates the live site** within a minute or two. Only push when a change is tested.
+- `.nojekyll` makes GitHub serve the files as-is.
+
 ## Status and ideas
 
 - All four Gen-1 games and PEE KID³ are complete, content-passed and bot-verified.
