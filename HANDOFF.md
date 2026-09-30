@@ -193,6 +193,13 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
 ## Testing (`tools/`)
 
 - Static checks: `node tools/check.js`, `lcheck.js`, `gcheck.js`, `tcheck.js`. `reach.js` audits Gen-1 maps for unreachable spots.
+- Text overflow (Gen 1): `node tools/overflow.js carl|linda|ghost|tp` plays with the bot and lists every text line drawn past the 160px screen. Moving `!` particles and rhythm arrows near the edge are expected noise. `node tools/textlint.js` is the static version for menus, cards and banners.
+  - Menus (`choose`/`ask`) wrap options over 23 characters and keep themselves on screen.
+  - Cards wrap at 26 characters.
+  - Credits lines, `ctext` and banners do not wrap. Keep them to 26 characters or fewer (24 for banners).
+  - The font has no `]`, `|` or other unusual symbols; `[` draws as a solid block. An em dash (—) glyph was added.
+  - TP needs seeded save data: `node tools/play.js tp '{"carl_meta":"{\"boots\":3,\"endings\":1}","linda_meta":"{\"boots\":2,\"endings\":1}","ghost_meta":"{\"boots\":2}"}'`.
+- Spooky Ghost late episodes: `BOT=bot_ghost3.js node tools/play.js ghost "$(node tools/ghostseed.js 3)"` (use 5 for episode 5). The final "all 15 cue cards" check fails with a seeded save, which is expected. The Ghost bot sometimes stalls in haunting when a guest is unreachable. That's bot pathing, not a game bug.
 - Gen-1 bot: `node tools/play.js carl|linda|ghost|tp` plays the whole game headless with button inputs, using `botlib.js` and `bot_<game>.js`.
 - PEE KID³ bot: `node tools/pkplay.js <startStageId> <maxFrames>`.
   - Set `WANT=GO` to take the GO ending.

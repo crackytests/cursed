@@ -348,7 +348,7 @@ async function gcredits(warm) {
   music('gend');
   const L = ['SPOOKY GHOST', 'LIVE FROM BEYOND', '', '', 'SPOOKY GHOST', '...HOST, GHOST, BOTH', '', 'CARL', '...THE GUEST', '(ARRIVED LATE)', '', 'FACE', '...CAME BACK', '',
     'CEO LINDA', '...BUILT IT', '', 'YOKO', '...HELPED', '', 'THE WIVES', '...WERE SOMEBODY', '', 'THE CURSE', '...IS NOT HIM', '', 'THE COLLECTORS', '...STILL LOOKING', '',
-    'SPECIAL THANKS', 'CHAT', '', '', 'A PRETEND CO. PRODUCTION', '(C)2000', '', '', warm ? 'THANK YOU FOR WATCHING' : 'THANK YOU. HOLD THE APPLAUSE.'];
+    'SPECIAL THANKS', 'CHAT', '', '', 'A PRETEND CO. PRODUCTION', '(C)2000', '', '', warm ? 'THANK YOU FOR WATCHING' : 'THANK YOU.', 'HOLD THE APPLAUSE.'];
   let y = H + 10;
   scene = { draw() { cls(3); L.forEach((l, i) => { const yy = y + i * 12; if (yy > -8 && yy < H) ctext(l, yy, l === 'SPOOKY GHOST' || l === 'CHAT' ? 0 : 1); }); } };
   fx.fade = 0; fx.pal = 'red';

@@ -25,7 +25,7 @@ async function done(id) {
 }
 async function showDirectives() {
   const g = (DAYS[S.day] ? DAYS[S.day].goals : []);
-  await say('DAY ' + S.day + ': ' + DAYS[S.day].title + '\n' + g.map(([id, t]) => (F('g_' + id) ? '[DONE] ' : '- ') + t).join('\n'));
+  await say('DAY ' + S.day + ': ' + DAYS[S.day].title + '\n' + g.map(([id, t]) => (F('g_' + id) ? '(DONE) ' : '- ') + t).join('\n'));
 }
 async function portfolio() {
   const us = Object.entries(S.units);
@@ -265,7 +265,7 @@ async function lcredits() {
   music('lend');
   const L = ['CEO LINDA', 'THE MALL OF THE FUTURE', '', '', 'LINDA', '...HERSELF', '', 'LINDA LITE', '...20% OF HERSELF', '', 'CARL', '...OUTSIDE', '',
     'FACE', '...THIRTY SECONDS', '', 'SPOOKY GHOST', '...LEFT', '', 'THE CORE', '...DISCONNECTED', '', 'PRETZEL GUY', '...UNIONIZED', '',
-    'SPECIAL THANKS', 'CHAT', '(UNPAID)', '', '', 'A FASCISM INC. PRODUCT', 'DEVELOPED BY PRETEND CO.', 'THE PRETEND COMPANY', 'A REAL COMPANY', '', '(C)1999', '', '', 'THANK YOU FOR YOUR BUSINESS'];
+    'SPECIAL THANKS', 'CHAT', '(UNPAID)', '', '', 'A FASCISM INC. PRODUCT', 'DEVELOPED BY PRETEND CO.', 'THE PRETEND COMPANY', 'A REAL COMPANY', '', '(C)1999', '', '', 'THANK YOU FOR', 'YOUR BUSINESS'];
   let y = H + 10;
   scene = { draw() { cls(3); L.forEach((l, i) => { const yy = y + i * 12; if (yy > -8 && yy < H) ctext(l, yy, l === 'LINDA' || l === 'CHAT' ? 0 : 1); }); } };
   fx.fade = 0; fx.pal = 'pink';
