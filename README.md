@@ -2,7 +2,15 @@
 
 Lost games from a studio that never existed.
 
-Open any `index.html` in a browser (or serve the folder with `python -m http.server`) — no build step.
+**Play online:** https://crackytests.github.io/cursed/ — or open any `index.html` locally (no build step).
+
+| Game | Link |
+|---|---|
+| CARL: Above & Below Nevada | https://crackytests.github.io/cursed/ |
+| CEO LINDA | https://crackytests.github.io/cursed/linda/ |
+| SPOOKY GHOST: Live From Beyond | https://crackytests.github.io/cursed/ghost/ |
+| TP: Throwing In The Towel | https://crackytests.github.io/cursed/tp/ |
+| PEE KID³: Third Time's the Charm | https://crackytests.github.io/cursed/pk/ |
 
 **Generation 1 — handheld (160×144, 4 shades)**
 - `index.html` — CARL: Above & Below Nevada
