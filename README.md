@@ -13,6 +13,7 @@ Lost games from a studio that never existed.
 | PEE KID³: Third Time's the Charm | https://crackytests.github.io/cursed/pk/ |
 | FACE: What Could Happen | https://crackytests.github.io/cursed/face/ |
 | YOKO: What Happened | https://crackytests.github.io/cursed/yoko/ |
+| CARL 2: Hu-Man Boogaloo | https://crackytests.github.io/cursed/carl2/ |
 
 **Generation 1 — handheld (160×144, 4 shades)**
 - `index.html` — CARL: Above & Below Nevada
@@ -23,9 +24,11 @@ Lost games from a studio that never existed.
 **Generation 2 — SUPER-16 (320×224, 512 colors, FM sound)**
 - `pk/` — PEE KID³: Third Time's the Charm
 - `face/` — FACE: What Could Happen (shoot-'em-up, FACE-FX chip)
-- `yoko/` — YOKO: What Happened (adventure + support battles, YKO-1 chip; the last SUPER-16 cartridge)
+- `yoko/` — YOKO: What Happened (adventure + support battles, YKO-1 chip; it closes the generation)
+- `carl2/` — CARL 2: Hu-Man Boogaloo (action RPG + arguments + pseudo-3D + a dance-off, BONG-FX chip; it came out anyway)
 
 FACE and YOKO are a pair: play FACE first. Both read the saves of every other PRETEND CO. game.
+CARL 2 is the sequel to CARL, released after the generation ended. It's where the series jumps the shark.
 
 Controls (Gen 2): arrows move, Z = A, X/Space = B, C = C, Enter = Start. F = fullscreen.
 

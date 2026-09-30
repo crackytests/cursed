@@ -353,8 +353,10 @@ async function awards() {
   if (metaOf('carl_meta').secret) await award('BEST SECRET', 'CARL', 'For the secret ending. I don\'t know what\'s in it. I\'m not in it.');
   const least = played.slice().sort((a, b) => a[1].boots - b[1].boots)[0];
   if (played.length > 1 && least[0] !== most[0]) await award('MOST IN NEED OF A HUG', least[0], 'Only ' + least[1].boots + ' boots. Go play it. It\'s lonely. I know lonely. I\'m on a cartridge by myself.');
-  const newer = [['PEE KID 3', 'pk_meta'], ['FACE', 'face_meta'], ['YOKO', 'yoko_meta']].filter(([, k]) => fetchStore(k));
+  const newer = [['PEE KID 3', 'pk_meta'], ['FACE', 'face_meta'], ['YOKO', 'yoko_meta'], ['CARL 2', 'carl2_meta']].filter(([, k]) => fetchStore(k));
   if (newer.length) await award('NEWER HARDWARE', newer.map(n => n[0]).join(', '), newer.some(n => n[0] === 'YOKO') && (fetchStore('yoko_meta').ends || {}).true ? 'Somebody on the new console made everybody in color. Even me, apparently. I didn\'t ask. It was nice.' : 'Those are on the new console. Five hundred and twelve colors. I saw one once. It was a lot. I\'m good in gray.');
+  const c2 = fetchStore('carl2_meta');
+  if (c2 && c2.jumped) await award('BEST SHARK', 'CARL 2', c2.renewed ? 'They made a second one of that little green guy. Now there\'s a third one coming and he has a chin. I\'ve never had a chin. I\'ve had a square.' : 'There\'s a second Carl. I heard he jumps a shark. I\'ve never jumped anything. I\'ve been jumped. Different thing.');
   await award('THE TP AWARD FOR DOING NOTHING', 'TP','Oh. Oh wow. Me? I\'d like to thank nobody. I did this myself. Barely.');
   await say('That\'s the awards. They were stupid. I had a good time.', TPN);
   scene = prev; music('hang');

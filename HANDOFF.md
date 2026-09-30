@@ -176,10 +176,79 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
 
 - **TP** gained one award in `tp/tshow.js`: NEWER HARDWARE. It appears only if a Gen-2 save exists, and changes its line after YOKO's true ending. He still talks about the games only as products.
 
+### CARL 2: Hu-Man Boogaloo (`carl2/`): the post-finale sequel
+
+- **Design**: see `CARL2_DESIGN.md`. The reference art is `carl.png` and `carl2.webp`; the story leans on `CARL_CHARACTER_BIBLE.md` and follows up CARL 1's "below below" ending.
+- **What it is**: the late-life cash-in sequel that came out after YOKO closed the generation, and the game where the series jumps the shark. It is mostly a top-down action RPG, with CARL 1's arguments upgraded, three pseudo-3D set pieces and a dance-off.
+- **The villain and the theme**:
+  - CARL 1's White Suits rebranded: the Head of Containment is now the **HEAD OF CONTENT**.
+  - With FOCUS GROUP and LEGAL he makes up the Sequel Committee, and their product is **HU-MAN**: a focus-tested "normal human" Carl.
+  - Every line HU-MAN says is one of the character bible's "Too generic" examples (`QUIPS` in `c2argue.js`).
+- **Script load order**: `engine2`, `fm`, `../pk/pkart`, `../g2/cast`, `../face/faceart`, `../yoko/yart`, `c2art`, `c2tiles`, `c2bong`, `c2world`, `c2argue`, `c2road`, `c2dance`, `c2maps`, `c2maps2`, `c2story`, `c2story2`, `c2main`.
+- **`c2art.js`**: Carl's top-down sprite (`carlSprite(dir, f, throwing, P)`), HU-MAN, a generic `person()` builder (`PEOPLE`), companions (Garfield, Bruce the shark, Ghost), enemies, bosses, items, and new portraits. `carlPortrait(mood)` has moods `n w a s h`, plus `shades` and `jaw`, which HUMAN% forces (`carlMood`).
+- **`c2tiles.js`**:
+  - 14 themed 16×16 tilesets, built on first use by `tileset(name)`.
+  - The map legend is generic: `. , : ; "` floors, `#` wall, `T t o _ = * ~` solids, `D` door, `S` stairs, `x` invisible solid. Every theme draws its own version.
+  - A wall tile draws its facade or its top depending on the tile below it.
+  - After the shark jump, `extremePal` saturates every map.
+- **`c2bong.js`**:
+  - Every bong is generated from size × material × up to 2 mods, with a name (`genBong`, `makeBong`).
+  - Also here: the BONGS menu, the Emporium shop, the BONG-O-MATIC (combines two), and THE BIG ONE (unique, found below below).
+- **`c2world.js`**: the action engine.
+  - Maps (`MAPS2[id]`): `rows`, `exits` (rects with optional `if`/`no`), `ents()`, `spawns`, `arena`, `signs`, `enter`, `init`, `dark`.
+  - **Entity `if` conditions are live**, checked every frame (`live(e)`). They are not a load-time filter; a clue that appears mid-scene depends on this. This was a real bug.
+  - **Arenas** lock the exits, run `start`, then waves, then `done`.
+    - Every boss is an arena, so losing your cool reloads the map and the fight re-triggers. Don't spawn a boss straight from a story script: dying there used to soft-lock.
+    - An arena waits for `start` to finish before it can clear.
+  - Player controls: A throws the equipped bong (holding A keeps your facing), B talks or rolls, tap C smokes (haze), hold C at a full meter to turn HU-MAN.
+  - Enemy AIs: `chase shoot roll hop orbit float`.
+  - Companions: Garfield ACCUSEs (double damage) and Bruce CHOMPs.
+  - HUD: COOL, LV, HUMAN%, the HU-MAN meter, bux, the equipped bong, and the Committee's objective marker.
+  - `OBJ` and `routeTo()` are shared by the marker and the test bot. Routing goes through locked doors on purpose, so the story explains the lock when you arrive.
+  - The chat ticker lives here too.
+  - `memo()` is the Committee NOTE popup. **Never name a function `note`**: it replaces the synth's `note()`, and every sound effect recursed forever. Only a real browser showed it.
+- **`c2argue.js`**: arguments (`argue2(def)`):
+  - The CARL 1 moves: LOGIC, GRIEVANCE, DENIAL, RANT, DEFLECT, ASK CHAT, SMOKE, PRETZEL.
+  - New: HU-MAN QUIP (+3 HUMAN%; HU-MAN himself is immune) and companion moves.
+- **`c2road.js`**: one pseudo-3D road projector used for DESERT BUS TURBO (`desertBusTurbo`) and JUMP THE SHARK (`jumpTheShark`), plus the Space-Harrier renderer (`inSpace('waves'|'boss')`).
+  - Road palettes use index 1 as the main color and 15 as the outline.
+  - Gates and ramps are checked on every segment crossed, because fast skiers skip segments.
+- **`c2dance.js`**: THE BOOGALOO (`boogaloo()`), call and response on a 112 BPM beat clock. The bot reads `DANCE.want`.
+- **`c2maps.js` / `c2maps2.js`**: 17 maps.
+  - The lot, the A.S.S. and the Mall of the Future: `ship lot mall emporium lostfound sequel`.
+  - `desert diner lake`.
+  - The backlot and the three crossover sets: `backlot setface setpk setyoko`.
+  - `moon`.
+  - The dark maps below: `facility below`.
+  - The finale: `studio`.
+- **`c2story.js` / `c2story2.js`**: the seven episodes, 8 tapes, 5 deliveries (Dispatch's radio in the A.S.S.), the finale and the endings.
+  - `C(text, mood)` is Carl speaking. `CL(line, huLine)` swaps to the HU-MAN line at HUMAN% ≥ 70. `laugh()` is the laugh track, which goes silent in A VERY SPECIAL EPISODE.
+- **`c2main.js`**: boot (the publisher is YOKO LTD. if `yoko_meta.perma`), the BONG-FX card, the "released after the generation ended" card, the title, saves, the cold open (four-shade "PREVIOUSLY ON CARL"), and about 27 FM tracks.
+  - New patches: `guitar`, `sax`, `surf`.
+  - `FM_TONE` is set so the game doesn't sound tinny.
+- **HUMAN%**:
+  - It starts at 10 ("colorized").
+  - Up: +6 per transformation, +3 per quip, +2 per EXTREME bong.
+  - Down: -3 per tape, and sincere choices (Face, Pee Kid, Yoko, Comrade Carl, the clip show).
+  - At 40 Carl gets sunglasses; at 70 he gets a jaw, and the finale can only be signed.
+- **Endings** (`carl2_meta.ends`):
+  - `renewed`: sign, or HUMAN% ≥ 70. The title turns into CARL 3: HU-MAN 3000.
+  - `canceled`.
+  - `boogaloo`.
+  - `belowbelow`, the true ending: all 8 tapes and HUMAN% ≤ 30 at the Lost+Found counter give the claim ticket, then choose KEEP GOING. AS ME.
+  - `dream`: SMOKE at the final offer.
+- **Canon choices (keep them)**:
+  - The parents are only ever "just missed".
+  - Carl learns his name; the player sees `[[[[[`.
+  - Comrade Carl, cop Carl and mayor Carl are shown as NON-CANON or as proposals.
+  - TP appears only as a cartridge in a bargain bin, and Carl doesn't know who he is.
+  - The Gen-1 cast stay in their four shades unless YOKO's true ending has been seen.
+- **TP** gained a BEST SHARK award if `carl2_meta.jumped`, and lists CARL 2 under NEWER HARDWARE.
+
 ## Storage keys (localStorage; the games read each other's)
 
-- Saves: `carl_sav`, `linda_sav`, `ghost_sav`, `pk_save`, `face_save`, `yoko_save`.
-- Metas: `carl_meta`, `linda_meta`, `ghost_meta`, `tp_mem`, `pk_meta`, `face_meta`, `yoko_meta`.
+- Saves: `carl_sav`, `linda_sav`, `ghost_sav`, `pk_save`, `face_save`, `yoko_save`, `carl2_save`.
+- Metas: `carl_meta`, `linda_meta`, `ghost_meta`, `tp_mem`, `pk_meta`, `face_meta`, `yoko_meta`, `carl2_meta`.
 - FACE reads every older meta as "potential" (what could still happen). YOKO reads every meta, including `face_meta`, as "the record" (what happened).
 
 ## Gotchas
@@ -226,6 +295,27 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
 - Real browser: run `python3 -m http.server 8731` in the repo root, then `node tools/browser.js face/ 30`. It uses the global Playwright and reports console errors and frame cost.
 - Music tone: with the same server, `node tools/audio.js yoko/ all 16 [wavDir]` renders every track offline and prints loudness, spectral centroid and the share of energy per band (below 250 Hz is the body; 2 kHz and up is the tin). With `wavDir` it writes WAVs to listen to.
 
+### CARL 2 tools
+
+- `tools/c2vm.js`: the CARL 2 file list for the headless harness.
+- `node tools/c2shot.js <map> <tx> <ty> [frames] [inputs] [prefix]`: screenshot a map. `EP=n` and `FLAGS=a,b` set the state first.
+- `node tools/c2set.js bus|ski|space|dance`: run one set piece headless with a simple driver. It prints the result.
+- `node tools/c2unit.js`: about 30 branch tests. Each calls a story function directly in an odd state (deliveries, companion swap, shop, notes, every ending, continue in the studio, losing your cool) and checks the result. Run it after story changes; it takes a few minutes.
+- **Full playthrough**: `FAST=1 WANT="end=boogaloo|renewed|canceled|dream|belowbelow,tapes=1,comp=garf" node tools/c2play.js [maxFrames]`.
+  - `FAST=1` skips rendering. It's about 3× faster, but frames are still slow in node: a full game is roughly 150k–250k frames, which is 30–60 minutes.
+  - `META=none` hides the other games' saves; `YOKO=true|empire` fakes YOKO's endings.
+  - The bot (`c2bot.js`) handles everything a player does:
+    - it follows `OBJ`, pathfinds with BFS over tiles, routes between maps with `routeTo`, and flies the A.S.S. with NAV;
+    - it fights (aims 8 ways, strafes, rolls away from shots), grabs loot, and equips better bongs through the real START menu;
+    - it answers every menu and argues toward the foe's weak spot;
+    - it drives the bus, skis, flies the space run, and dances.
+  - With `tapes=1` it also hunts all 8 tapes and takes the hitchhiker delivery.
+  - Watchdogs print `WARN FADE-BLACK`, `FLASH STUCK`, `SHAKE STUCK`, `HOLD STUCK` (the world frozen with nothing on screen), and `STALL` (no progress on an objective for 12,000 frames).
+- **Real browser, with sound**: run `python3 -m http.server 8731`, then `node tools/c2browser.js [seconds] play|sets`.
+  - `play` injects the bot into the live page.
+  - `sets` runs the bus, ski, space, dance and an argument in a row.
+  - It reports console errors. Run it after any change to audio code.
+
 ## Publishing
 
 - The public repo is https://github.com/crackytests/cursed (branch `main`). GitHub Pages serves it at **https://crackytests.github.io/cursed/**, with each game under `pk/`, `linda/`, `ghost/` and `tp/`.
@@ -234,6 +324,7 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
 
 ## Status and ideas
 
-- All four Gen-1 games, PEE KID³, FACE and YOKO are complete and bot-verified.
+- All four Gen-1 games, PEE KID³, FACE, YOKO and CARL 2 are complete and bot-verified.
 - FACE and YOKO are the penultimate and ultimate games of Generation 2. YOKO's true ending closes the generation ("THE SUPER-16 GENERATION IS OVER. NOBODY WAS LEFT BEHIND.") and asks "SEE YOU NEXT GENERATION?"
+- CARL 2 is the cash-in that came out after the generation ended: "THE LAST GAME FOR THE SUPER-16". Its true ending: "THE SUPER-16 GENERATION IS OVER. HE LEFT LAST."
 - Generation 3 is the natural next step. FACE's stage 6 already teases what the next hardware looks like: flat-shaded polygons from the FACE-FX chip.

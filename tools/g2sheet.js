@@ -6,6 +6,7 @@ const LISTS = {
   yoko: ['g2/engine2', 'g2/fm', 'pk/pkart', 'g2/cast', 'face/faceart', 'yoko/yart'],
   cast: ['g2/engine2', 'g2/fm', 'pk/pkart', 'g2/cast'],
   pk: ['g2/engine2', 'g2/fm', 'pk/pkart'],
+  carl2: ['g2/engine2', 'g2/fm', 'pk/pkart', 'g2/cast', 'face/faceart', 'yoko/yart', 'carl2/c2art', 'carl2/c2tiles'],
 };
 const [game, code, sc, out] = process.argv.slice(2);
 const files = (LISTS[game] || LISTS.cast).filter(f => { try { require('fs').accessSync(path.join(G.ROOT, f + '.js')); return true; } catch (e) { return false; } });
