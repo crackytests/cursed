@@ -157,7 +157,7 @@ async function chipScreen() {
 
 // ---------- title ----------
 async function titleScreen() {
-  SH.hold = 0; SH.paused = false; post.legacy = 0; LEGACY_AUDIO = false; post.tint = null; post.wave = 0; post.shake = 0;
+  SH.hold = 0; SH.paused = false; post.legacy = 0; LEGACY_AUDIO = false; post.tint = null; post.wave = 0; calm();
   const sv = fetchStore('face_save'), YM = fetchStore('yoko_meta') || {};
   let t = 0;
   scene = { update() { t++; }, draw() {
@@ -208,7 +208,7 @@ async function checkOnFace() {
 // ---------- stage flow ----------
 async function startStage(n) {
   FSAVE.stage = n; saveFS();
-  SH.hold = 0; SH.paused = false; post.legacy = 0; LEGACY_AUDIO = false;
+  SH.hold = 0; SH.paused = false; post.legacy = 0; LEGACY_AUDIO = false; calm();
   if (n === 6) return stage6();
   const def = STG_FACE[n];
   scene = { draw() { cls(BLACK); } }; post.fade = 0;
@@ -238,7 +238,7 @@ async function stageEnd() {
   sfx('get'); banner('STAGE CLEAR', 100); await wait(100);
   FSAVE.restoresTotal = (FSAVE.restoresTotal || 0) + PLR.restores; PLR.restores = 0;
   PLR.backups = Math.max(PLR.backups, 2);
-  await fadeOut(); scene = { draw() { cls(BLACK); } }; post.fade = 0;
+  await fadeOut(); calm(); scene = { draw() { cls(BLACK); } }; post.fade = 0;
   await showCard(['STAGE ' + n + ' CLEAR', '', 'VIEWERS ...... ' + SH.viewers, 'POTENTIAL .... ' + Math.round(PLR.pot) + '%', 'BACKUPS ...... ' + PLR.backups, 'INTEGRITY .... ' + PLR.integrity + '%'], 160, { bg: hex('#000012'), fg: WHITE });
   FMETA.hiViewers = Math.max(FMETA.hiViewers || 0, SH.viewers); saveFM();
   const quit = await lab(n);
@@ -250,7 +250,7 @@ function tl3(build) { const L = []; build((t, fn) => L.push([t, fn])); return L.
 const PAL3 = { deb: [hex('#ff24db'), hex('#6dff24'), hex('#24dbff'), hex('#ffdb24')] };
 function debris(x, y, z, o = {}) { const m = pick(['cube', 'pyr', 'octa']); return obj3(m, x, y, z, Object.assign({ s: 9 + rnd(6), col: pick(PAL3.deb), srx: Math.random() * .06, sry: Math.random() * .06, hp: 3, r: 14 }, o)); }
 async function stage6() {
-  scene = { draw() { cls(BLACK); } }; post.fade = 0;
+  calm(); scene = { draw() { cls(BLACK); } }; post.fade = 0;
   await showCard(['STAGE 6', '', 'THE NEXT GENERATION', '', 'FACE-FX CHIP ENGAGED'], 130, { bg: hex('#000012'), fg: hex('#6dff24') });
   Object.assign(FX3, { objs: [], pb: [], eb: [], scroll: 0, speed: 3, t: 0, sky: 'fx', control: 100, help: 0, hitflash: 0, ev: 0, tick: null, over: null, lights: [], assist: 0, fogC: hex('#000024') });
   Object.assign(SH, { comm: [], cm: null, fx: [], eb: [], ents: [], hold: 0, assisted: 0 });

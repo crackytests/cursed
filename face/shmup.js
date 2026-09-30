@@ -172,6 +172,7 @@ function fan(e, n, spd, spread, o = {}) { for (let i = 0; i < n; i++) aim(e, spd
 
 // ---------- per-frame ----------
 function shUpdate() {
+  shakeTick(); // before the freeze check: a shake that starts right before a story scene must still wear off
   if (frozen()) return;
   if (post.flash > 0) post.flash = Math.max(0, post.flash - .06);
   SH.t++; SH.sx += SH.speed;
@@ -227,10 +228,11 @@ function shUpdate() {
   SH.ents = SH.ents.filter(e => !e.gone);
   for (const f of SH.fx) { f.t--; if (f.vx !== undefined) { f.x += f.vx; f.y += f.vy; f.vx *= .95; f.vy *= .95; } if (f.k === 'ring') f.t2 = (f.t2 || 0) + 1; }
   SH.fx = SH.fx.filter(f => f.k === 'ring' ? (f.t2 || 0) < 16 : f.t > 0);
-  if (SH.shake > 0) { SH.shake--; post.shake = SH.shake > 0 ? Math.min(4, SH.shake >> 1) : 0; }
   if (SH.stage.tick) SH.stage.tick();
   commUpdate();
 }
+function shakeTick() { if (SH.shake > 0) SH.shake--; post.shake = SH.shake > 0 ? Math.min(4, SH.shake >> 1) : 0; }
+function calm() { SH.shake = 0; post.shake = 0; }
 function collect(it) {
   if (it.k === 'orb') { PLR.pot = Math.min(100, PLR.pot + 2); SH.viewers += 1; if (SH.t % 3 === 0) sfx('blip', [1800, 300]); }
   else if (it.k === 'bulb') { PLR.lvl = Math.min(4, PLR.lvl + 1); sfx('get'); SH.fx.push({ k: 'txt', x: PLR.x - 20, y: PLR.y - 24, s: PLR.lvl >= 4 ? 'IDEA: MAX' : 'IDEA LV' + PLR.lvl, t: 50, c: hex('#ffdb24') }); if (PLR.lvl === 2 && !FMETA.bulbTip) { FMETA.bulbTip = 1; saveFM(); comm('FACE', 'An idea. A lightbulb. That\'s not how ideas work. I\'m keeping it.', 100); } }

@@ -17,10 +17,11 @@ var BOT = (() => {
     if (o.includes('RESUME')) return 0;
     return 0;
   }
-  let blackF = 0, flashF = 0;
-  function watch() { // things a human would see that a bot can't: dialogs on a black screen, a flash that never ends
+  let blackF = 0, flashF = 0, shakeF = 0;
+  function watch() { // things a human would see that a bot can't: dialogs on a black screen, a flash that never ends, a shake that never stops
     if (post.fade > .95 && (DLG || MENUS.length || CARD)) { if (++blackF === 20) L('WARN FADE-BLACK while ' + (DLG ? 'DLG ' + DLG.lines[0] : MENUS.length ? 'MENU ' + MENUS[0].opts[0] : 'CARD ' + CARD.lines[0])); } else blackF = 0;
     if (post.flash > .25) { if (++flashF === 180) L('WARN FLASH STUCK at ' + post.flash); } else flashF = 0;
+    if (post.shake > 0) { if (++shakeF === 120) L('WARN SHAKE STUCK at ' + post.shake + (scene === gameScene ? '' : ' (outside gameplay)')); } else shakeF = 0;
   }
   function tick() {
     F++; want = {}; watch();
