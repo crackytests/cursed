@@ -84,7 +84,8 @@ const FONT = {};
   const src = { A: '0E11111F111111', B: '1E11111E11111E', C: '0E11101010110E', D: '1C12111111121C', E: '1F10101E10101F', F: '1F10101E101010', G: '0E11101711110F', H: '1111111F111111', I: '0E04040404040E', J: '0702020202120C', K: '11121418141211', L: '1010101010101F', M: '111B1515111111', N: '11111915131111', O: '0E11111111110E', P: '1E11111E101010', Q: '0E11111115120D', R: '1E11111E141211', S: '0F10100E01011E', T: '1F040404040404', U: '1111111111110E', V: '11111111110A04', W: '1111111515150A', X: '11110A040A1111', Y: '1111110A040404', Z: '1F01020408101F',
     0: '0E11131519110E', 1: '040C040404040E', 2: '0E11010204081F', 3: '1F02040201110E', 4: '02060A121F0202', 5: '1F101E0101110E', 6: '0608101E11110E', 7: '1F010204080808', 8: '0E11110E11110E', 9: '0E11110F01020C',
     '.': '00000000000C0C', ',': '000000000C0408', '!': '04040404040004', '?': '0E110102040004', "'": '0C040800000000', '-': '0000001F000000', ':': '000C0C000C0C00', '/': '00010204081000', '(': '02040808080402', ')': '08040202020408',
-    '"': '0A0A0A00000000', '>': '080C0E0F0E0C08', '*': '0004150E150400', '+': '0004041F040400', '=': '00001F001F0000', '#': '0A0A1F0A1F0A0A', '&': '0C121408151209', '%': '18190204081303', '@': '000A1F1F0E0400', '$': '040F140E051E04', '^': '040E1F04040404', 'v': '040404041F0E04', '[': '1F1F1F1F1F1F1F', '_': '0000000000001F', '³': '1C0204020C1000' };
+    '"': '0A0A0A00000000', '>': '080C0E0F0E0C08', '*': '0004150E150400', '+': '0004041F040400', '=': '00001F001F0000', '#': '0A0A1F0A1F0A0A', '&': '0C121408151209', '%': '18190204081303', '@': '000A1F1F0E0400', '$': '040F140E051E04', '^': '040E1F04040404', 'v': '040404041F0E04', '[': '1F1F1F1F1F1F1F', '_': '0000000000001F', '³': '1C0204020C1000',
+    '<': '02040810080402', ';': '000C0C000C0408', '~': '00000815020000', '|': '04040404040404', '{': '06080818080806', '}': '0C02020302020C', '\u221e': '00000A150A0000' };
   for (const k in src) { const h = src[k], r = []; for (let i = 0; i < 7; i++) r.push(parseInt(h.substr(i * 2, 2), 16)); FONT[k] = r; }
 })();
 function glyph(ch, x, y, c, sc = 1) { const g = FONT[ch === 'v' ? 'v' : ch.toUpperCase()]; if (!g) return; for (let j = 0; j < 7; j++) for (let i = 0; i < 5; i++) if (g[j] & (16 >> i)) sc === 1 ? pset(x + i, y + j, c) : rectF(x + i * sc, y + j * sc, sc, sc, c); }
@@ -238,3 +239,43 @@ function drawOverlay() {
 function store(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 function fetchStore(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
 const clock = () => new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toUpperCase();
+
+// ---------- gen-2 late additions (FACE / YOKO): primitives, legacy crush, tones ----------
+function lineF(x0, y0, x1, y1, c) { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1) | 0; for (let i = 0; i <= n; i++) pset(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n, c); }
+function circF(cx, cy, r, c) { for (let y = -r; y <= r; y++) { const w = Math.sqrt(Math.max(0, r * r - y * y)); rectF(Math.round(cx - w), Math.round(cy + y), Math.round(w * 2) + 1, 1, c); } }
+function ringF(cx, cy, r, c) { const n = Math.max(8, (r * 6.3) | 0); for (let i = 0; i < n; i++) { const a = i / n * 6.2832; pset(cx + Math.cos(a) * r, cy + Math.sin(a) * r, c); } }
+function rectA(x, y, w, h, c, a) { // alpha-blended rect (a: 0..1)
+  x |= 0; y |= 0; const x1 = Math.min(W, x + w), y1 = Math.min(H, y + h), [cr, cg, cb] = chan(c);
+  for (let j = Math.max(0, y); j < y1; j++) for (let i = Math.max(0, x); i < x1; i++) { const o = j * W + i, [r, g, b] = chan(FB[o]); FB[o] = rgb(r + (cr - r) * a, g + (cg - g) * a, b + (cb - b) * a); }
+}
+function triF(x0, y0, x1, y1, x2, y2, c) { // flat triangle fill, top-left rule-ish
+  if (y1 < y0) { [x0, y0, x1, y1] = [x1, y1, x0, y0]; } if (y2 < y0) { [x0, y0, x2, y2] = [x2, y2, x0, y0]; } if (y2 < y1) { [x1, y1, x2, y2] = [x2, y2, x1, y1]; }
+  const ys = Math.max(0, Math.ceil(y0)), ye = Math.min(H - 1, Math.floor(y2));
+  for (let y = ys; y <= ye; y++) {
+    const xa = y2 === y0 ? x0 : x0 + (x2 - x0) * (y - y0) / (y2 - y0);
+    const xb = y < y1 ? (y1 === y0 ? x0 : x0 + (x1 - x0) * (y - y0) / (y1 - y0)) : (y2 === y1 ? x1 : x1 + (x2 - x1) * (y - y1) / (y2 - y1));
+    const l = Math.round(Math.min(xa, xb)), r = Math.round(Math.max(xa, xb)); if (r >= l) rectF(l, y, r - l + 1, 1, c);
+  }
+}
+const lum = c => { const [r, g, b] = chan(c); return r * .3 + g * .59 + b * .11; };
+// the four-shade cartridges, as full colors (light -> dark)
+const TONES = {
+  dmg: ['#9bbc0f', '#8bac0f', '#306230', '#0f380f'], pink: ['#ffe8f2', '#ee94be', '#963070', '#260822'],
+  red: ['#ffe2dc', '#ec5868', '#8a1640', '#16020e'], gray: ['#dedacd', '#a5a094', '#63605c', '#1e1c1e'],
+};
+// crush a palette to one cartridge's four shades (the new hardware still can't draw them)
+function legacyPal(P, tone = 'dmg') { const T = TONES[tone].map(hex); return P.map((c, i) => i === 0 ? 0 : T[(l => l > 170 ? 0 : l > 110 ? 1 : l > 55 ? 2 : 3)(lum(c))]); }
+
+// ordered-dither gradient: the 9-bit palette bands, so dither between neighbouring levels like the real hardware did
+const BAYER4 = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map(v => (v + .5) / 16);
+const HEXC = {}; const hexRaw = h => HEXC[h] || (HEXC[h] = [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+function skyD(y0, y1, h0, h1) {
+  const a = hexRaw(h0), b = hexRaw(h1), cols = [0, 0, 0, 0];
+  y0 = Math.max(0, y0 | 0); y1 = Math.min(H, y1 | 0);
+  for (let y = y0; y < y1; y++) {
+    const k = (y - y0) / Math.max(1, y1 - y0), rv = (a[0] + (b[0] - a[0]) * k) * 7 / 255, gv = (a[1] + (b[1] - a[1]) * k) * 7 / 255, bv = (a[2] + (b[2] - a[2]) * k) * 7 / 255;
+    const rl = rv | 0, gl = gv | 0, bl = bv | 0, rf = rv - rl, gf = gv - gl, bf = bv - bl, yo = (y & 3) << 2;
+    for (let i = 0; i < 4; i++) { const t = BAYER4[yo | i], r = Math.min(7, rl + (rf > t ? 1 : 0)) * 255 / 7 | 0, g = Math.min(7, gl + (gf > t ? 1 : 0)) * 255 / 7 | 0, bb = Math.min(7, bl + (bf > t ? 1 : 0)) * 255 / 7 | 0; cols[i] = ((255 << 24) | (bb << 16) | (g << 8) | r) >>> 0; }
+    const row = y * W; for (let x = 0; x < W; x++) FB[row + x] = cols[x & 3];
+  }
+}

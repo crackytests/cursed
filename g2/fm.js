@@ -117,6 +117,7 @@ function speak(txt, o = {}) {
       if (typeof speechSynthesis === 'undefined' || !window.SpeechSynthesisUtterance) return res();
       const u = new SpeechSynthesisUtterance(txt);
       u.pitch = o.pitch === undefined ? 1 : o.pitch; u.rate = o.rate || 1; u.volume = o.volume === undefined ? .9 : o.volume;
+      if (o.lang) { u.lang = o.lang; const vs = speechSynthesis.getVoices ? speechSynthesis.getVoices() : [], v = vs.find(v => v.lang && v.lang.slice(0, 2) === o.lang.slice(0, 2)); if (v) u.voice = v; }
       u.onend = res; u.onerror = res; speechSynthesis.cancel(); speechSynthesis.speak(u);
       setTimeout(res, 2500 + txt.length * 90);
     } catch (e) { res(); }

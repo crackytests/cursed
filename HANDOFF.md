@@ -83,10 +83,103 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
 - The killer stays unnamed and uncaught.
 - The kid never uses violence. His verbs are asking, performing and inspecting.
 
+### Shared late-Gen-2 additions (used by FACE and YOKO)
+
+- **`g2/engine2.js`** gained additive helpers only (PEE KID³ is unaffected):
+  - `lineF`, `circF`, `ringF`, `rectA` (alpha rect), and `triF` (flat triangle, used by the 3D stage).
+  - `lum`, `TONES`, and `legacyPal(P, tone)`, which crushes a palette to one cartridge's four shades.
+  - `skyD(y0, y1, '#hex', '#hex')`: a Bayer-dithered gradient. Use it instead of `sky()` for big dark gradients. The 9-bit palette otherwise bands into flat slabs.
+  - Font glyphs `< ; ~ | { } ∞`.
+- **`g2/fm.js`**: `speak(txt, { lang: 'ja-JP' })` picks a matching voice. YOKO's boot says ようこそ.
+- **`g2/cast.js`** is the studio's cast library, loaded after `pk/pkart.js`. It holds 48×48 portraits drawn from the reference art for:
+  - New Face (with moods), Old Face, Pilot X, Dyslexio and Backup Face;
+  - Yoko (with a smile), the Empress, Warworld Yoko and the Yokoids;
+  - Spooky Ghost, CEO Linda, Carl, TP, JB Garfield and the Clerk.
+  - It registers them in `PORT`/`VOICE`. Everything lives on `CAST`: `CAST.full` holds full-color versions, `CAST.mood` the alternate expressions, and `CAST.variant(key, {idx: '#hex'})` makes recolors.
+- **Visual canon rule**: the Gen-1 cast (Carl, Linda, Ghost, TP, Old Face) stay in four shades, each in their own cartridge's tone. Everyone native to Gen 2 is in color. The only exception is YOKO's true ending.
+
+### FACE: What Could Happen (`face/`): done and bot-tested
+
+- **Design**: see `FACE_YOKO_DESIGN.md`. The reference art is `new face.webp`, `old-face.webp` and `pilot X.png`; `warworld  yoko.webp` is the final boss.
+- **What it is**: a horizontal shoot-'em-up. The player is New Face, a floating head. The green dot (his third eye) is the only hittable spot.
+- **Script load order**: `engine2`, `fm`, `../pk/pkart`, `../g2/cast`, `faceart`, `shmup`, `stages`, `story`, `poly`, `fmain`.
+- **`shmup.js`**: the engine.
+  - **Forms**: swap with C, new ones unlock per stage.
+    - NEW FACE: waveform shot.
+    - OLD FACE: four-shade green. His hands weld; stop firing and they catch bullets.
+    - PILOT X: piercing laser. Stop firing for 30 frames and he goes INCOGNITO, so spotlights can't see him.
+    - DYSLEXIO: homing magnet shots that bend bullets away. They rearrange enemy WORDS into anagrams (DANGER→GARDEN and so on, in `ANAG`). He drains potential.
+  - **Resources**:
+    - POTENTIAL: B spends 50% as an IDEA bomb, which turns every bullet into potential.
+    - BACKUPS are lives. Every restore costs INTEGRITY, and his `restoreLine()` dialog degrades as integrity drops.
+    - Continues are unlimited but cost 5% integrity each.
+  - **Blocking scenes** go through `story(fn)`, which increments `SH.hold`. `frozen()` stops everything while a dialog, menu, card or pause is up.
+  - **Comms** (`comm(who, text)`) are non-blocking transmissions that play while the stage keeps going.
+  - **Never `await startStage()` inside a story**: it would release the freeze early. `stageEnd` uses `run(() => startStage(n+1))` instead.
+- **`stages.js`**: `FOES` (about 30 enemy types and bosses), backgrounds, and `STG_FACE[1..5]` timelines built with `tl()`.
+  - `gate(t, cond)` holds stage time until the condition is met. Boss fights and forced story beats use it.
+  - The stages:
+    1. ON AIR: breaking out of the screen-bound panel, then Linda's UNSKIPPABLE AD (you shoot the SKIP AD button).
+    2. LOST AND FOUND: Old Face is the "one face" in Carl's lost & found. Then THE FACELESS, and Carl's parking lot.
+    3. DON'T TELL GHOST: spotlights, stealth, the chat snitch, then RED FACE and Ghost.
+    4. THE THIRD GENERATOR: the kid (depends on PK's save), the Dyslexio transformation, then THE SPELLCHECKER.
+    5. BACKUP: Backup Face's HR review, the incident file (the Yoko core is Prototype 1), then THE CURSE.
+- **`poly.js`**: the FACE-FX chip, a flat-shaded polygon renderer.
+  - Stage 6 is a 3D rail shooter ("the next generation is 3D").
+  - The soul choice leads to the armada. Shots show ASSISTED; hits show +HELP and drain CONTROL, ending in INPUT REASSIGNED and then SUPERUSER: YOKO.
+- **`fmain.js`**: boot (the O in CO. becomes an eye), the FACE-FX chip screen, the potential scan, title, LAB interludes between stages, pause, stage 6, endings, credits and all music.
+  - The **potential scan** reads the other cartridges' metas. It counts the endings you haven't seen as "potential" and grants more backups the less you've done.
+- **Choices recorded**: sponsorship, tell or lie to Ghost, take or free the kid, apologize, and the soul.
+- **Endings**:
+  - `core`, `kid`, `viewers`: armada, then SUPERUSER: YOKO. `viewers` also shows a "SPENT" screen that marks your other games' potential as spent; nothing is deleted.
+  - `nothing`: let it end, fading to four shades.
+  - Secret `dyslexio`: needs all 8 letters D-Y-S-L-E-X-I-O, hidden on specific enemies. The I only drops if DRAWER is scrambled into REWARD.
+
+### YOKO: What Happened (`yoko/`): done and bot-tested
+
+- **Design**: see `FACE_YOKO_DESIGN.md`. The reference art is `yoko.jpg`, `empress yoko.webp`, `warworld  yoko.webp` and `jb garfield.webp`.
+- **What it is**: a Jinguji-Saburo-style menu adventure plus turn-based battles. **The player never controls anyone directly until the very end.**
+- **Script load order**: `engine2`, `fm`, `../pk/pkart`, `../g2/cast`, `../face/faceart` (reused sprites), `yart`, `battle`, `adv`, `chapters`, `chapters2`, `ymain`.
+- **`battle.js`**: the support battle.
+  - **Allies act on their own AI** (`ALLY[k].ai`):
+    - Carl does the opposite of any suggestion.
+    - JB Garfield only ACCUSEs foes that have been TRANSLATEd, which counts as evidence. Otherwise he naps or eats.
+    - Ghost performs when ASSISTed, which acts as his spotlight.
+    - Pee Kid never hits anyone. He ASKs, PERFORMs and INSPECTs, and always does what he's asked.
+    - Linda INVOICEs between jobs and can BUY OUT franchises.
+  - **Yoko's commands**, paid with FOCUS:
+    - ASSIST: raises potential; 3 stacks unlock the ally's big move.
+    - TRANSLATE: reveals a foe's intent.
+    - SUGGEST.
+    - RESTORE: unlocked in chapter 2.
+    - OVERRULE: unlocked in chapter 3. It always works, costs trust, and is counted in `YREC`.
+    - WAIT.
+  - **Foes** telegraph their intent, shown as ??? until translated.
+  - **THE TEST** asks riddles about the party. Answer by SUGGEST → ANSWER on the right person. The riddle about Yoko is answered by OVERRULE.
+- **`adv.js`**: `SCN[id]` scenes with `look/talk/translate/think/suggest/move` functions that return `{label: async fn}`.
+  - These are re-read every time, so flags change what's available. `advLoop()` runs until `endChapter()`.
+- **`chapters.js` / `chapters2.js`**:
+  - Prologue OFF: Carl turns her on.
+  - 1 YOKO LIMITED: the mall, Linda, JB Garfield, the Shift Manager.
+  - 2 THE RECORDING: Ghost plays FACE's actual last broadcast from `face_meta`, then Backup Face and the kid.
+  - 3 THE TRICK: a four-shade flashback where only Yoko is in color. You play the original Yoko and discover OVERRULE.
+  - 4 MANDOLIN: Mandela-spelled signs, and full-color Karl, Spookey Ghost and Lynda.
+  - 5 WARWORLD: the Linda franchises; CEO Linda joins.
+  - 6 THE EMPRESS: `debate()`, whose charges are built from *your* save data. Then `walk()`, where INPUT ASSIGNED: YOU and you walk Yoko to a console.
+- **`ymain.js`**: boot (PRETEND CO. glitches into YOKO LTD.), the YKO-1 chip screen, THE RECORD (reads every game's meta), title, chapter select, checkpoints, the endings with the full-color parade, credits and music.
+- **Endings**:
+  - `restore`: repair access only.
+  - `empire`: sets `yoko_meta.perma`, which makes the boot YOKO LTD. forever.
+  - `open`: four shades, then home.
+  - `true`: requires agreeing with the Empress (certainty ≤30, credibility ≥60), answering the last question "it isn't my/your decision", at most 5 overrules, and a cleared FACE save. The Gen-1 cast get color; the true credits end with "SEE YOU NEXT GENERATION?"
+
+- **TP** gained one award in `tp/tshow.js`: NEWER HARDWARE. It appears only if a Gen-2 save exists, and changes its line after YOKO's true ending. He still talks about the games only as products.
+
 ## Storage keys (localStorage; the games read each other's)
 
-- Saves: `carl_sav`, `linda_sav`, `ghost_sav`, `pk_save`.
-- Metas: `carl_meta`, `linda_meta`, `ghost_meta`, `tp_mem`, `pk_meta`.
+- Saves: `carl_sav`, `linda_sav`, `ghost_sav`, `pk_save`, `face_save`, `yoko_save`.
+- Metas: `carl_meta`, `linda_meta`, `ghost_meta`, `tp_mem`, `pk_meta`, `face_meta`, `yoko_meta`.
+- FACE reads every older meta as "potential" (what could still happen). YOKO reads every meta, including `face_meta`, as "the record" (what happened).
 
 ## Gotchas
 
@@ -116,6 +209,21 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
   4. Release keys between presses.
   5. Don't set `anyKey`, or boot will run over your test.
 
+### Gen-2 tools (FACE / YOKO), portable (no hardcoded paths)
+
+- `tools/g2vm.js` is the shared headless harness. `load(files, LS)` runs a game in a fake browser; `step(ctx, n)` and `png(ctx, out)` advance frames and save screenshots.
+- Sheets and screenshots:
+  - `node tools/g2sheet.js face|yoko|cast "<draw code>" [scale] [out]`: art sheets.
+  - `node tools/fshot.js <stage> <f1,f2,...>` and `node tools/yshot.js <chapter> <f1,...>`: screenshots into `tools/shots/`.
+- FACE full playthrough: `WANT="sponsor=1,ghost=truth|lie,kid=take|free,apology=1|0,soul=core|kid|viewers|nothing|dyslexio" PK=kept|letgo|none [GOD=1] node tools/fplay.js [maxFrames]`.
+  - The bot (`fbot.js`) dodges with a threat field, bombs when crowded, and swaps to Dyslexio for words.
+  - A full run is about 30k frames and takes about 10 minutes.
+- FACE freeze check: `node tools/ffreeze.js`.
+- YOKO full playthrough: `WANT="end=restore|empire|open|true,over=0|1" FACE=core|kid|viewers|nothing|dyslexio|none PK=kept|letgo|none node tools/yplay.js [maxFrames]`.
+  - Add `CH=n` to start at chapter n.
+  - The bot (`ybot.js`) explores scenes least-tried-first, plays the battles with a real support policy, picks debate answers, and walks to the console.
+- Real browser: run `python3 -m http.server 8731` in the repo root, then `node tools/browser.js face/ 30`. It uses the global Playwright and reports console errors and frame cost.
+
 ## Publishing
 
 - The public repo is https://github.com/crackytests/cursed (branch `main`). GitHub Pages serves it at **https://crackytests.github.io/cursed/**, with each game under `pk/`, `linda/`, `ghost/` and `tp/`.
@@ -124,5 +232,6 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
 
 ## Status and ideas
 
-- All four Gen-1 games and PEE KID³ are complete, content-passed and bot-verified.
-- The user said Gen 2 is "the next generation … should feel like an upgrade". More Gen-2 games (spin-offs, possibly on `g2/`) are the likely next step. Expect a new bible and reference art in the repo root for each one.
+- All four Gen-1 games, PEE KID³, FACE and YOKO are complete and bot-verified.
+- FACE and YOKO are the penultimate and ultimate games of Generation 2. YOKO's true ending closes the generation ("THE SUPER-16 GENERATION IS OVER. NOBODY WAS LEFT BEHIND.") and asks "SEE YOU NEXT GENERATION?"
+- Generation 3 is the natural next step. FACE's stage 6 already teases what the next hardware looks like: flat-shaded polygons from the FACE-FX chip.
