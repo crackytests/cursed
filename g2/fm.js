@@ -4,16 +4,36 @@
 let AC = null, master, musBus, sfxBus, noiseBuf, SQ = {};
 let LEGACY_AUDIO = false;
 const mus = { rate: 1, det: 0 };
+// A game can warm up the mix before audio starts (neutral when unset):
+// FM_TONE = { low: dB shelf at 200Hz, high: dB shelf at 3.2kHz, lp: lowpass Hz, room: reverb send 0..1, sfxHigh: dB shelf on sfx, gain: music level x }
+let FM_TONE = null;
 function audioInit() {
   if (AC) { if (AC.state === 'suspended') AC.resume(); return; }
   AC = new (window.AudioContext || window.webkitAudioContext)();
+  audioGraph();
+  nextT = AC.currentTime + .05; setInterval(sched, 25);
+}
+function audioGraph() { // the mixer, built on AC (the live context, or an OfflineAudioContext when a tool renders music)
   master = AC.createGain(); master.gain.value = .55;
   const comp = AC.createDynamicsCompressor(); master.connect(comp); comp.connect(AC.destination);
-  musBus = AC.createGain(); musBus.gain.value = .32; musBus.connect(master);
-  sfxBus = AC.createGain(); sfxBus.gain.value = .35; sfxBus.connect(master);
+  musBus = AC.createGain(); musBus.gain.value = .32 * ((FM_TONE && FM_TONE.gain) || 1);
+  sfxBus = AC.createGain(); sfxBus.gain.value = .35;
+  const T = FM_TONE || {}, mOut = toneChain(musBus, T), sOut = toneChain(sfxBus, { high: T.sfxHigh });
+  mOut.connect(master); sOut.connect(master);
+  if (T.room) { const cv = AC.createConvolver(), wet = AC.createGain(); cv.buffer = roomIR(1.6); wet.gain.value = T.room; mOut.connect(cv); sOut.connect(cv); cv.connect(wet); wet.connect(master); }
   noiseBuf = AC.createBuffer(1, AC.sampleRate, AC.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   for (const [k, duty] of [['p12', .125], ['p25', .25], ['p50', .5]]) { const n = 32, re = new Float32Array(n), im = new Float32Array(n); for (let i = 1; i < n; i++) re[i] = 2 * Math.sin(i * Math.PI * duty) / (i * Math.PI); SQ[k] = AC.createPeriodicWave(re, im); }
-  nextT = AC.currentTime + .05; setInterval(sched, 25);
+}
+function toneChain(src, o) {
+  let n = src;
+  const f = (type, hz, db, q) => { const b = AC.createBiquadFilter(); b.type = type; b.frequency.value = hz; if (db !== undefined) b.gain.value = db; if (q) b.Q.value = q; n.connect(b); n = b; };
+  if (o.low) f('lowshelf', 200, o.low); if (o.high) f('highshelf', 3200, o.high); if (o.lp) f('lowpass', o.lp, undefined, .6);
+  return n;
+}
+function roomIR(sec) { // a small, dark room: decaying noise, smoothed so the tail doesn't hiss
+  const n = AC.sampleRate * sec | 0, b = AC.createBuffer(2, n, AC.sampleRate);
+  for (let ch = 0; ch < 2; ch++) { const d = b.getChannelData(ch); let lp = 0; for (let i = 0; i < n; i++) { lp += ((Math.random() * 2 - 1) - lp) * .18; d[i] = lp * Math.pow(1 - i / n, 3) * (i < AC.sampleRate * .012 ? i / (AC.sampleRate * .012) : 1); } }
+  return b;
 }
 // FM patches: ratio (mod:carrier), index (mod depth), mdecay (index falloff), a/d/s (envelope), wave (carrier)
 const PATCH = {
@@ -28,10 +48,10 @@ const PATCH = {
   pluck: { ratio: 1, index: 3, mdecay: .02, d: .18, s: 0, vol: .5 },
 };
 const LEGACY_WAVE = { bass: 'tri', slap: 'tri', lead: 'p25', brass: 'p50', bell: 'p12', epiano: 'p25', pad: 'p12', organ: 'p50', pluck: 'p12' };
-function note(f, dur, patch, at, dest, det = 0) {
+function note(f, dur, patch, at, dest, det = 0, vm = 1) {
   if (!AC || !f) return;
   const p = PATCH[patch] || PATCH.lead, g = AC.createGain(), c = AC.createOscillator();
-  const vol = p.vol * (dest === sfxBus ? 1 : .9);
+  const vol = p.vol * vm * (dest === sfxBus ? 1 : .9);
   if (LEGACY_AUDIO) { // the downgrade: plain square/triangle, like the old cartridges
     const lw = LEGACY_WAVE[patch] || 'p25';
     if (lw === 'tri') c.type = 'triangle'; else c.setPeriodicWave(SQ[lw]);
@@ -94,19 +114,19 @@ function sched() {
   if (!AC || !cur) return;
   const sd = 60 / (cur.bpm * mus.rate) / 4;
   if (nextT < AC.currentTime - .2) nextT = AC.currentTime + .02;
-  while (nextT < AC.currentTime + .12) {
-    for (const c of cur.ch) {
-      const e = c.map[stepN % c.len]; if (!e) continue;
-      if (c.drum) {
-        const v = c.vol || 1;
-        if (e.k === 'k') kick(nextT, musBus, v);
-        else if (e.k === 's') { noise(.14, { bp: 1800, vol: .45 * v, at: nextT, dest: musBus }); tone(200, .08, { vol: .2 * v, at: nextT, dest: musBus, type: 'triangle' }); }
-        else if (e.k === 'h') noise(.03, { hp: 8000, vol: .18 * v, at: nextT, dest: musBus });
-        else if (e.k === 'o') noise(.2, { hp: 6000, vol: .15 * v, at: nextT, dest: musBus });
-        else if (e.k === 'x') { [0, 4, 7].forEach(s => note(nf('C5') * Math.pow(2, s / 12), .25, 'brass', nextT, musBus)); noise(.2, { hp: 2000, vol: .3, at: nextT, dest: musBus }); } // orchestra hit
-      } else note(nf(e.k), e.len * sd * .95, c.ins || 'lead', nextT, musBus, mus.det + (c.det || 0));
-    }
-    stepN++; nextT += sd;
+  while (nextT < AC.currentTime + .12) { playStep(cur, stepN, nextT, sd); stepN++; nextT += sd; }
+}
+function playStep(tr, n, at, sd) {
+  for (const c of tr.ch) {
+    const e = c.map[n % c.len]; if (!e) continue;
+    if (c.drum) {
+      const v = c.vol || 1;
+      if (e.k === 'k') kick(at, musBus, v);
+      else if (e.k === 's') { noise(.14, { bp: 1800, vol: .45 * v, at, dest: musBus }); tone(200, .08, { vol: .2 * v, at, dest: musBus, type: 'triangle' }); }
+      else if (e.k === 'h') noise(.03, { hp: 8000, vol: .18 * v, at, dest: musBus });
+      else if (e.k === 'o') noise(.2, { hp: 6000, vol: .15 * v, at, dest: musBus });
+      else if (e.k === 'x') { [0, 4, 7].forEach(s => note(nf('C5') * Math.pow(2, s / 12), .25, 'brass', at, musBus)); noise(.2, { hp: 2000, vol: .3, at, dest: musBus }); } // orchestra hit
+    } else note(nf(e.k), e.len * sd * .95, c.ins || 'lead', at, musBus, mus.det + (c.det || 0), c.vol || 1);
   }
 }
 

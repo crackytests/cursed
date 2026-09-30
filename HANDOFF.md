@@ -91,6 +91,7 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
   - `skyD(y0, y1, '#hex', '#hex')`: a Bayer-dithered gradient. Use it instead of `sky()` for big dark gradients. The 9-bit palette otherwise bands into flat slabs.
   - Font glyphs `< ; ~ | { } ∞`.
 - **`g2/fm.js`**: `speak(txt, { lang: 'ja-JP' })` picks a matching voice. YOKO's boot says ようこそ.
+- **`g2/fm.js` mix**: a game can set `FM_TONE = { low, high, lp, room, sfxHigh, gain }` (shelf dB, lowpass Hz, reverb send, music level) before audio starts. It's neutral when unset, so PK and FACE sound as they always did. Melodic channels also take `vol`. YOKO sets a warm mix and retunes its own copies of `PATCH.bell/epiano/pad/pluck/bass` and the UI blips at the top of `yoko/ymain.js`: the stock bell was the tinny part (about a third of its energy above 2 kHz).
 - **`g2/cast.js`** is the studio's cast library, loaded after `pk/pkart.js`. It holds 48×48 portraits drawn from the reference art for:
   - New Face (with moods), Old Face, Pilot X, Dyslexio and Backup Face;
   - Yoko (with a smile), the Empress, Warworld Yoko and the Yokoids;
@@ -223,6 +224,7 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
   - Add `CH=n` to start at chapter n.
   - The bot (`ybot.js`) explores scenes least-tried-first, plays the battles with a real support policy, picks debate answers, and walks to the console.
 - Real browser: run `python3 -m http.server 8731` in the repo root, then `node tools/browser.js face/ 30`. It uses the global Playwright and reports console errors and frame cost.
+- Music tone: with the same server, `node tools/audio.js yoko/ all 16 [wavDir]` renders every track offline and prints loudness, spectral centroid and the share of energy per band (below 250 Hz is the body; 2 kHz and up is the tin). With `wavDir` it writes WAVs to listen to.
 
 ## Publishing
 

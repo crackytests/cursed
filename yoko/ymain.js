@@ -6,12 +6,24 @@ const REC = { face: fetchStore('face_meta'), pk: fetchStore('pk_meta'), carl: fe
 function saveY() {}
 function checkpoint(ch) { store('yoko_save', { ch, flags: ADV.flags, party: PARTY, rec: YREC, can: YOKO_CAN }); }
 
-// ---------- music (FM). quieter than his. ----------
+// ---------- sound. quieter than his, but warm: her driver rounds off the chip's metal ----------
+FM_TONE = { low: 2.5, high: -3.5, lp: 7000, room: .2, sfxHigh: -4, gain: .95 };
+Object.assign(PATCH.bell, { index: 1.3, mdecay: .04, d: 1, vol: .42 }); // the ring on the attack only, then a clean tone
+Object.assign(PATCH.epiano, { index: 1.6, mdecay: .08, vol: .48, ratio2: 0 }); // no tine click
+Object.assign(PATCH.pad, { ratio: 1, index: .9, mdecay: .7, a: .3, d: .6, s: .85 });
+Object.assign(PATCH.pluck, { index: 2.2 });
+Object.assign(PATCH.bass, { index: 2.6 });
+SFX.blip = v => { if (!AC) return; const [f0, j] = v, f = f0 > 900 ? 900 + (f0 - 900) * .55 : f0; note(f + (Math.random() - .5) * j, .04, 'pluck', AC.currentTime, sfxBus); };
+SFX.tick = () => note(900, .03, 'pluck', AC.currentTime, sfxBus);
+SFX.move = () => note(700, .03, 'pluck', AC.currentTime, sfxBus);
+SFX.chat = () => note(1200, .03, 'pluck', AC.currentTime, sfxBus);
+const oct = (n, d) => n.replace(/([A-G]#?)(\d)/g, (m, k, o) => k + (+o + d));
 Object.assign(TRACKS, {
   ytitle: { bpm: 80, ch: [
     { ins: 'bell', n: 'F#5 - - A5 - - D6 - C#6 - - - A5 - - - B5 - - A5 - - F#5 - E5 - - - - - - - D5 - - F#5 - - A5 - G5 - F#5 - E5 - - - F#5 - - - D5 - - - - - - - - - - -' },
     { ins: 'epiano', n: 'D4 F#4 A4 F#4 D4 F#4 A4 F#4 B3 D4 F#4 D4 B3 D4 F#4 D4 G3 B3 D4 B3 G3 B3 D4 B3 A3 C#4 E4 C#4 A3 C#4 E4 C#4' },
-    { ins: 'pad', n: 'D3 - - - - - - - B2 - - - - - - - G2 - - - - - - - A2 - - - - - - -' }] },
+    { ins: 'pad', n: 'D3 - - - - - - - B2 - - - - - - - G2 - - - - - - - A2 - - - - - - -' },
+    { ins: 'bass', vol: .7, n: 'D2 . . . . . D2 . B1 . . . . . B1 . G1 . . . . . G1 . A1 . . . . . A1 .' }] },
   closet: { bpm: 70, ch: [{ ins: 'epiano', n: 'A4 . . . E5 . . . D5 . . . C#5 . . . A4 . . . F#4 . . . E4 . . . . . . .' }, { ins: 'pad', n: 'A2 - - - - - - - F#2 - - - - - - -' }] },
   mall: { bpm: 104, ch: [
     { ins: 'epiano', n: 'E5 - C#5 - A4 - C#5 E5 D5 - B4 - G#4 - B4 D5 C#5 - A4 - E4 - A4 C#5 B4 - G#4 - E4 - - -' },
@@ -39,8 +51,8 @@ Object.assign(TRACKS, {
   trick: { bpm: 150, ch: [
     { ins: 'lead', n: 'C5 - - E5 - - G5 - - E5 - - C5 - - G4 - - C5 - - F5 - - A5 - - F5 - - C5 - - A4 - -' },
     { ins: 'bass', n: 'C3 . . G2 . . C3 . . G2 . . F2 . . C3 . . F2 . . C3 . .' }] },
-  exile: { bpm: 60, ch: [{ ins: 'pad', n: 'A3 - - - - - - - G#3 - - - - - - - F#3 - - - - - - - E3 - - - - - - -' }, { ins: 'bell', n: 'E6 . . . . . . . C#6 . . . . . . . B5 . . . . . . . A5 . . . . . . .' }] },
-  archive: { bpm: 96, ch: [{ ins: 'bell', n: 'C#5 . E5 . G#5 . E5 . B4 . D#5 . F#5 . D#5 .' }, { ins: 'pad', n: 'C#4 - - - - - - - B3 - - - - - - -' }, { drum: 1, vol: .4, n: 'k . . . s . . . k . . . s . . .' }] },
+  exile: { bpm: 60, ch: [{ ins: 'pad', n: 'A3 - - - - - - - G#3 - - - - - - - F#3 - - - - - - - E3 - - - - - - -' }, { ins: 'bell', n: oct('E6 . . . . . . . C#6 . . . . . . . B5 . . . . . . . A5 . . . . . . .', -1) }, { ins: 'bass', vol: .6, n: 'A2 . . . . . . . G#2 . . . . . . . F#2 . . . . . . . E2 . . . . . . .' }] },
+  archive: { bpm: 96, ch: [{ ins: 'bell', n: 'C#5 . E5 . G#5 . E5 . B4 . D#5 . F#5 . D#5 .' }, { ins: 'pad', n: 'C#4 - - - - - - - B3 - - - - - - -' }, { ins: 'bass', vol: .8, n: 'C#2 . . C#2 . . . . B1 . . B1 . . . .' }, { drum: 1, vol: .4, n: 'k . . . s . . . k . . . s . . .' }] },
   mandolin: { bpm: 112, ch: [
     { ins: 'pluck', n: 'D5 D5 D5 D5 F#5 F#5 F#5 F#5 A5 A5 A5 A5 F#5 F#5 F#5 F#5 G5 G5 G5 G5 E5 E5 E5 E5 C#5 C#5 D5 D5 E5 E5 E5 E5' },
     { ins: 'pluck', det: 8, n: 'A4 . A4 . D5 . A4 . B4 . D5 . G4 . B4 . A4 . C#5 . E5 . C#5 . A4 . C#5 . E5 . A4 .' },
@@ -55,9 +67,9 @@ Object.assign(TRACKS, {
     { ins: 'pad', n: 'D4 - - - - - - - C4 - - - - - - - A#3 - - - - - - - A3 - - - - - - -' },
     { ins: 'bell', n: 'A5 . . D6 . . F6 . . . E6 . . . . . D6 . . A5 . . F5 . . . G5 . . . . .' },
     { ins: 'bass', n: 'D2 . . . . . . . C2 . . . . . . . A#1 . . . . . . . A1 . . . C#2 . . .' }] },
-  walk: { bpm: 90, ch: [{ ins: 'bell', n: 'D6 . A5 . F#5 . A5 . D6 . E6 . F#6 . . . E6 . C#6 . A5 . C#6 . E6 . D6 . C#6 . . .' }, { ins: 'pad', n: 'D4 - - - - - - - A3 - - - - - - -' }] },
+  walk: { bpm: 90, ch: [{ ins: 'bell', n: oct('D6 . A5 . F#5 . A5 . D6 . E6 . F#6 . . . E6 . C#6 . A5 . C#6 . E6 . D6 . C#6 . . .', -1) }, { ins: 'pad', n: 'D4 - - - - - - - A3 - - - - - - -' }, { ins: 'bass', vol: .8, n: 'D2 . . . . . . . A1 . . . . . . .' }] },
   another: { bpm: 88, ch: [{ ins: 'epiano', n: 'D5 - F#5 - A5 - - - G5 - F#5 - E5 - - - F#5 - A5 - D6 - - - C#6 - B5 - A5 - - -' }, { ins: 'bass', n: 'D2 . . . . . . . G2 . . . . . . . B1 . . . . . . . A1 . . . . . . .' }, { ins: 'pad', n: 'F#4 - - - - - - - B3 - - - - - - - D4 - - - - - - - C#4 - - - - - - -' }] },
-  empire: { bpm: 76, ch: [{ ins: 'brass', n: 'D4 - - - F4 - - - A4 - - - D5 - - - C5 - - - A#4 - - - A4 - - - - - - -' }, { ins: 'pad', n: 'D3 - - - - - - - A#2 - - - - - - -' }, { ins: 'bell', n: 'D6 . . . . . . . . . . . . . . . F6 . . . . . . . . . . . . . . .' }] },
+  empire: { bpm: 76, ch: [{ ins: 'brass', n: 'D4 - - - F4 - - - A4 - - - D5 - - - C5 - - - A#4 - - - A4 - - - - - - -' }, { ins: 'pad', n: 'D3 - - - - - - - A#2 - - - - - - -' }, { ins: 'bell', n: oct('D6 . . . . . . . . . . . . . . . F6 . . . . . . . . . . . . . . .', -1) }, { ins: 'bass', vol: .8, n: 'D2 . . . . . . . A#1 . . . . . . .' }] },
   letend: { bpm: 72, ch: [{ ins: 'lead', n: 'A4 - - - G4 - - - F4 - - - E4 - - - D4 - - - E4 - - - F4 - - - - - - -' }, { ins: 'bass', n: 'D3 . . . . . . . A2 . . . . . . .' }] },
   true: { bpm: 96, ch: [
     { ins: 'brass', n: 'D5 - - - A4 - D5 - F#5 - - - E5 - D5 - E5 - - - B4 - E5 - G5 - - - F#5 - E5 - F#5 - A5 - D6 - - - C#6 - B5 - A5 - F#5 - G5 - - - F#5 - E5 - D5 - - - - - - -' },
