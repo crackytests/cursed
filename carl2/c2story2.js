@@ -74,7 +74,7 @@ async function garfTalk2() {
   const w = ent('waitress'); if (w) w.gone = 1; setF2('liteFound');
   await C('She\'s a LINDA. She was a Linda the whole time. There\'s a Linda in the diner. There\'s a Linda in everything.', 'a');
 }
-async function liteStart() { music('boss'); spawnEnemy('lite', 15 * 16, 6 * 16); spawnEnemy('focus', 4 * 16, 9 * 16); spawnEnemy('focus', 16 * 16, 9 * 16); }
+async function liteStart() { music('boss'); spawnEnemy('lite', 15 * 16 + 8, 6 * 16 + 14); spawnEnemy('focus', 4 * 16 + 8, 9 * 16 + 14); spawnEnemy('focus', 16 * 16 + 8, 9 * 16 + 14); }
 async function clue(k, line) {
   if (F2(k)) return C('Already got that one. It\'s a clue. It\'s still a clue.');
   setF2(k); sfx('ask'); await C(line, 'n');
@@ -498,6 +498,8 @@ async function hocStart() {
   await C('You. You were here. In the facility. You were the one with the clipboard. You were ALWAYS the one with the clipboard.', 'a');
   await say('We kept you safe. Now we keep you on the air. It\'s the same job. You\'re product, Carl. You were always product.', HOC);
   await C('I was a KID.', 'a');
+  WD.shake = 24; sfx('crash'); setF2('pilesDown');
+  await say('(EVERY PILE OF LOST STUFF IN THE WAREHOUSE COMES DOWN AT ONCE. IT\'S ALL EVERYWHERE NOW. IT WAS ALWAYS GOING TO BE.)');
   music('boss');
   bossEnt({ id: 'hoc', name: 'HEAD OF CONTENT', x: 20 * 16, y: 5 * 16, hp: 190 + C2.lv * 10, spr: CS.hoc, P: CP.hoc, box: [26, 40], hitY: 22, hw: 12, hh: 6, upd: hocUpd, onDie: () => {} });
 }

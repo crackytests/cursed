@@ -212,6 +212,8 @@ async function roboMallCop() {
   for (const id of ['hoc', 'focusgrp', 'legal']) { const e = ent(id); if (e) e.gone = 1; }
   const boss = addEnt({ id: 'robo', kind: 'boss', boss: 1, x: 11 * 16, y: 6 * 16, hp: 70, maxhp: 70, spr: CS.robo, P: CP.robo, anim: 12, hw: 14, hh: 6, box: [30, 36], hitY: 22, name: 'ROBO MALL COP', upd: roboUpd, onDie: () => {} });
   WD.bossE = boss; music('boss');
+  if (F2('roboMet')) return say(pick(['ROBO MALL COP HAS RE-ENTERED THE SEQUEL!', 'ROBO MALL COP IS BACK. HE NEVER LEFT. HE WAS CHARGING.']));
+  setF2('roboMet');
   await say('ROBO MALL COP HAS ENTERED THE SEQUEL!');
   await say('CITATION: UNLICENSED CARL. CITATION: BONG, OPEN CONTAINER. CITATION: GREEN.', 'ROBO MALL COP');
   await C('They made the mall cop a ROBOT. Why is everything a robot now. Chat, is this what sequels are?', 'a');
@@ -225,7 +227,7 @@ function roboUpd(e) {
     if (e.tt > 200) { e.st = 'wind'; e.tt = 0; e.cx = Math.sign(PL.x - e.x) || 1; e.cy = (PL.y - e.y) / 60; } }
   else if (e.st === 'wind') { e.fl = e.tt & 4 ? 2 : 0; if (e.tt > 40) { e.st = 'charge'; e.tt = 0; sfx('power'); } }
   else if (e.st === 'charge') { const m = moveBox(e, e.cx * 3.2 * sp, e.cy * sp, 14, 6); if (m.hitX || e.tt > 70) { e.st = 'roam'; e.tt = 0; WD.shake = 8; if (m.hitX) { e.stunT = 50; } } }
-  if (e.phase === 2 && !e.called) { e.called = 1; wstory(async () => { await say('BACKUP REQUESTED. BACKUP IS ALSO ME.', 'ROBO MALL COP'); spawnEnemy('cop', 4 * 16, 8 * 16); spawnEnemy('cop', 17 * 16, 8 * 16); }); }
+  if (e.phase === 2 && !e.called) { e.called = 1; wstory(async () => { await say('BACKUP REQUESTED. BACKUP IS ALSO ME.', 'ROBO MALL COP'); spawnEnemy('cop', 5 * 16 + 8, 9 * 16 + 14); spawnEnemy('cop', 16 * 16 + 8, 9 * 16 + 14); }); }
   if (Math.hypot(PL.x - e.x, PL.y - e.y) < 20) hurtPlayer(3 + (e.st === 'charge' ? 2 : 0), e.x, e.y);
 }
 async function roboDown() {

@@ -25,8 +25,9 @@ const solidPx = (px, py) => SOLID.has(tileAt(Math.floor(px / 16), Math.floor(py 
 function boxFree(x, y, hw, hh) { return !(solidPx(x - hw, y - hh) || solidPx(x + hw, y - hh) || solidPx(x - hw, y + hh) || solidPx(x + hw, y + hh) || solidPx(x, y - hh) || solidPx(x, y + hh)); }
 function moveBox(e, dx, dy, hw = 5, hh = 3, ghost) { // e.x,e.y = feet; box centered at y-hh
   let hitX = 0, hitY = 0;
-  if (dx) { const nx = e.x + dx; if (ghost ? inMap(nx, e.y) : boxFree(nx, e.y - hh, hw, hh)) e.x = nx; else hitX = 1; }
-  if (dy) { const ny = e.y + dy; if (ghost ? inMap(e.x, ny) : boxFree(e.x, ny - hh, hw, hh)) e.y = ny; else hitY = 1; }
+  const stuck = !ghost && !boxFree(e.x, e.y - hh, hw, hh); // already overlapping a wall: let it walk out instead of freezing there
+  if (dx) { const nx = e.x + dx; if (ghost ? inMap(nx, e.y) : stuck ? inMap(nx, e.y) : boxFree(nx, e.y - hh, hw, hh)) e.x = nx; else hitX = 1; }
+  if (dy) { const ny = e.y + dy; if (ghost ? inMap(e.x, ny) : stuck ? inMap(e.x, ny) : boxFree(e.x, ny - hh, hw, hh)) e.y = ny; else hitY = 1; }
   return { hitX, hitY };
 }
 const inMap = (x, y) => x > 8 && y > 12 && x < WD.w * 16 - 8 && y < WD.h * 16 - 2;
@@ -98,7 +99,8 @@ const ENEMY = {
 };
 function spawnEnemy(k, x, y, o = {}) {
   const T = ENEMY[k]; if (!T) { console.error('no enemy', k); return null; }
-  const lv = C2.ep || 1, hpScale = 1 + (lv - 1) * .28;
+  const lv = C2.ep || 1, hpScale = 1 + (lv - 1) * .28, hw0 = T.hw || 6;
+  if (!T.ghost && !boxFree(x, y - 4, hw0, 4)) { let best = null, bd = 1e9; for (let dy = -48; dy <= 48; dy += 4) for (let dx = -48; dx <= 48; dx += 4) { const d = dx * dx + dy * dy; if (d < bd && boxFree(x + dx, y + dy - 4, hw0, 4)) { bd = d; best = [x + dx, y + dy]; } } if (best) [x, y] = best; }
   const e = addEnt(Object.assign({ kind: 'enemy', k, x, y, hp: Math.round(T.hp * hpScale), spd: T.spd, ai: T.ai, dmg: T.dmg + Math.floor((lv - 1) / 2), hw: T.hw || 6, hh: 4, rad: 7, cd: 60 + rnd(90), dir: rnd(4), anim: T.anim || 14, spr: T.spr, P: T.P ? T.P() : null, T }, o));
   e.maxhp = e.hp; if (!e.P) { const s = entSprite(e); e.P = s && s.P; }
   if (WD.arena) e.arenaSpawned = 1; // only the fight's own enemies hold an arena shut
@@ -154,7 +156,11 @@ function killEnemy(e) {
   if (e.onDie) e.onDie(e);
 }
 function boom(x, y, sz) { sfx(sz > 2 ? 'hurt' : 'blip', [120, 40]); for (let i = 0; i < 6 + sz * 5; i++) { const a = Math.random() * 6.28, v = .6 + Math.random() * 1.6 * sz; WD.fx.push({ k: 'spark', x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, t: 18 + rnd(14), c: pick([hex('#ffffff'), hex('#ffdb24'), hex('#ff9224'), hex('#92dbff')]) }); } }
-function dropPick(k, x, y, b) { const a = Math.random() * 6.28; WD.pick.push({ k, x, y, vx: Math.cos(a) * 1.2, vy: Math.sin(a) * 1.2, t: 0, b }); }
+function dropPick(k, x, y, b) {
+  const a = Math.random() * 6.28;
+  if (solidPx(x, y + 2)) { let best = null, bd = 1e9; for (let dy = -32; dy <= 32; dy += 4) for (let dx = -32; dx <= 32; dx += 4) { const d = dx * dx + dy * dy; if (d < bd && !solidPx(x + dx, y + dy + 2)) { bd = d; best = [x + dx, y + dy]; } } if (best) [x, y] = best; }
+  WD.pick.push({ k, x, y, vx: Math.cos(a) * 1.2, vy: Math.sin(a) * 1.2, t: 0, b });
+}
 function gainXP(n) {
   C2.xp += n; const need = () => 18 + C2.lv * C2.lv * 10;
   while (C2.xp >= need()) { C2.xp -= need(); C2.lv++; C2.maxhp += 4; C2.hp = C2.maxhp; sfx('get'); banner('LEVEL UP! LV ' + C2.lv + '. COMPOSURE ' + C2.maxhp + '. STILL SHORT.', 140); }
@@ -227,6 +233,7 @@ function hurtPlayer(d, sx, sy) {
   if (C2.hp <= 0) { PL.dead = 1; wstory(lostCool); }
 }
 async function lostCool() {
+  const A = WD.M.arena; if (A && WD.arena && !F2(A.flag)) { C2.nerf = C2.nerf || {}; C2.nerf[A.flag] = (C2.nerf[A.flag] || 0) + 1; }
   music(null); sfx('powerdown');
   for (let i = 0; i < 40; i++) { post.fade = i / 40; await nextFrame(); }
   scene = { draw() { cls(BLACK); } }; post.fade = 0;
@@ -319,11 +326,17 @@ function exitCheck() {
   }
   if (WD.noT > 0) WD.noT--;
 }
+// lose a boss fight and the focus group quietly makes the next try easier (15% per loss, up to 45%)
+function focusNerf(A) {
+  const n = Math.min(3, (C2.nerf && C2.nerf[A.flag]) || 0); if (!n) return;
+  for (const e of WD.ents) if (e.boss && !e.dead) { e.maxhp = Math.max(1, Math.round(e.maxhp * (1 - .15 * n))); e.hp = Math.min(e.hp, e.maxhp); }
+  banner('FOCUS GROUP: "TOO HARD." BOSS HP -' + n * 15 + '%', 150);
+}
 function arenaUpdate() {
   const A = WD.M.arena; if (!A || F2(A.flag)) return;
   if (!WD.arena) {
     const tx = PL.x / 16, ty = PL.y / 16;
-    if (tx >= A.x && tx < A.x + A.w && ty >= A.y && ty < A.y + A.h && (!A.if || A.if())) { WD.arena = { wave: 0, t: 0, starting: 1 }; WD.lock = 1; wstory(async () => { if (A.start) await A.start(); if (WD.arena) WD.arena.starting = 0; }); }
+    if (tx >= A.x && tx < A.x + A.w && ty >= A.y && ty < A.y + A.h && (!A.if || A.if())) { WD.arena = { wave: 0, t: 0, starting: 1 }; WD.lock = 1; wstory(async () => { if (A.start) await A.start(); focusNerf(A); if (WD.arena) WD.arena.starting = 0; }); }
     return;
   }
   if (WD.arena.starting) return;
@@ -370,7 +383,10 @@ function shotBreak(s) {
 }
 function pickUpdate() {
   for (const p of WD.pick) {
-    p.t++; p.x += p.vx; p.y += p.vy; p.vx *= .9; p.vy *= .9;
+    p.t++; // loot bounces off walls: a bong that slid into a wall could never be picked up
+    if (solidPx(p.x + p.vx, p.y + 2)) p.vx = -p.vx * .5; else p.x += p.vx;
+    if (solidPx(p.x, p.y + p.vy + 2)) p.vy = -p.vy * .5; else p.y += p.vy;
+    p.vx *= .9; p.vy *= .9;
     const d = Math.hypot(PL.x - p.x, PL.y - 4 - p.y);
     if (p.k !== 'bong' && d < 44 && p.t > 20) { p.x += (PL.x - p.x) * .15; p.y += (PL.y - 4 - p.y) * .15; }
     if (d < 11 && p.t > 12) { p.dead = 1; collect(p); }

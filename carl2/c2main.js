@@ -7,6 +7,10 @@ function saveC2() { if (!C2) return; C2.obj = OBJ; C2.x = Math.floor(PL.x / 16);
 
 // ---------------- sound: a warmer mix, a guitar, a sax ----------------
 FM_TONE = { low: 2.5, high: -2.5, lp: 8000, room: .14, sfxHigh: -3, gain: 1 };
+// CARL 2's own sounds: radio static, the arena alarm, and a warehouse's worth of stuff falling over
+SFX.static = () => { noise(.5, { bp: 2200, vol: .28, rate: 1.4 }); noise(.35, { hp: 4000, vol: .12, at: AC.currentTime + .1 }); };
+SFX.alert = () => [0, .14, .28].forEach(d => note(880, .09, 'brass', AC.currentTime + d, sfxBus));
+SFX.crash = () => { noise(.9, { lp: 700, vol: .6, rate: .5 }); for (let i = 0; i < 5; i++) noise(.12, { bp: 500 + Math.random() * 1600, vol: .3, at: AC.currentTime + .08 + i * .09 }); kick(AC.currentTime, sfxBus, .8); };
 Object.assign(PATCH, {
   guitar: { ratio: 1, index: 6.5, mdecay: .45, a: .004, d: .22, s: .55, vol: .42 },
   sax: { ratio: 1, index: 2.2, mdecay: .8, a: .04, d: .3, s: .72, vol: .42 },

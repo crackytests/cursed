@@ -119,9 +119,11 @@ var BOT = (() => {
   function moveTo(px, py, tol = 3) { const dx = px - PL.x, dy = py - PL.y; if (dx > tol) hold('right'); if (dx < -tol) hold('left'); if (dy > tol) hold('down'); if (dy < -tol) hold('up'); return Math.abs(dx) <= tol && Math.abs(dy) <= tol; }
   // ---------- combat ----------
   function fight() {
-    const foes = WD.ents.filter(e => (e.kind === 'enemy' || e.boss) && !e.dead && !e.gone && !e.harmless && !(e.haze && WD.haze <= 0));
+    const foes = WD.ents.filter(e => (e.kind === 'enemy' || e.boss) && !e.dead && !e.gone && !e.harmless && !(e.haze && WD.haze <= 0) && !(e.botSkip && !WD.lock));
     let tg = null, bd = 1e9; for (const e of foes) { const d = Math.hypot(e.x - PL.x, e.y - PL.y); if (d < bd) { bd = d; tg = e; } }
     if (!tg || bd > (WD.lock ? 999 : 150)) return false;
+    // an enemy we can't hurt for 15 seconds (behind a counter, over water) isn't worth the afternoon
+    if (tg.botHp !== tg.hp) { tg.botHp = tg.hp; tg.botT = 0; } else if (++tg.botT === 900) { L('WARN gave up on ' + (tg.k || tg.id) + ' at ' + (tg.x / 16 | 0) + ',' + (tg.y / 16 | 0) + (WD.lock ? ' (IN AN ARENA)' : '')); tg.botSkip = 1; }
     // dodge: roll away from a shot about to land
     for (const s of WD.eshots) { const dx = s.x - PL.x, dy = s.y - (PL.y - 8); if (Math.hypot(dx, dy) < 26 && (s.vx * -dx + s.vy * -dy) > 0 && PL.roll <= 0 && F % 3 === 0) { const ax = Math.abs(s.vy) > Math.abs(s.vx); if (ax) hold(dx > 0 ? 'left' : 'right'); else hold(dy > 0 ? 'up' : 'down'); press('b'); return true; } }
     if (PL.humanT > 0) { moveTo(tg.x, tg.y + 4, 6); if (F % 4 === 0) { const a = Math.atan2(tg.y - PL.y, tg.x - PL.x); setAim(a); } hold('a'); return true; }
@@ -130,7 +132,8 @@ var BOT = (() => {
     const ideal = tg.boss ? 90 : 64;
     if (((dir8 - fa) % 8 + 8) % 8 !== 0) { setAim(dir8 * Math.PI / 4); return true; } // turn to face (without A, so facing updates)
     hold('a');
-    const want2 = bd > ideal + 18 ? 1 : bd < ideal - 18 ? -1 : 0, ux = Math.cos(a), uy = Math.sin(a);
+    const clear = losClear(PL.x, PL.y - 4, tg.x, tg.y - 6);
+    const want2 = !clear || bd > ideal + 18 ? 1 : bd < ideal - 18 ? -1 : 0, ux = Math.cos(a), uy = Math.sin(a);
     if (want2 === 1) { // close in along a real path (booths, counters and shelves are in the way)
       const ptx = Math.floor(PL.x / 16), pty = Math.floor((PL.y - 4) / 16), etx = Math.floor(tg.x / 16), ety = Math.floor((tg.y - 4) / 16);
       if (!BOT.fp || BOT.fpT !== tg || F % 30 === 0) { BOT.fp = bfs(ptx, pty, etx, ety); BOT.fpT = tg; }
@@ -138,11 +141,15 @@ var BOT = (() => {
       if (BOT.fp.length > 1) { const nx = BOT.fp[0]; moveTo(nx[0] * 16 + 8, nx[1] * 16 + 12, 2); return true; }
     }
     let mx = ux * want2, my = uy * want2; if (!want2) { mx = -uy * (Math.sin(F * .02) > 0 ? 1 : -1) * .6; my = ux * (Math.sin(F * .02) > 0 ? 1 : -1) * .6; }
+    // throws only go 8 ways: when the target sits between two of them, slide sideways onto a clean line
+    const err = Math.abs(((a - dir8 * Math.PI / 4) + Math.PI * 3) % (Math.PI * 2) - Math.PI), odx = tg.x - PL.x, ody = (tg.y - 6) - (PL.y - 4);
+    if (err > .22 && bd < ideal + 40) { if (Math.abs(odx) < Math.abs(ody)) { mx = Math.sign(odx); my = 0; } else { my = Math.sign(ody); mx = 0; } }
     if (mx > .3) hold('right'); if (mx < -.3) hold('left'); if (my > .3) hold('down'); if (my < -.3) hold('up');
     return true;
   }
+  function losClear(x0, y0, x1, y1) { const n = Math.ceil(Math.hypot(x1 - x0, y1 - y0) / 4); for (let i = 1; i < n; i++) { const t = i / n; if (solidPx(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t + 4)) return false; } return true; }
   function setAim(a) { const d = Math.round(a / (Math.PI / 4)), dx = Math.round(Math.cos(d * Math.PI / 4)), dy = Math.round(Math.sin(d * Math.PI / 4)); delete want.a; if (dx > 0) hold('right'); if (dx < 0) hold('left'); if (dy > 0) hold('down'); if (dy < 0) hold('up'); }
-  function loot() { let best = null, bd = 90; for (const p of WD.pick) { const d = Math.hypot(p.x - PL.x, p.y - PL.y); if (d < bd && (p.k !== 'pretzel' || C2.hp < C2.maxhp)) { bd = d; best = p; } } if (best) { moveTo(best.x, best.y + 4, 2); return true; } return false; }
+  function loot() { let best = null, bd = 90; for (const p of WD.pick) { const d = Math.hypot(p.x - PL.x, p.y - PL.y); if (d < bd && !(p.botT > 600) && (p.k !== 'pretzel' || C2.hp < C2.maxhp)) { bd = d; best = p; } } if (best) { best.botT = (best.botT || 0) + 1; if (best.botT === 600) L('WARN could not reach a ' + best.k + ' at ' + (best.x / 16 | 0) + ',' + (best.y / 16 | 0)); moveTo(best.x, best.y + 4, 2); return true; } return false; }
   // ---------- equip: a quick look at the menu when a better bong shows up ----------
   function betterBong() { const sc = b => b.dmg * 60 / b.rate * (b.mods.includes('SPLIT') ? 2 : 1) * (b.mods.includes('EXTREME') && !human() ? 0 : 1); let bi = C2.eq; C2.bongs.forEach((b, i) => { if (sc(b) > sc(C2.bongs[bi]) * 1.15) bi = i; }); return bi !== C2.eq ? bi : -1; }
   function tick() {
@@ -174,7 +181,8 @@ var BOT = (() => {
   }
   function world() {
     const o = JSON.stringify(OBJ) + WD.id; if (o !== lastObj) { lastObj = o; objSince = F; if (OBJ) L('OBJ ' + OBJ.text + ' @' + (OBJ.map || '-') + ' ' + OBJ.x + ',' + OBJ.y + ' [on ' + WD.id + ']'); }
-    if (F - objSince === 12000) L('STALL objective "' + (OBJ && OBJ.text) + '" on ' + WD.id + ' at ' + (PL.x / 16 | 0) + ',' + (PL.y / 16 | 0));
+    if (F - objSince === 12000) DBG.stalled = (DBG.stalled || 0) + 1;
+    if (F - objSince === 12000) L('STALL objective "' + (OBJ && OBJ.text) + '" on ' + WD.id + ' at ' + (PL.x / 16 | 0) + ',' + (PL.y / 16 | 0) + ' hold=' + WD.hold + ' lock=' + WD.lock + ' arena=' + JSON.stringify(WD.arena) + ' dlg=' + !!DLG + ' pick=' + WD.pick.map(p => p.k + '@' + (p.x / 16 | 0) + ',' + (p.y / 16 | 0)).join(' ') + ' ents=' + WD.ents.filter(e => e.kind === 'enemy' || e.boss).map(e => (e.id || e.type || e.name) + '@' + (e.x / 16 | 0) + ',' + (e.y / 16 | 0) + (e.dead ? 'D' : '') + (e.gone ? 'G' : '') + (e.harmless ? 'H' : '') + (e.arenaSpawned ? 'A' : '') + ' hp' + e.hp).join(' '));
     if (BOT.holdingC) { if (PL.humanT > 0 || C2.meter < 100) BOT.holdingC = 0; else { hold('c'); return; } }
     const bb = betterBong(); if (bb >= 0 && !WD.lock && BOT.equipPlan === undefined && (BOT.eqTries || 0) < 8) { BOT.equipPlan = bb; BOT.eqTries = (BOT.eqTries || 0) + 1; if (BOT.eqTries === 8) L('WARN equip menu never took'); return; }
     if (bb < 0) BOT.eqTries = 0;

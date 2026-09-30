@@ -21,6 +21,7 @@ const max = +(process.argv[2] || 400000);
     G.R(ctx, 'BOT.tick()'); T += 16.7; G.R(ctx, `loop(${T})`);
     for (let j = 0; j < 2; j++) await new Promise(r => setImmediate(r));
     if (G.R(ctx, 'DBG.ending && MENUS.length > 0 && MENUS[0].opts.join("").includes("NEW GAME")')) { console.log('DONE ending=' + G.R(ctx, 'DBG.ending') + ' frames=' + f); break; }
+    if (G.R(ctx, 'DBG.stalled || 0') >= (+process.env.STALLS || 1)) { console.log('ERR stalled at frame ' + f); if (process.env.STALLSHOT) { G.R(ctx, 'worldScene.draw = () => { drawWorld(); drawHUD(); }; scene.draw()'); G.png(ctx, process.env.STALLSHOT, 2); } break; }
     if (process.env.SHOTS && f % +process.env.SHOTS === 1) G.R(ctx, 'DBG.wantDraw = 1');
     if (process.env.SHOTS && f % +process.env.SHOTS === 0) { G.R(ctx, 'DBG.wantDraw = 0'); } if (process.env.SHOTS && f % +process.env.SHOTS === 0) G.png(ctx, path.join(__dirname, 'shots', 'c2p_' + String(f).padStart(7, '0') + '.png'), 2);
     if (f % 20000 === 0) console.log('.. f=' + f + ' ep=' + G.R(ctx, 'C2 && C2.ep') + ' map=' + G.R(ctx, 'WD.id') + ' lv=' + G.R(ctx, 'C2 && C2.lv') + ' hp=' + G.R(ctx, 'C2 && C2.hp') + ' human=' + G.R(ctx, 'C2 && C2.human') + ' tapes=' + G.R(ctx, 'C2 && C2.tapes.length'));

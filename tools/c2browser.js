@@ -7,7 +7,7 @@ const secs = +(process.argv[2] || 60), mode = process.argv[3] || 'play';
 (async () => {
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ['--autoplay-policy=no-user-gesture-required'] });
   const p = await b.newPage({ viewport: { width: 960, height: 672 } });
-  const errs = []; p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); if (m.text().includes('WARN') || m.text().includes('DONE') || m.text().includes('SETS')) console.log('page:', m.text()); }); p.on('pageerror', e => errs.push('pageerror: ' + e.message));
+  const errs = []; p.on('console', m => { if (m.type() === 'error' && !(m.location().url || '').endsWith('favicon.ico')) errs.push(m.text()); if (m.text().includes('WARN') || m.text().includes('DONE') || m.text().includes('SETS')) console.log('page:', m.text()); }); p.on('pageerror', e => errs.push('pageerror: ' + e.message)); p.on('response', r => { if (r.status() >= 400) errs.push(r.status() + ' ' + r.url()); });
   await p.goto('http://localhost:8731/carl2/'); await p.waitForTimeout(800);
   if (mode === 'sets') await p.evaluate(() => { window.titleScreen = async () => {}; });
   await p.keyboard.press('KeyZ'); await p.waitForTimeout(300);

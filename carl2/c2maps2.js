@@ -352,8 +352,8 @@ MAPS2.below = { theme: 'lost', name: 'BELOW BELOW', music: () => WD.arena ? 'bos
   enter: () => belowEnter(),
   tick() { if (WD.t % 420 === 210 && WD.haze <= 0 && WD.ents.some(e => typeof e.solid === 'function' && e.solid() && Math.hypot(e.x - PL.x, e.y - PL.y) < 120)) tickChat(pick(CHATTERS2), pick(['smoke near the piles', 'the piles look different when its wavy', 'try the haze carl', 'C button. trust me', 'the lost stuff moves when you smoke'])); },
   ents: () => [
-    { id: 'pile1', tx: 19, ty: 11, draw: e => drawPile(e), hw: 16, hh: 8, solid: () => WD.haze <= 0, noPrompt: 1, talk: () => WD.haze > 0 ? null : say('LOST STUFF. A LOT OF IT. PILED UP. IN THE HAZE IT MIGHT LOOK DIFFERENT.') },
-    { id: 'pile2', tx: 36, ty: 19, draw: e => drawPile(e), hw: 16, hh: 8, solid: () => WD.haze <= 0, noPrompt: 1, talk: () => WD.haze > 0 ? null : say('MORE LOST STUFF. SOMEBODY LOST A LOT OF THINGS. SOMEBODY LOST EVERYTHING.') },
+    { id: 'pile1', tx: 19, ty: 11, draw: e => drawPile(e), hw: 16, hh: 8, solid: () => WD.haze <= 0 && !F2('pilesDown'), noPrompt: 1, talk: () => WD.haze > 0 || F2('pilesDown') ? null : say('LOST STUFF. A LOT OF IT. PILED UP. IN THE HAZE IT MIGHT LOOK DIFFERENT.') },
+    { id: 'pile2', tx: 36, ty: 19, draw: e => drawPile(e), hw: 16, hh: 8, solid: () => WD.haze <= 0 && !F2('pilesDown'), noPrompt: 1, talk: () => WD.haze > 0 || F2('pilesDown') ? null : say('MORE LOST STUFF. SOMEBODY LOST A LOT OF THINGS. SOMEBODY LOST EVERYTHING.') },
     { id: 'bigone', tx: 36, ty: 13, draw: e => drawBong(bigOne(), e.x - camX, e.y - camY - 10), solid: 0, label: 'THE BIG ONE', talk: () => getBigOne(), if: () => !F2('bigone') },
     { id: 'towel', tx: 6, ty: 21, solid: 0, noPrompt: 1, talk: () => say('A TOWEL. SOMEBODY THREW IT IN. THE TAG SAYS "TP." YOU DON\'T KNOW WHO THAT IS. NOBODY DOES.') },
     { id: 'lostface', tx: 12, ty: 21, solid: 0, noPrompt: 1, talk: () => say('ONE FACE. IT\'S IN A BAG. THE BAG SAYS "OLD. STILL WARM."') },
@@ -363,7 +363,7 @@ MAPS2.below = { theme: 'lost', name: 'BELOW BELOW', music: () => WD.arena ? 'bos
   spawns: [{ k: 'umbrella', x: 8, y: 24 }, { k: 'umbrella', x: 28, y: 24 }, { k: 'mask', x: 18, y: 16 }, { k: 'mask', x: 6, y: 13 }, { k: 'umbrella', x: 30, y: 16 }, { k: 'mask', x: 25, y: 12 }, { k: 'figure', x: 12, y: 17 }],
   arena: { x: 8, y: 2, w: 24, h: 8, flag: 'hocDown', start: () => hocStart(), waves: [], done: () => hocDown() },
 };
-function drawPile(e) { if (WD.haze > 0 && ((WD.t >> 2) & 1)) return; const x = e.x - camX, y = e.y - camY; for (let i = 0; i < 9; i++) rectF(x - 16 + (i * 7) % 28, y - 20 + ((i * 5) % 14), 10, 8, hex(['#926d49', '#db2424', '#2449b6', '#dbb624', '#b6b6b6'][i % 5])); }
+function drawPile(e) { const x = e.x - camX, y = e.y - camY; if (F2('pilesDown')) { for (let i = 0; i < 9; i++) rectF(x - 26 + (i * 11) % 48, y - 6 + ((i * 3) % 6), 10, 4, hex(['#926d49', '#db2424', '#2449b6', '#dbb624', '#b6b6b6'][i % 5])); return; } if (WD.haze > 0 && ((WD.t >> 2) & 1)) return; for (let i = 0; i < 9; i++) rectF(x - 16 + (i * 7) % 28, y - 20 + ((i * 5) % 14), 10, 8, hex(['#926d49', '#db2424', '#2449b6', '#dbb624', '#b6b6b6'][i % 5])); }
 MAPS2.studio = { theme: 'studio', name: 'STUDIO 219', music: () => WD.arena ? 'human' : 'boogaloo', noComp: 0, enter: () => studioResume(),
   arena: { x: 1, y: 3, w: 24, h: 10, flag: 'huDown', if: () => F2('finaleOn'), start: () => finalePhase1(), waves: [], done: () => finalePhase2() },
   rows: rows(`

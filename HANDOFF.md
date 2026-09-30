@@ -300,10 +300,12 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
 - `tools/c2vm.js`: the CARL 2 file list for the headless harness.
 - `node tools/c2shot.js <map> <tx> <ty> [frames] [inputs] [prefix]`: screenshot a map. `EP=n` and `FLAGS=a,b` set the state first.
 - `node tools/c2set.js bus|ski|space|dance`: run one set piece headless with a simple driver. It prints the result.
+- `SETUP='js' UNTIL='js' PRINT='js' node tools/c2scene.js [maxFrames]`: run the bot from a set-up state instead of from boot (for example one boss fight). It prints where things ended up.
 - `node tools/c2unit.js`: about 30 branch tests. Each calls a story function directly in an odd state (deliveries, companion swap, shop, notes, every ending, continue in the studio, losing your cool) and checks the result. Run it after story changes; it takes a few minutes.
 - **Full playthrough**: `FAST=1 WANT="end=boogaloo|renewed|canceled|dream|belowbelow,tapes=1,comp=garf" node tools/c2play.js [maxFrames]`.
   - `FAST=1` skips rendering. It's about 3× faster, but frames are still slow in node: a full game is roughly 150k–250k frames, which is 30–60 minutes.
   - `META=none` hides the other games' saves; `YOKO=true|empire` fakes YOKO's endings.
+  - The run stops at the first `STALL` and prints `ERR stalled`; `STALLS=n` allows more, and `STALLSHOT=file.png` saves a screenshot of the stall. The `STALL` line lists the lock/arena state, pickups and every enemy with its position.
   - The bot (`c2bot.js`) handles everything a player does:
     - it follows `OBJ`, pathfinds with BFS over tiles, routes between maps with `routeTo`, and flies the A.S.S. with NAV;
     - it fights (aims 8 ways, strafes, rolls away from shots), grabs loot, and equips better bongs through the real START menu;
