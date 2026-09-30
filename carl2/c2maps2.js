@@ -113,7 +113,7 @@ MAPS2.lake = { theme: 'lake', name: 'LAKE MEAD', music: () => WD.arena ? 'human'
     { id: 'boat', tx: 17, ty: 21, spr: CS.ass, P: CP.ass, anim: 30, solid: 0, label: 'THE A.S.S. (A BOAT)', reach: 10, talk: () => boatTalk(), if: () => !F2('jumped') },
     { id: 'hocL', tx: 14, ty: 9, spr: CS.hoc, P: CP.hoc, anim: 40, label: 'HEAD OF CONTENT', talk: () => lakeCommittee(), if: () => !F2('jumped') },
     { id: 'legalL', tx: 20, ty: 9, draw: e => drawLegal(e), label: 'LEGAL', talk: () => lakeCommittee(), if: () => !F2('jumped') },
-    { id: 'bruce', tx: 22, ty: 10, spr: CS.shark, P: CP.shark, anim: 30, label: 'BRUCE', talk: () => bruceTalk(), if: () => F2('jumped') && C2.comp !== 'bruce' },
+    { id: 'bruce', tx: 22, ty: 12, spr: CS.shark, P: CP.shark, anim: 30, label: 'BRUCE', talk: () => bruceTalk(), if: () => F2('jumped') && C2.comp !== 'bruce' },
     { id: 'tBruce', tx: 17, ty: 18, spr: CS.tape, P: CP.item, solid: 0, talk: () => tapeAt(4, 'A tape on the dock. Wet. It smells like shark. I know what shark smells like now.'), if: () => F2('jumped') && !C2.tapes.includes(4) },
     shipIf('lake'),
   ].filter(Boolean),
@@ -360,7 +360,7 @@ MAPS2.below = { theme: 'lost', name: 'BELOW BELOW', music: () => WD.arena ? 'bos
     { id: 'photo', tx: 24, ty: 21, solid: 0, noPrompt: 1, talk: () => say('A PHOTO OF A KID OUTSIDE A BATHROOM. NUMBER 17. HE LOOKS LIKE HE REALLY HAS TO GO.') },
     { id: 'shoplist', tx: 30, ty: 21, solid: 0, noPrompt: 1, talk: () => say('A SHOPPING LIST IN VERY NEAT HANDWRITING: "MILK. EGGS. A NEW GENERATION."') },
   ],
-  spawns: [{ k: 'umbrella', x: 8, y: 24 }, { k: 'umbrella', x: 28, y: 24 }, { k: 'mask', x: 18, y: 16 }, { k: 'mask', x: 6, y: 13 }, { k: 'umbrella', x: 30, y: 16 }, { k: 'mask', x: 25, y: 12 }, { k: 'figure', x: 12, y: 17 }],
+  spawns: [{ k: 'umbrella', x: 8, y: 24 }, { k: 'umbrella', x: 28, y: 24 }, { k: 'mask', x: 18, y: 16 }, { k: 'mask', x: 6, y: 13 }, { k: 'umbrella', x: 30, y: 16 }, { k: 'mask', x: 25, y: 12 }, { k: 'figure', x: 12, y: 16 }],
   arena: { x: 8, y: 2, w: 24, h: 8, flag: 'hocDown', start: () => hocStart(), waves: [], done: () => hocDown() },
 };
 function drawPile(e) { const x = e.x - camX, y = e.y - camY; if (F2('pilesDown')) { for (let i = 0; i < 9; i++) rectF(x - 26 + (i * 11) % 48, y - 6 + ((i * 3) % 6), 10, 4, hex(['#926d49', '#db2424', '#2449b6', '#dbb624', '#b6b6b6'][i % 5])); return; } if (WD.haze > 0 && ((WD.t >> 2) & 1)) return; for (let i = 0; i < 9; i++) rectF(x - 16 + (i * 7) % 28, y - 20 + ((i * 5) % 14), 10, 8, hex(['#926d49', '#db2424', '#2449b6', '#dbb624', '#b6b6b6'][i % 5])); }
