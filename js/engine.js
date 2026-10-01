@@ -90,7 +90,7 @@ const FONT = {};
     '"':'0A0A0A00000000','>':'080C0E0F0E0C08','<':'02060E1E0E0602','*':'0004150E150400','+':'0004041F040400',
     '=':'00001F001F0000','#':'0A0A1F0A1F0A0A','&':'0C121408151209','_':'0000000000001F','%':'18190204081303',
     '~':'00000815020000','@':'000A1F1F0E0400','^':'040E1F04040404','v':'040404041F0E04',
-    '$':'040F140E051E04','[':'1F1F1F1F1F1F1F',
+    '$':'040F140E051E04','[':'1F1F1F1F1F1F1F','—':'0000001F000000', // em dash (used all over the dialog)
   };
   for (const k in src) { const h = src[k], r = []; for (let i = 0; i < 7; i++) r.push(parseInt(h.substr(i * 2, 2), 16)); FONT[k] = r; }
 })();
@@ -200,9 +200,15 @@ async function say(s, name, o = {}) {
   if (!o.keep) dlg = null;
 }
 // menu: returns index, or -1 if cancelled
+// options longer than 23 chars wrap onto extra rows, and the box is always kept on screen
+// (a fixed x or a long option used to push text off the 160px screen)
 async function choose(opts, o = {}) {
-  const w = Math.max(...opts.map(s => s.length)) * 6 + 20, h = opts.length * 11 + 10;
-  const m = { opts, i: 0, x: o.x !== undefined ? o.x : W - w, y: o.y !== undefined ? o.y : (dlg ? H - 44 - h : H - h), w, h };
+  const rows = opts.map(s => wrap(String(s), 23)), nRows = rows.reduce((n, r) => n + r.length, 0);
+  const w = Math.min(W, Math.max(...rows.flat().map(s => s.length)) * 6 + 20), h = nRows * 11 + 10;
+  const x = Math.max(0, Math.min(o.x !== undefined ? o.x : W - w, W - w));
+  const tag = dlg && dlg.name && x < dlg.name.length * 6 + 12 ? 12 : 0; // don't cover the speaker's name tag
+  const y = o.y !== undefined ? o.y : (dlg ? H - 44 - h - tag : H - h);
+  const m = { opts, rows, i: 0, x, y: Math.max(0, Math.min(y, H - h)), w, h };
   menus.push(m);
   await nextFrame();
   for (;;) {
@@ -232,8 +238,8 @@ async function chat(msgs) {
 function drawOverlay() {
   if (card) {
     cls(card.inv ? 0 : 3);
-    const y0 = ((H - card.lines.length * 10) / 2) | 0;
-    card.lines.forEach((l, i) => ctext(l, y0 + i * 10, card.inv ? 3 : 0));
+    const ls = card.lines.flatMap(l => l.length > 26 ? wrap(l, 26) : [l]), y0 = ((H - ls.length * 10) / 2) | 0; // 26 chars = full width
+    ls.forEach((l, i) => ctext(l, y0 + i * 10, card.inv ? 3 : 0));
   }
   if (bannerT > 0) {
     bannerT--;
@@ -255,7 +261,8 @@ function drawOverlay() {
   }
   for (const m of menus) {
     box(m.x, m.y, m.w, m.h);
-    m.opts.forEach((s, i) => { text(s, m.x + 14, m.y + 6 + i * 11); if (i === m.i) text('>', m.x + 6, m.y + 6 + i * 11); });
+    let r = 0;
+    m.rows.forEach((lines, i) => { if (i === m.i) text('>', m.x + 6, m.y + 6 + r * 11); for (const l of lines) text(l, m.x + 14, m.y + 6 + r++ * 11); });
   }
 }
 
