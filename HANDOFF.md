@@ -281,10 +281,94 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
   - The Gen-1 cast stay in their four shades unless YOKO's true ending has been seen.
 - **TP** gained a BEST SHARK award if `carl2_meta.jumped`, and lists CARL 2 under NEWER HARDWARE.
 
+### SAVE THE WORLD: A Pretend Co. Gaiden (`stw/`): done and bot-tested
+
+- **Design**: see `STW_DESIGN.md`. A 1994-style 16-bit epic RPG (FF6 / Phantasy Star IV) for the SUPER-16 with the "WORLD-FX" scaling chip. It is **out of continuity on purpose** (a gaiden): the cast are recast as fantasy archetypes. Gen-1 characters are drawn in full color here, except Old Face, who stays four-shade green as a joke.
+- **Story**: the world is a saved game kept in three SLOTS. THE FRANCHISE licenses save spirits as SAVE CRYSTALS. Its jester **KURSOR** (a living menu cursor) selects NEW GAME at the midpoint (THE CLOUD). The second half is THE CORRUPTED SAVE: every environment, NPC and foe is crushed to four greens (`G.world === 2`), and only the party is still in color. The last question is "SAVE THE WORLD? YES / NO": two endings, plus a secret scene if all 9 heroes and HU-MAN are recruited.
+- **Cast**:
+  - Yoko: MAGIC, plus the EMPRESS trance.
+  - Carl: FIND (steal).
+  - Face: INVENT (gadgets).
+  - Old Face: WELD (d-pad inputs).
+  - CEO Linda: INVOICE (absorbs the next spell as MP).
+  - Spooky Ghost: SEGMENT (three reels).
+  - JB Garfield: ACCUSE (charges up while you wait).
+  - Pee Kid: ASK / PERFORM / INSPECT. He never attacks.
+  - Pilot X: INCOGNITO.
+  - Secret: HU-MAN, MIMIC.
+  - TERMS and CONDITIONS are the temporary licensees of the opening armor march.
+- **Script load order**: `engine2`, `fm`, `../pk/pkart`, `../g2/cast`, `swart`, `swport`, `swtiles`, `swfoes`, `swdata`, `swcore`, `swbattle`, `swfield`, `swmenu`, `swworld`, `swbestiary`, `swmaps1`, `swstory1`, `swmaps2`, `swstory2`, `swmaps3`, `swstory3`, `swmaps4`, `swstory4`, `swmusic`, `swmain`.
+- **`swart.js`**: sprites.
+  - The 16x24 chibi builder (`chibi(o, dir, pose)`) with hair styles.
+  - Every hero's field and battle poses, in `ART.hero[id]`: `d/u/l` walk frames, plus `ready atk cast hurt low win ko walkB`.
+  - Builders for the floating heads and the ghost, the LICENSED ARMOR mechs, and NPC sprites (`ART.npc`).
+- **`swport.js`**: portraits.
+  - New portraits for KURSOR, THE FRANCHISOR and BRUCE.
+  - `ART.headPort(who)` makes a quick portrait from any chibi.
+  - The Carl, Linda and Ghost portraits are switched to `CAST.full`.
+- **`swtiles.js`**: tiles.
+  - 13 fantasy tilesets (`SWTHEMES`) with the same legend as CARL 2: `. , : ; " # T t o _ = * ~ ^ B b D S`. `swTileset(name)` builds one.
+  - Overworld terrain (`OW_TILES`, `OW_COL`) and place icons.
+  - Prop tiles (`OVERLAY` in swfield) draw over the theme's floor.
+- **`swfoes.js`**: enemy art.
+  - Kits in `FOEART.KITS`: trooper, beast, blob, pill, floater, plant, machine, spook, bird, fin, troll, snake, queue, bug, chair, bar, glitch.
+  - A lighting pass shades every kit.
+  - A look can carry its own `draw` (the bosses do).
+  - `FOEART.gtext` stamps letters into a sprite.
+- **`swdata.js`**: data.
+  - HEROES with growth curves (`heroHP`, `heroMP`, `heroStat`) and `XPNEED`.
+  - ITEMS, EQUIP (6 weapon tiers per class), SPELLS and NATURAL spells.
+  - CRYSTALS: spells, learn rates and summons.
+  - GADGETS, WELDS, ACCUSE, REELS, BEAMS (the armor's attacks) and COMBOS.
+- **`swcore.js`**: game state.
+  - `G` (the save), `addHero`, and `stats(r)` with equipment.
+  - Inventory, `giveXP` and `giveAP`.
+  - Three save slots (`stw_save`) and `META` (`stw_meta`).
+- **`swbattle.js`**: side-view ATB battles.
+  - `battle(form, opt)` returns win, lose or run.
+  - Features:
+    - WAIT/ACTIVE config, rows, statuses and desperation moves.
+    - Combos: two commands within 300 frames.
+    - AUTO (Start) and running away (hold B+C).
+    - Summons, mirror and invoice.
+    - Undead foes: a revive kills them.
+  - One shared `applyEffect` handles every source of damage, healing and status.
+  - Boss hooks: `ai`, `onHurt`, `onDeath`, `draw`, and `guard` (return 0 to block a hit).
+  - Mid-battle scripts are pushed to the front of `B.actQ` as enemy actions with `move.run`.
+- **`swfield.js`**: the tile-step field engine.
+  - A map (`MAPS[id]`) has rows, theme, music, npcs(), chests, saves, signs, steps, onStep, enc, enter, dark and color.
+  - Exits are one of `{to, tx, ty}`, `{to: 'world', wx, wy}` or `{run}`.
+  - Story helpers: `goMap`, `walk`, `addNpc`, `join`.
+  - `obj` sets the objective. The C-button TALK hint shows it, and it's what the bot follows.
+  - `panels` draws PS4-style comic pages.
+  - `gameOver` throws 'gameover'; the `run` override in swmain swallows it.
+  - `crushRect` does the corrupted-save four-shade crush.
+- **`swmenu.js`**: menus.
+  - The field menu: ITEM, MAGIC, CRYSTAL, EQUIP, STATUS, ORDER, COMBOS, CONFIG, SAVE.
+  - `mlist` (A confirms, B cancels) and `optimum(r)`.
+  - `shop(name, stock)`, `inn(price)` and `saveMenu`.
+- **`swworld.js`**: the world map.
+  - A 128x112 world built from shapes by `buildWorld(1|2)`. World 2 erases regions to `?` void.
+  - `PLACES`, and walking with encounters (`WZONES`).
+  - The airship flies over the WORLD-FX scaled plane (`airDraw`; A flies, B lands), with a minimap.
+- **`swbestiary.js`**: enemies.
+  - `estats(lv)` is the balance curve.
+  - About 50 foes, made with `foe(id, name, lv, look, o)`.
+  - `form()`, the `AREA` groups and the world encounter zones.
+- **`swmaps1-4.js` / `swstory1-4.js`**: about 70 maps and the four acts. Each boss is defined next to the scene that uses it.
+  - `MB(w, h)` is the map builder.
+  - `partyWith(...)` forces who's in the party for a scene.
+  - `bringBack(id, lv)` handles a second-half reunion.
+- **`swmusic.js`**: 48 tracks written as `note:length` melodies over chord progressions (`MU.song`).
+- **`swmain.js`**: boot, the WORLD-FX card, title and continue.
+- **Gotchas**:
+  - Some short names are already taken: `KID` (pkart) and `M` (swfield's current map). The story helpers are `KD`, `MV` and `LK`.
+  - On this machine, bash heredocs collapse doubled backslashes, so escaped quotes inside JS strings get lost. Edit with the Edit tool, or keep apostrophes out of inserted strings.
+
 ## Storage keys (localStorage; the games read each other's)
 
-- Saves: `carl_sav`, `linda_sav`, `ghost_sav`, `pk_save`, `face_save`, `yoko_save`, `carl2_save`.
-- Metas: `carl_meta`, `linda_meta`, `ghost_meta`, `tp_mem`, `pk_meta`, `face_meta`, `yoko_meta`, `carl2_meta`.
+- Saves: `carl_sav`, `linda_sav`, `ghost_sav`, `pk_save`, `face_save`, `yoko_save`, `carl2_save`, `stw_save` (three slots).
+- Metas: `carl_meta`, `linda_meta`, `ghost_meta`, `tp_mem`, `pk_meta`, `face_meta`, `yoko_meta`, `carl2_meta`, `stw_meta`.
 - FACE reads every older meta as "potential" (what could still happen). YOKO reads every meta, including `face_meta`, as "the record" (what happened).
 
 ## Gotchas
@@ -344,6 +428,29 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
 - Music harmony: `node tools/musiclint.js carl2|yoko|face [track]` lists each channel's loop length (`DRIFT` means the parts slide out of sync: every loop length should divide the longest) and the steps where two voices clash by a semitone. With a track name it prints every clash. Short passing notes are fine; held ones sound rough.
 - Music tone: with the same server, `node tools/audio.js yoko/ all 16 [wavDir]` renders every track offline and prints loudness, spectral centroid and the share of energy per band (below 250 Hz is the body; 2 kHz and up is the tin). With `wavDir` it writes WAVs to listen to.
 
+### SAVE THE WORLD tools
+
+- `tools/swvm.js` is the file list.
+- Static checks:
+  - `node tools/swcheck.js`: every referenced map, form, foe, item, track and theme exists. It also checks row widths and NPC sprites.
+  - `node tools/swentries.js`: every door and place lands on a walkable tile.
+  - `node tools/swglyphs.js`: lists characters the font can't draw.
+  - `node tools/swreach.js x y [world]`: lists the world places you can walk to from a tile.
+- **Bot playthrough**: `node tools/swplay.js [maxFrames]` plays from boot to THE END in about 81k frames (25 minutes).
+  - `STATE=face|raft|train|plains|south|airship|gate|cloud|wor|tower` starts from a chapter checkpoint (`tools/swstates.js`).
+  - `SHOTS=f1,f2` saves PNGs; `SETUP='js'` runs code first.
+  - It prints dialog, BATTLE results and STUCK lines.
+  - The bot is `tools/swbot.js`:
+    - It follows `G.obj` across maps (using the exit graph), across the world (BFS, with caves treated as tunnels) and through the sky (it lands next to the target).
+    - It fights through the real battle menus.
+    - It buys upgrades in maps with shops and calls `optimum`.
+    - It sets shortcuts: `DBG.botWeld`, `DBG.botReel`, `DBG.botAccuse`, `DBG.aria`, `DBG.botEnding`.
+- `node tools/swmenutest.js` presses real buttons to test the field menu, the shop, save/load, and the WELD/ACCUSE/SEGMENT/MAGIC battle inputs.
+- Other tools:
+  - `node tools/swworldpng.js [1|2]` renders the overworld.
+  - `node tools/g2sheet.js stw "<draw code>"` renders art sheets.
+  - `node tools/swrun.js "<setup>" frames "<print>"` and `STATE=x node tools/swdbg.js frames "<expr>"` are for poking at the game state.
+
 ### CARL 2 tools
 
 - `tools/c2vm.js`: the CARL 2 file list for the headless harness.
@@ -369,13 +476,13 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
 
 ## Publishing
 
-- The public repo is https://github.com/crackytests/cursed (branch `main`). GitHub Pages serves it at **https://crackytests.github.io/cursed/**, with each game under `pk/`, `linda/`, `ghost/` and `tp/`.
+- The public repo is https://github.com/crackytests/cursed (branch `main`). GitHub Pages serves it at **https://crackytests.github.io/cursed/**, with each game under its folder (`pk/`, `linda/`, `ghost/`, `tp/`, `stw/` and so on).
 - **Pushing to `main` updates the live site** within a minute or two. Only push when a change is tested.
 - `.nojekyll` makes GitHub serve the files as-is.
 
 ## Status and ideas
 
-- All four Gen-1 games, PEE KID³, FACE, YOKO and CARL 2 are complete and bot-verified.
+- All four Gen-1 games, PEE KID³, FACE, YOKO, CARL 2 and SAVE THE WORLD are complete and bot-verified.
 - FACE and YOKO are the penultimate and ultimate games of Generation 2. YOKO's true ending closes the generation ("THE SUPER-16 GENERATION IS OVER. NOBODY WAS LEFT BEHIND.") and asks "SEE YOU NEXT GENERATION?"
 - CARL 2 is the cash-in that came out after the generation ended: "THE LAST GAME FOR THE SUPER-16". Its true ending: "THE SUPER-16 GENERATION IS OVER. HE LEFT LAST."
 - Generation 3 is the natural next step. FACE's stage 6 already teases what the next hardware looks like: flat-shaded polygons from the FACE-FX chip.
