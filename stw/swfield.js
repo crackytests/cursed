@@ -33,6 +33,7 @@ async function goMap(id, x, y, dir, o = {}) {
   loadMap(id, x, y, dir);
   if (!o.noFade) await fadeIn(.1);
   FIELD_LOCK--;
+  if (post.fade > 0) await fadeIn(o.noFade ? .03 : .1); // never start a scene behind a black screen
   if (M.def.enter) await run(() => M.def.enter(M));
 }
 const tileAt = (x, y) => (M && y >= 0 && y < M.h && x >= 0 && x < M.w) ? (M.g[y][x] || ' ') : ' ';

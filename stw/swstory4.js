@@ -252,14 +252,14 @@ async function finalBattle() {
   for (const f of ['tier1', 'tier2', 'tier3', 'kursor']) {
     if (f === 'kursor') await K('...FINE. FINE! NO MORE TIERS. JUST ME. NEW GAME. NEW GAME! NEW GAME!');
     else if (f !== 'tier1') await say(f === 'tier2' ? 'THE FLOOR GIVES WAY TO THE NEXT GENERATION: SIXTEEN BITS, FIVE HUNDRED AND TWELVE COLORS.' : 'AND THE NEXT: SOMETHING MADE OF FLAT TRIANGLES, TURNING SLOWLY, LOOKING FOR A FACE.', null);
-    const r = await battle(f, { keepMusic: 1 }); if (r === 'lose') return gameOver();
+    const r = await battle(f, { keepMusic: 1 }); if (r === 'lose') return gameOver(); await fadeIn(.1);
     if (f !== 'kursor') { for (const r of partyHeroes()) { if (r.hp > 0) r.hp = Math.min(r.mhp, r.hp + Math.floor(r.mhp * .3)); r.mp = Math.min(r.mmp, r.mp + Math.floor(r.mmp * .25)); } }
   }
   setFlag('kursorDone'); FIELD_LOCK--;
   await ending();
 }
 async function ending() {
-  FIELD_LOCK++; music('ending');
+  FIELD_LOCK++; music('ending'); await fadeIn(.05);
   await say('KURSOR FLICKERS. HE GETS SMALLER. HE\'S JUST A LITTLE TRIANGLE NOW, POINTING AT NOTHING.', null);
   await K('...SO. WHAT WILL YOU SELECT?');
   await Y('IT\'S NOT MINE TO SELECT. IT\'S EVERYONE\'S.');

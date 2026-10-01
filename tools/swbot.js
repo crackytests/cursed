@@ -10,7 +10,9 @@ var BOT = (() => {
     for (const k in want) kb[k] = 1;
   }
   const W8 = typeof process === 'undefined' ? {} : process.env;
+  let blackN = 0;
   function decide() {
+    if ((DLG || MENUS.length) && post.fade > .85 && !CARD) { if (++blackN === 12) B0.log('WARN dialog on a black screen: ' + (DLG ? (DLG.who || '') + ' ' + DLG.lines.join(' ') : MENUS[0].opts.join('/')) + ' map=' + G.map); } else if (!DLG && !MENUS.length && post.fade < .1) blackN = 0;
     if (DBG.credits || (B0.until && B0.until())) { B0.done = 1; return; }
     if (DBG.fdbg && frame % 30 === 0) B0.log('DEC scene=' + (scene === fieldScene ? 'field' : scene === worldScene ? 'world' : scene === menuScene ? 'menu' : 'other') + ' busy=' + busy + ' lock=' + FIELD_LOCK + ' dlg=' + !!DLG + ' menus=' + MENUS.length + ' B=' + !!(B && !B.done));
     if (typeof TITLE !== 'undefined' && TITLE.opts.length && scene && !G.map && !G.inWorld && !M) { if (TITLE.opts[TITLE.i] !== 'NEW GAME') tap('down'); else tap('a'); return; }

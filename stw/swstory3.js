@@ -238,7 +238,7 @@ async function memoryAmbush() {
 async function cloudAscent() {
   FIELD_LOCK++; music('danger');
   await GH('THERE IT IS. THE CLOUD. IT\'S A SERVER FARM. IN THE SKY. IT\'S EVERYONE\'S SAVES. IT HAS ADS.');
-  for (let i = 0; i < 2; i++) { if (await battle(i ? 'ads2' : 'ads1') === 'lose') return gameOver(); }
+  for (let i = 0; i < 2; i++) { if (await battle(i ? 'ads2' : 'ads1') === 'lose') return gameOver(); await fadeIn(.1); }
   await GH('HOLD ON! WE\'RE BOARDING!');
   WORLD.airCheck = null; G.vehicle = null; G.inWorld = 0; FIELD_LOCK--;
   await goMap('cloud1', 4, 2, 'd');
