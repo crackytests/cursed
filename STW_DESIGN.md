@@ -33,6 +33,14 @@ You gather them again, restore what can be restored, and climb Kursor's tower, w
 | Kefka's tower | THE TITLE SCREEN: three parties, and final tiers through three hardware generations |
 | Mode 7 airship | The WORLD-FX chip: the airship view is a scaled, rotating world map |
 
+## The Phantasy Star IV pass (added later)
+
+- **A second planet**: THE MEMORY CARD, the spirits' world behind the gate. It has its own world map, palette, monsters and the town MEMORIA. THE ARCHIVE is its dungeon.
+- **An android party member**: MAYI, a Yokoid who walked through the gate long ago.
+- **SKILLS**: per-character moves with limited uses that come back when you rest.
+- **The DESERT BUS** as a land vehicle: it crosses quicksand and fights with its own commands.
+- **A front-on battle view** you can switch to in CONFIG.
+
 ## The cast (party)
 
 | Character | Archetype | Command | Notes |

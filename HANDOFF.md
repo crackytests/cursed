@@ -297,7 +297,7 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
   - Pilot X: INCOGNITO.
   - Secret: HU-MAN, MIMIC.
   - TERMS and CONDITIONS are the temporary licensees of the opening armor march.
-- **Script load order**: `engine2`, `fm`, `../pk/pkart`, `../g2/cast`, `swart`, `swport`, `swtiles`, `swfoes`, `swdata`, `swcore`, `swbattle`, `swfield`, `swmenu`, `swworld`, `swbestiary`, `swmaps1`, `swstory1`, `swmaps2`, `swstory2`, `swmaps3`, `swstory3`, `swmaps4`, `swstory4`, `swmusic`, `swmain`.
+- **Script load order**: `engine2`, `fm`, `../pk/pkart`, `../g2/cast`, `swart`, `swport`, `swtiles`, `swfoes`, `swdata`, `swcore`, `swbattle`, `swfield`, `swmenu`, `swworld`, `swbestiary`, `swmaps1`, `swstory1`, `swmaps2`, `swstory2`, `swmaps3`, `swstory3`, `swmaps4`, `swstory4`, `swmore`, `swmusic`, `swps4`, `swmain`.
 - **`swart.js`**: sprites.
   - The 16x24 chibi builder (`chibi(o, dir, pose)`) with hair styles.
   - Every hero's field and battle poses, in `ART.hero[id]`: `d/u/l` walk frames, plus `ready atk cast hurt low win ko walkB`.
@@ -374,6 +374,22 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
   - **Story touches**: rumors from a New File in New File town; the TALK hint lists side stories once the party is back; the epilogue changes for each side story finished.
   - It works by wrapping earlier functions (`crushRect`, `loadMap`, `drawBattleBG`, `mkFoeUnit`, `foeAct`, `fieldMenu`, `nextReunionObj`, `endingYes`).
   - Bot test for side content: `STATE=side OBJ="'cartG',6,3" UNTIL="flag('cart_green')" node tools/swplay.js 20000`.
+- **`swps4.js`**: the Phantasy Star IV pass, loaded after `swmusic`.
+  - **The second planet**: THE MEMORY CARD (`G.world === 3`, `buildPlanet()`, its own palette via `owPalette()` and its own zones, `WZONES3`).
+    - The story now goes through it: opening the gate (`gateDoor`) travels there. You visit MEMORIA, where MAYI joins and the Elder Save explains, then THE ARCHIVE (boss THE GARBAGE COLLECTOR), then back through the gate (`spiritsComeHome`), and then the dinner invite.
+    - After `planetDone`, the gate offers the trip again.
+  - **MAYI**, an android Yokoid (`HEROES.mayi.android`).
+    - Healing magic is half as effective on her; the CHARGE PACK item fully restores her.
+    - Most statuses are blocked, and crystals can't teach her.
+    - Her command is HELP (HOLD STILL stuns a foe; TIDY UP cures an ally).
+    - She is away in the corrupted save and returns with Yoko.
+  - **SKILLS** (`SKILLS[hero]`): each hero has 2-3 moves unlocked by level, with limited uses (`r.su`). Uses come back on any rest (`restParty` and the sleeping bag). HU-MAN's TESTED WELL borrows a random skill.
+  - **The DESERT BUS**:
+    - It's rented at THE BUS DEPOT in the north desert. You walk onto it to drive (`G.vehicle === 'bus'`); B parks it (`G.bus`).
+    - It crosses the quicksand (`q` tiles) to THE BURIED STATION (boss THE SANDWORM, crystal THE DRIVER, whose summon gives the party TURBO).
+    - Battles in the bus use the BUS command (RAM, HORN, HIGH BEAMS, EXHAUST, TUNE-UP) and draw the bus instead of the party.
+  - **BATTLE VIEW** in CONFIG: SIDE, or FRONT (PS4-style: foes face you, the party is drawn from behind; `frontLayout`, `drawFrontHero`).
+  - New tracks: `planet`, `memoria`, `archive`, `bus`.
 - **`swmusic.js`**: 48 tracks written as `note:length` melodies over chord progressions (`MU.song`).
 - **`swmain.js`**: boot, the WORLD-FX card, title and continue.
 - **Gotchas**:

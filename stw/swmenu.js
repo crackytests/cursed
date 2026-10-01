@@ -89,7 +89,7 @@ async function itemsMenu() {
     const i = await mlist(keys.map(k => ({ t: itemName(k), r: String(G.inv[k]), dim: !ITEMS[k] })), { x: 60, y: 20, w: 200, rows: 13, title: 'ITEMS', dimOk: 0, help: j => keys[j] && (ITEMS[keys[j]] ? ITEMS[keys[j]].desc : equipDesc(EQUIP[keys[j]])) });
     if (i < 0) return;
     const k = keys[i], it = ITEMS[k];
-    if (it.field === 'tent') { if (!G.inWorld && !(M.def.saves || []).length) { await mmsg('USE IT AT A SAVE POINT OR ON THE WORLD MAP.'); continue; } invAdd(k, -1); for (const r of Object.values(G.roster)) { r.hp = r.mhp; r.mp = r.mmp; } sfx('get'); await mmsg('EVERYONE RESTED.'); continue; }
+    if (it.field === 'tent') { if (!G.inWorld && !(M.def.saves || []).length) { await mmsg('USE IT AT A SAVE POINT OR ON THE WORLD MAP.'); continue; } invAdd(k, -1); for (const r of Object.values(G.roster)) { r.hp = r.mhp; r.mp = r.mmp; resetSkills(r); } sfx('get'); await mmsg('EVERYONE RESTED.'); continue; }
     if (it.field === 'warp') { if (!M || !M.def.dungeon) { await mmsg('NOTHING TO LEAVE.'); continue; } invAdd(k, -1); WINS.length = 0; G.warpOut = 1; return; }
     if (it.bomb) { await mmsg('THAT\'S FOR BATTLES.'); continue; }
     if (it.field === 'photo') { await mmsg(it.desc); continue; }
@@ -199,9 +199,9 @@ async function comboBook() {
 async function configMenu() {
   for (;;) {
     const c = G.config;
-    const i = await mlist([{ t: 'BATTLE MODE', r: c.wait ? 'WAIT' : 'ACTIVE' }, { t: 'BATTLE SPEED', r: String(c.speed) }, { t: 'DONE' }], { x: 80, y: 40, w: 180, rows: 3, title: 'CONFIG', lr: (j, d) => { if (j === 1) { c.speed = clamp(c.speed + d, 1, 6); return 1; } if (j === 0) { c.wait = c.wait ? 0 : 1; return 1; } } });
-    if (i < 0 || i === 2) return;
-    if (i === 0) c.wait = c.wait ? 0 : 1; if (i === 1) c.speed = c.speed % 6 + 1;
+    const i = await mlist([{ t: 'BATTLE MODE', r: c.wait ? 'WAIT' : 'ACTIVE' }, { t: 'BATTLE SPEED', r: String(c.speed) }, { t: 'BATTLE VIEW', r: c.view === 'front' ? 'FRONT' : 'SIDE' }, { t: 'DONE' }], { x: 80, y: 40, w: 180, rows: 4, title: 'CONFIG', help: j => j === 2 ? 'SIDE: THE PARTY ON THE RIGHT. FRONT: THE FOES FACE YOU, THE PARTY FROM BEHIND.' : '', lr: (j, d) => { if (j === 1) { c.speed = clamp(c.speed + d, 1, 6); return 1; } if (j === 0) { c.wait = c.wait ? 0 : 1; return 1; } if (j === 2) { c.view = c.view === 'front' ? 'side' : 'front'; return 1; } } });
+    if (i < 0 || i === 3) return;
+    if (i === 0) c.wait = c.wait ? 0 : 1; if (i === 1) c.speed = c.speed % 6 + 1; if (i === 2) c.view = c.view === 'front' ? 'side' : 'front';
   }
 }
 // ---------- saving: the three slots ----------

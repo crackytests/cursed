@@ -73,7 +73,10 @@ var BOT = (() => {
     const L = cmdList(u).filter(c => !c[1]).map(c => c[0]);
     const known = knownSpells(u.r);
     if (L.includes('ARMOR')) { const b = BEAMS.filter(b => !b.only || b.only === u.id); if (hurt && rnd(2)) return { cmd: 'ARMOR', sub: 'REFUND', target: hurt }; const bm = b.find(x => x.tgt === 'all') && foes.length > 1 ? b.find(x => x.tgt === 'all') : b[rnd(3)]; return { cmd: 'ARMOR', sub: bm.name, target: weakest, all: bm.tgt === 'all', allForced: 1 }; }
+    if (L.includes('BUS')) { if (hurt && rnd(2)) return { cmd: 'BUS', sub: 'TUNE-UP', all: 1, allForced: 1 }; return foes.length > 1 && rnd(2) ? { cmd: 'BUS', sub: 'EXHAUST', all: 1, allForced: 1 } : { cmd: 'BUS', sub: 'RAM', target: weakest }; }
     if (ko && invHas('extralife') && L.includes('ITEM')) return { cmd: 'ITEM', sub: 'EXTRA LIFE', target: ko, dead: 1 };
+    if (L.includes('SKILL') && rnd(4) === 0) { const sk = heroSkills(u.r).filter(k => usesLeft(u.r, k) > 0 && (hurt || !(k.eff.heal || k.eff.fullheal || k.eff.mp)) && !k.eff.revive); if (sk.length) { const k = sk[sk.length - 1]; return { cmd: 'SKILL', sub: k.name, target: k.tgt === 'ally' ? (hurt || u) : weakest, all: k.tgt === 'all' || k.tgt === 'allies', allForced: 1 }; } }
+    if (L.includes('HELP') && rnd(3) === 0) return { cmd: 'HELP', sub: 'HOLD STILL', target: weakest };
     if (ko && known.includes('cont') && u.mp >= 30) return { cmd: 'MAGIC', sub: 'CONTINUE', target: ko, dead: 1 };
     if (hurt) {
       const heal = ['best', 'betterer', 'better'].find(s => known.includes(s) && u.mp >= SPELLS[s].mp);
@@ -156,7 +159,7 @@ var BOT = (() => {
     const gl = goal(); if (!gl) { stuck('no objective (world)'); return; }
     let tx = gl.x, ty = gl.y;
     if (!gl.world) { const e = route('world', gl.map); if (!e) { stuck('no world route to ' + gl.map); return; } tx = e.x; ty = e.y; }
-    const p = worldPath(WP.x, WP.y, tx, ty); if (p === null) { if (G.ship) { const q = worldPath(WP.x, WP.y, G.ship.x, G.ship.y); if (q && q.length) { hold1(q[0]); progress(); return; } } stuck('no world path to ' + tx + ',' + ty); return; }
+    const p = worldPath(WP.x, WP.y, tx, ty); if (p === null) { if (G.ship) { const q = worldPath(WP.x, WP.y, G.ship.x, G.ship.y); if (q && q.length) { hold1(q[0]); progress(); return; } } if (G.bus && G.bus.w === G.world && !G.vehicle) { const q = worldPath(WP.x, WP.y, G.bus.x, G.bus.y); if (q && q.length) { hold1(q[0]); progress(); return; } } stuck('no world path to ' + tx + ',' + ty); return; }
     if (!p.length) { tap('a'); return; }
     hold1(p[0]); progress();
   }
@@ -168,7 +171,7 @@ var BOT = (() => {
     const PT = portals();
     while (Q.length) { const k = Q.shift(), x = k % WW, y = (k / WW) | 0; if (x === tx && y === ty) break;
       if (PT[k] && k !== key(sx, sy) && dirs[k] !== 4) { for (const [px, py] of PT[k]) { const nk = key(px, py); if (prev[nk] < 0) { prev[nk] = k; dirs[nk] = 4; Q.push(nk); } } continue; }
-      for (const [dx, dy, d] of [[0, -1, 0], [0, 1, 1], [-1, 0, 2], [1, 0, 3]]) { const nx = x + dx, ny = y + dy, nk = key(nx, ny); if (nx < 0 || ny < 0 || nx >= WW || ny >= WH || prev[nk] >= 0) continue; if (!(nx === tx && ny === ty) && !worldPass(nx, ny)) continue; if (((placeAt(nx, ny) && !PT[nk]) || (G.ship && G.ship.x === nx && G.ship.y === ny)) && !(nx === tx && ny === ty)) continue; prev[nk] = k; dirs[nk] = d; Q.push(nk); } }
+      for (const [dx, dy, d] of [[0, -1, 0], [0, 1, 1], [-1, 0, 2], [1, 0, 3]]) { const nx = x + dx, ny = y + dy, nk = key(nx, ny); if (nx < 0 || ny < 0 || nx >= WW || ny >= WH || prev[nk] >= 0) continue; if (!(nx === tx && ny === ty) && !worldPass(nx, ny)) continue; if (((placeAt(nx, ny) && !PT[nk]) || (G.ship && G.ship.x === nx && G.ship.y === ny) || (G.bus && G.bus.w === G.world && G.bus.x === nx && G.bus.y === ny)) && !(nx === tx && ny === ty)) continue; prev[nk] = k; dirs[nk] = d; Q.push(nk); } }
     if (prev[key(tx, ty)] < 0) return null; const out = []; let k = key(tx, ty); while (k !== key(sx, sy)) { out.unshift('udlrT'[dirs[k]]); k = prev[k]; } return out;
   }
   function progress() { const k = (G.inWorld ? 'W' : G.map) + ':' + (G.inWorld ? WP.x + ',' + WP.y : PL.x + ',' + PL.y); if (k !== lastKey) { lastKey = k; lastProg = frame; stuckN = 0; } else if (frame - lastProg > 600) { stuck('not moving at ' + k); lastProg = frame; } }

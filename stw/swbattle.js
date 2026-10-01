@@ -31,7 +31,8 @@ async function battle(form, opt = {}) {
   if (typeof form === 'string') form = FORMS[form];
   const prevScene = scene, prevMusic = curName;
   B = { form, foes: form.foes.map(([id, x, y]) => mkFoeUnit(id, x, y)), party: partyHeroes().map(mkHeroUnit), actQ: [], readyQ: [], pops: [], fx: [], msg: null,
-    menu: null, cursor: null, bg: form.bg || opt.bg || 'grass', acting: 0, intro: 1, runHold: 0, lastCmd: null, t: 0, results: null, banner: null, combo: null };
+    menu: null, cursor: null, bg: form.bg || opt.bg || 'grass', acting: 0, intro: 1, runHold: 0, lastCmd: null, t: 0, results: null, banner: null, combo: null, bus: !!opt.bus, front: G.config.view === 'front' };
+  if (B.front) frontLayout();
   for (const f of B.foes) { G.seen[f.id] = 1; }
   scene = { update: battleUpdate, draw: battleDraw };
   if (!opt.keepMusic) music(form.music || (form.boss ? 'boss' : 'battle'));
@@ -122,11 +123,14 @@ function scrambledAction(u) {
 // ---------- the command menu ----------
 function cmdList(u) {
   const muted = u.status.mute;
+  if (B.bus) return [['BUS'], ['ITEM']];
+  if (HEROES[u.id].android) return [['FIGHT'], ['HELP'], heroSkills(u.r).length ? ['SKILL'] : null, ['ITEM']].filter(Boolean);
   if (flag('armor') && ['yoko', 'terms', 'conds'].includes(u.id)) return [['ARMOR'], ['ITEM']];
-  if (u.id === 'kid') return [['ASK'], ['PERFORM'], ['INSPECT'], ['MAGIC', muted], ['ITEM']];
+  if (u.id === 'kid') return [['ASK'], ['PERFORM'], ['INSPECT']].concat(heroSkills(u.r).length ? [['SKILL']] : [], [['MAGIC', muted], ['ITEM']]);
   const L = [['FIGHT']]; const c = HEROES[u.id].cmd;
   if (c !== 'MAGIC') L.push([c]);
   if (u.id === 'yoko' && flag('empress')) L.push(['EMPRESS', u.empress]);
+  if (heroSkills(u.r).length) L.push(['SKILL']);
   L.push(['MAGIC', muted || !(knownSpells(u.r).length || u.r.crystal)]); L.push(['ITEM']);
   return L;
 }
@@ -157,6 +161,9 @@ async function cmdDetail(u, cmd) {
     const bm = L[i], t = bm.tgt === 'all' ? allFoes() : await pickTarget(u, bm.heal ? 'ally' : 'foe'); return t && { kind: 'beam', beam: BEAMS.indexOf(bm), targets: t };
   }
   if (cmd === 'MAGIC') return magicMenu(u);
+  if (cmd === 'SKILL') return skillMenu(u);
+  if (cmd === 'BUS') return busMenu(u);
+  if (cmd === 'HELP') return helpMenu(u);
   if (cmd === 'ITEM') return itemMenu(u);
   if (cmd === 'INVENT') {
     const L = G.gadgets.map(k => GADGETS[k]); if (!L.length) { bmsg('NO INVENTIONS YET.'); return null; }
@@ -287,7 +294,7 @@ function applyEffect(u, t, eff) {
   if (eff.pow || eff.sp) {
     if (eff.magic || eff.sp) n = magBase(u, eff.sp || eff.pow * 20) * variance();
     else n = physBase(u) * (eff.pow || 1) * variance();
-    if (eff.heal) { if (t.side === 'e' && t.d.undead) { dmgPop(t, Math.round(n), 'heal'); return; } t.hp = Math.min(t.mhp, t.hp + Math.round(n)); pop(t, Math.round(n), BCOL.heal); return; }
+    if (eff.heal) { if (t.side === 'e' && t.d.undead) { dmgPop(t, Math.round(n), 'heal'); return; } if (t.side === 'p' && HEROES[t.id].android && eff.magic) n *= .5; t.hp = Math.min(t.mhp, t.hp + Math.round(n)); pop(t, Math.round(n), BCOL.heal); return; }
     const df = eff.magic || eff.sp ? t.mdef : t.def;
     if (!eff.pierce) n *= (255 - Math.min(230, df)) / 256;
     if (!eff.magic && !eff.sp) { if (u.side === 'p' && u.row === 'back' && !['mic', 'dart', 'rod'].includes(HEROES[u.id].weap)) n *= .5; if (t.side === 'p' && t.row === 'back') n *= .5; }
@@ -335,8 +342,8 @@ function retarget(a) {
   return retargetSide(a, t);
 }
 function retargetSide(a, t) { const side = t.length ? t[0].side : 'e'; const pool = side === 'e' ? foesAlive() : partyAlive(); return pool.length ? [pickOne(pool)] : []; }
-async function stepIn(u) { if (u.side !== 'p') { u.flash = 6; await wait(8); return; } for (let i = 0; i < 6; i++) { u.dx -= 3; await nextFrame(); } }
-async function stepOut(u) { if (u.side !== 'p') return; while (u.dx < 0) { u.dx = Math.min(0, u.dx + 4); await nextFrame(); } }
+async function stepIn(u) { if (u.side !== 'p') { u.flash = 6; await wait(8); return; } for (let i = 0; i < 6; i++) { if (B.front) u.dy = (u.dy || 0) - 2; else u.dx -= 3; await nextFrame(); } }
+async function stepOut(u) { if (u.side !== 'p') return; while (u.dx < 0 || u.dy < 0) { u.dx = Math.min(0, u.dx + 4); u.dy = Math.min(0, (u.dy || 0) + 3); await nextFrame(); } }
 
 async function perform(a) {
   const u = a.actor; a.targets = a.targets ? retarget(a) : null;
@@ -402,6 +409,7 @@ async function heroAct(a) {
       for (const t of T) {
         if (it.revive && t.hp <= 0) { applyEffect(u, t, { revive: it.revive }); if (it.all) t.hp = t.mhp; }
         if (t.hp <= 0) continue;
+        if (it.charge) { if (HEROES[t.id].android) { const n = t.mhp - t.hp; t.hp = t.mhp; t.mp = t.mmp; pop(t, n, BCOL.heal); fx('zap', t, 20); } else pop(t, 'NOTHING', BCOL.miss); continue; }
         if (it.heal) { const n = Math.min(t.mhp - t.hp, it.heal); t.hp += n; pop(t, n, BCOL.heal); fx('heal', t, 30); }
         if (it.mana) { const n = Math.min(t.mmp - t.mp, it.mana); t.mp += n; pop(t, n, BCOL.mp); fx('heal', t, 30); }
         if (it.cure) applyEffect(u, t, { cure: it.cure });
@@ -468,6 +476,9 @@ async function heroAct(a) {
       if (v === 'INSPECT') { const t = T[0]; label('PEE BOY INSPECTS ' + t.name + '.'); await wait(16); applyEffect(u, t, { scan: 1 }); inflict(t, 'exposed', 100); }
       await wait(24); break;
     }
+    case 'skill': await doSkill(u, a); break;
+    case 'busw': await doBusWeapon(u, a); break;
+    case 'help': await doHelp(u, a); break;
     case 'combo': {
       const c = a.combo; B.banner = { s: c.name, t: 100 }; post.flash = .5; sfx('object'); await wait(24); post.flash = 0;
       const tg = c.tgt === 'allies' ? partyAlive() : foesAlive();
@@ -574,7 +585,10 @@ function battleDraw() {
     if (f.status.sleep && (frame >> 4) & 1) text('Z', sx + f.w - 6, f.y - 6, WHITE);
   }
   // party
+  if (B.bus) drawBattleBus();
   for (const u of B.party) {
+    if (B.bus) continue;
+    if (B.front) { drawFrontHero(u); continue; }
     const H = heroArt(u); let s = H.ready, px = u.x + u.dx, py = u.y;
     if (u.hp <= 0) { s = H.ko; py += 10; }
     else if (B.results && u.pose === 'win') s = (frame >> 4) & 1 ? H.win : H.ready;

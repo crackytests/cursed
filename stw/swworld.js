@@ -4,6 +4,7 @@ const WW = 128, WH = 112;
 const WORLD = { g: null, places: {}, made: 0 };
 // ---------- building the world from shapes (deterministic) ----------
 function buildWorld(n) {
+  if (n === 3) return buildPlanet();
   const g = Array.from({ length: WH }, () => Array(WW).fill('~'));
   const nz = (x, y, s) => swh(x >> 2, y >> 2, s) * .5 + swh(x, y, s + 1) * .25;
   const land = (cx, cy, rx, ry, t, s = 1, keep) => { for (let y = 0; y < WH; y++) for (let x = 0; x < WW; x++) { const d = ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2; if (d < 1 - .35 + nz(x, y, s) * .7) { if (!keep || g[y][x] !== '~') g[y][x] = t; } } };
@@ -27,6 +28,7 @@ function buildWorld(n) {
   line([[64, 94], [66, 102], [62, 110]], 1, '^'); line([[96, 95], [98, 103], [96, 110]], 1, '^'); blob(106, 104, 5, 4, '^', 44); blob(106, 104, 2, 1, 'n', 45);
   // islands
   land(112, 20, 7, 5, '.', 51); blob(112, 20, 3, 2, '"', 52); land(10, 72, 5, 4, '.', 53); land(118, 92, 5, 4, ',', 54);
+  if (n === 1) blob(56, 36, 5, 3, 'q', 71); // quicksand around the buried station (only the bus crosses it)
   if (n === 2) {
     // the corrupted save: whole regions are simply gone; the middle collapses into a crater with a tower on it
     blob(64, 61, 16, 9, '?', 61); blob(64, 61, 8, 5, 'n', 62); blob(10, 18, 6, 3, '?', 63); blob(84, 82, 10, 3, '?', 64); blob(86, 102, 8, 3, '?', 65);
@@ -79,7 +81,7 @@ async function toWorld(x, y) {
   G.inWorld = 1; G.map = null; M = null; worldGrid();
   if (x !== undefined) { G.wx = x; G.wy = y; }
   WP.x = G.wx; WP.y = G.wy; WP.px = WP.x * TS; WP.py = WP.y * TS; WP.mv = 0;
-  G.encN = encSteps(); scene = worldScene; music(G.vehicle === 'air' ? 'airship' : G.world === 2 ? 'world2' : 'world');
+  G.encN = encSteps(); scene = worldScene; owPalette(); music(G.vehicle === 'air' ? 'airship' : G.vehicle === 'bus' ? 'bus' : G.world === 3 ? 'planet' : G.world === 2 ? 'world2' : 'world');
   await fadeIn(.1); FIELD_LOCK--;
 }
 async function leaveWorld(id, x, y, dir) { G.inWorld = 0; await goMap(id, x, y, dir); }
@@ -96,26 +98,29 @@ function worldUpdate() {
   if (pressed.start) { run(fieldMenu); return; }
   if (pressed.c) { run(talkHint); return; }
   if (pressed.a) { run(worldAct); return; }
+  if (pressed.b && G.vehicle === 'bus') { if (wtile(WP.x, WP.y) !== 'q' && !placeAt(WP.x, WP.y)) { G.bus = { x: WP.x, y: WP.y, w: G.world }; G.vehicle = null; sfx('door'); music(G.world === 3 ? 'planet' : G.world === 2 ? 'world2' : 'world'); } else sfx('tick'); return; }
   const d = held.up ? 'u' : held.down ? 'd' : held.left ? 'l' : held.right ? 'r' : null;
   if (d) { WP.dir = d; const [dx, dy] = DIRV[d], nx = WP.x + dx, ny = WP.y + dy; if (worldPass(nx, ny)) { WP.mv = 1; WP.tx = nx; WP.ty = ny; } }
 }
 function worldPass(x, y) {
   if (G.ship && G.ship.x === x && G.ship.y === y) return true;
-  const t = wtile(x, y); if (!WALKABLE.has(t) && !placeAt(x, y)) return false;
+  if (G.bus && G.bus.w === G.world && G.bus.x === x && G.bus.y === y) return true;
+  const t = wtile(x, y); if (t === 'q') return G.vehicle === 'bus'; if (!WALKABLE.has(t) && !placeAt(x, y)) return false;
   return !(WORLD.blocks || []).some(b => b.x === x && b.y === y && b.on());
 }
 async function worldStep() {
   const p = placeAt(WP.x, WP.y);
   if (p) { const [k, pl] = p; if (pl.run) { await pl.run(); return; } if (pl.to) { await leaveWorld(...pl.to); return; } }
   if (G.ship && G.ship.x === WP.x && G.ship.y === WP.y) { await boardAirship(); return; }
+  if (G.bus && !G.vehicle && G.bus.w === G.world && G.bus.x === WP.x && G.bus.y === WP.y) { G.vehicle = 'bus'; G.bus = null; sfx('power'); music('bus'); return; }
   if (WORLD.onStep) { const r = await WORLD.onStep(WP.x, WP.y); if (r) return; }
-  if (G.vehicle === 'bus' || flag('noenc')) return;
-  G.encN--; if (G.encN <= 0) { G.encN = encSteps(); const z = worldZone(WP.x, WP.y); if (z) { FIELD_LOCK++; const r = await battle(FORMS[pickOne(z.forms)] || pickOne(z.forms), { bg: z.bg }); FIELD_LOCK--; if (r === 'lose') await gameOver(); else await fadeIn(.1); } }
+  if (flag('noenc')) return;
+  G.encN -= G.vehicle === 'bus' ? .5 : 1; if (G.encN <= 0) { G.encN = encSteps(); const z = G.vehicle === 'bus' && wtile(WP.x, WP.y) === 'q' ? { forms: forms('BUS'), bg: 'desert' } : worldZone(WP.x, WP.y); if (z) { FIELD_LOCK++; const r = await battle(FORMS[pickOne(z.forms)] || pickOne(z.forms), { bg: z.bg, bus: G.vehicle === 'bus' }); FIELD_LOCK--; if (r === 'lose') await gameOver(); else await fadeIn(.1); } }
 }
 async function worldAct() { const p = placeAt(WP.x, WP.y); if (p) await worldStep(); }
 // encounter zones on the world (first match wins)
 function worldZone(x, y) {
-  const t = wtile(x, y), Z = G.world === 2 ? WZONES2 : WZONES;
+  const t = wtile(x, y), Z = G.world === 3 ? WZONES3 : G.world === 2 ? WZONES2 : WZONES;
   return Z.find(z => x >= z.r[0] && y >= z.r[1] && x <= z.r[2] && y <= z.r[3] && (!z.t || z.t.includes(t)));
 }
 // ---------- drawing the walking view ----------
@@ -126,8 +131,9 @@ function worldDraw() {
   for (let ty = y0; ty <= y0 + 15; ty++) for (let tx = x0; tx <= x0 + 20; tx++) { const c = wtile(tx, ty), fr = OW_TILES[c] || OW_TILES['~']; draw(fr[af % fr.length], tx * TS - cx, ty * TS - cy, OW_P); }
   for (const [k, p] of Object.entries(PLACES)) { if (p.if && !p.if()) continue; if (p.icon === 'save' && !p.run) continue; draw(OW_ICON[p.icon], p.x * TS - cx, p.y * TS - cy, OW_ICON_P); }
   if (G.ship) drawAirshipSprite(G.ship.x * TS - cx - 8, G.ship.y * TS - cy - 6, 0, 1);
+  if (G.bus && G.bus.w === G.world) drawBus(G.bus.x * TS - cx - 4, G.bus.y * TS - cy - 4, 'r');
   const id = G.party[0], who = id === 'kid' ? (hero('kid').aspect || 'kid') : id;
-  if (G.vehicle === 'bus') drawBus(WP.px - cx - 4, WP.py - cy - 4, WP.dir);
+  if (G.vehicle === 'bus') { drawBus(WP.px - cx - 4, WP.py - cy - 4, WP.dir); text('B: GET OFF', 6, H - 10, WHITE); }
   else draw(ART.field(who, WP.dir, WP.mv ? (WP.f >> 3) & 3 : 0), WP.px - cx, WP.py - cy - 8, ART.pal(who), WP.dir === 'r');
   if (G.world === 2) crushRect(0, 0, W, H, false), G.vehicle !== 'bus' && draw(ART.field(who, WP.dir, WP.mv ? (WP.f >> 3) & 3 : 0), WP.px - cx, WP.py - cy - 8, ART.pal(who), WP.dir === 'r');
   const p = placeAt(WP.x, WP.y); if (p) { const w = p[1].name.length * 6 + 16; panel(((W - w) / 2) | 0, 8, w, 18); ctext(p[1].name, 13, WHITE); }
