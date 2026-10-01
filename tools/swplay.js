@@ -15,6 +15,8 @@ if (process.env.SETUP) R(process.env.SETUP);
 const botFile = process.env.BOT === 'mash' ? null : path.join(__dirname, 'swbot.js');
 if (botFile && fs.existsSync(botFile)) R(fs.readFileSync(botFile, 'utf8'));
 if (process.env.STATE) R(require('./swstates')[process.env.STATE]); else R('run(boot)');
+if (process.env.OBJ) R('obj("TEST", ' + process.env.OBJ + ')');
+if (process.env.UNTIL) R('BOT.until = () => ' + process.env.UNTIL);
 (async () => {
   let T = 0;
   for (let f = 0; f < max; f++) {

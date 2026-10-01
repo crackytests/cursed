@@ -92,6 +92,7 @@ async function itemsMenu() {
     if (it.field === 'tent') { if (!G.inWorld && !(M.def.saves || []).length) { await mmsg('USE IT AT A SAVE POINT OR ON THE WORLD MAP.'); continue; } invAdd(k, -1); for (const r of Object.values(G.roster)) { r.hp = r.mhp; r.mp = r.mmp; } sfx('get'); await mmsg('EVERYONE RESTED.'); continue; }
     if (it.field === 'warp') { if (!M || !M.def.dungeon) { await mmsg('NOTHING TO LEAVE.'); continue; } invAdd(k, -1); WINS.length = 0; G.warpOut = 1; return; }
     if (it.bomb) { await mmsg('THAT\'S FOR BATTLES.'); continue; }
+    if (it.field === 'photo') { await mmsg(it.desc); continue; }
     const r = await pickHero('USE ON'); if (!r) continue;
     if (it.revive && r.hp <= 0) { r.hp = Math.max(1, Math.floor(r.mhp * it.revive)); invAdd(k, -1); sfx('get'); continue; }
     if (r.hp <= 0) { await mmsg('THEY NEED AN EXTRA LIFE FIRST.'); continue; }

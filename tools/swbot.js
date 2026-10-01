@@ -11,7 +11,7 @@ var BOT = (() => {
   }
   const W8 = typeof process === 'undefined' ? {} : process.env;
   function decide() {
-    if (DBG.credits) { B0.done = 1; return; }
+    if (DBG.credits || (B0.until && B0.until())) { B0.done = 1; return; }
     if (DBG.fdbg && frame % 30 === 0) B0.log('DEC scene=' + (scene === fieldScene ? 'field' : scene === worldScene ? 'world' : scene === menuScene ? 'menu' : 'other') + ' busy=' + busy + ' lock=' + FIELD_LOCK + ' dlg=' + !!DLG + ' menus=' + MENUS.length + ' B=' + !!(B && !B.done));
     if (typeof TITLE !== 'undefined' && TITLE.opts.length && scene && !G.map && !G.inWorld && !M) { if (TITLE.opts[TITLE.i] !== 'NEW GAME') tap('down'); else tap('a'); return; }
     if (CARD) { tap('a'); return; }

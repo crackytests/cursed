@@ -9,7 +9,7 @@ for (const m of src.matchAll(/music\('([a-z0-9]+)'\)/g)) if (!has(`!!TRACKS['${m
 for (const m of src.matchAll(/music: '([a-z0-9]+)'/g)) if (!has(`!!TRACKS['${m[1]}']`)) bad.push('track ' + m[1]);
 for (const m of src.matchAll(/battle\('([a-z0-9]+)'/g)) if (!has(`!!FORMS['${m[1]}']`)) bad.push('form ' + m[1]);
 for (const m of src.matchAll(/goMap\('([a-z0-9]+)'/g)) if (!has(`!!MAPS['${m[1]}']`)) bad.push('map ' + m[1]);
-console.log(R(`(() => { const out = [];
+console.log(R(`G = newGame(); (() => { const out = [];
   for (const id in MAPS) { const d = MAPS[id];
     for (const e of d.exits || []) if (e.to && e.to !== 'world' && !MAPS[e.to]) out.push('exit ' + id + ' -> ' + e.to);
     for (const c of d.chests || []) { const k = c[2]; if (k !== 'gp' && !ITEMS[k] && !EQUIP[k] && !GADGETS[k]) out.push('chest item ' + id + ' ' + k); }

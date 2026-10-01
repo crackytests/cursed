@@ -359,6 +359,21 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
   - `MB(w, h)` is the map builder.
   - `partyWith(...)` forces who's in the party for a scene.
   - `bringBack(id, lv)` handles a second-half reunion.
+- **`swmore.js`**: the content pass, loaded after `swstory4`.
+  - **Auction house** in Prestige (`auction()`, `LOTS`). You bid against three rivals, each with a hidden cap. Lots: the MISS NOSE and THE BOUNCER crystals, the BODYGUARD and PAGER relics, a signed photo of Bruce, and (second half only) a CONTINUE+.
+  - **Second-half side content**:
+    - **The four old cartridges** (`CARTS`; places `cartG/cartP/cartR/cartY`): superbosses drawn in their own Gen-1 tone. Maps, battles and foes accept `tone` (dmg/pink/red/gray). Silencing all four gives THE AUDITOR crystal.
+    - **SLOT ZERO** (old mines → `zero1`/`zero2`): THE FIRST SAVE crystal.
+    - **THE THIRD GENERATOR** (needs Pee Kid; it can only be hurt after INSPECT): THE GENERATOR crystal.
+    - **The hermit's mountain** (needs Face and Old Face): THE FACELESS crystal and the AIR HORN gadget.
+    - **Linda's quarterly meeting** in Prestige (`lindaville`): a 3-item agenda; the reward is THE GOLD PEN.
+    - **THE TALK SHOW** (`talkshow`): bet an item, send one hero to fight alone, win a better item.
+  - **Rewards and shops**: every crystal, gadget and relic now has a source. The New File shops sell late-game stock.
+  - **New second-half foes**: AUTOSAVE, DEMO DISC, UNPLUGGED, RUMBLE PAK, EXPANSION PAK (area `W`).
+  - **Menus and battle**: a MONSTERS log in the field menu, and the BODYGUARD relic now works (`foeAct` wrapper).
+  - **Story touches**: rumors from a New File in New File town; the TALK hint lists side stories once the party is back; the epilogue changes for each side story finished.
+  - It works by wrapping earlier functions (`crushRect`, `loadMap`, `drawBattleBG`, `mkFoeUnit`, `foeAct`, `fieldMenu`, `nextReunionObj`, `endingYes`).
+  - Bot test for side content: `STATE=side OBJ="'cartG',6,3" UNTIL="flag('cart_green')" node tools/swplay.js 20000`.
 - **`swmusic.js`**: 48 tracks written as `note:length` melodies over chord progressions (`MU.song`).
 - **`swmain.js`**: boot, the WORLD-FX card, title and continue.
 - **Gotchas**:
