@@ -7,7 +7,7 @@ const ctx = { document: { getElementById: el, documentElement: {} }, addEventLis
   localStorage: { getItem: k => k in LS ? LS[k] : null, setItem: (k, v) => LS[k] = v, removeItem: k => delete LS[k] }, console, Math, setInterval() {}, setTimeout, setImmediate, Date, Promise, JSON, Object };
 ctx.window = ctx; vm.createContext(ctx);
 const R = s => vm.runInContext(s, ctx);
-for (const f of ['../g2/engine2', '../g2/fm', 'pkart', 'pkplat', 'pkstages', 'pkstory', 'pkmain'])
+for (const f of ['../g2/engine2', '../g2/fm', 'pkart', 'pkplat', 'pkstages', 'pkstory', 'pkmore', 'pkmain'])
   R(fs.readFileSync(f + '.js', 'utf8').replace(/\nfit\(\); requestAnimationFrame\(loop\); run\(boot\);\s*$/, '\n'));
 console.log(R('photoText(1); PHOTO_IDS.length + " ids, " + PHOTOS.length + " captions"')); process.exit(0);
 const start = +(process.argv[2] || 1), max = +(process.argv[3] || 60000);

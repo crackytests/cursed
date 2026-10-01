@@ -84,7 +84,7 @@ async function startStage(n) {
   const st = STAGES[n];
   await fadeOut();
   await showCard(['STAGE ' + secName(n), '', st.title], 110, st.forceLegacy ? { bg: hex('#0f380f'), fg: hex('#9bbc0f') } : { bg: hex('#081030'), fg: UI.name });
-  loadLevel(st); camX = 0; PL.pot = n === 1 ? 50 : Math.max(PL.pot, 40); PL.dig = 3;
+  loadLevel(st); camX = 0; PL.pot = n === 1 ? 50 : Math.max(PL.pot, 40); PL.dig = SAVE.hard ? 1 : 3;
   const w = world(n);
   if (w >= 3 && !PL.unlocked.includes('wee')) PL.unlocked.push('wee');
   if (w >= 4 && !PL.unlocked.includes('boy')) PL.unlocked.push('boy');
@@ -96,8 +96,8 @@ async function startStage(n) {
   if (!SAVE['intro' + n]) { SAVE['intro' + n] = 1; await st.intro(); }
 }
 async function stageClear() {
-  sfx('get'); banner(STG.id > 10 ? 'STAGE CLEAR' : 'SECTION CLEAR', 90); await wait(90);
   const next = ORDER[ORDER.indexOf(STG.id) + 1];
+  sfx('get'); banner(!next || world(next) !== world(STG.id) ? 'STAGE CLEAR' : 'SECTION CLEAR', 90); await wait(90);
   if (next) { SAVE.stage = next; savePK(); run(() => startStage(next)); }
 }
 async function pauseMenu() {
@@ -141,7 +141,7 @@ async function keyboard2(prompt) {
 }
 async function credits(letGo) {
   music(letGo ? 'legacy' : 'credits'); if (letGo) { post.legacy = 1; LEGACY_AUDIO = true; }
-  const L = ['PEE KID³', 'THIRD TIME\'S THE CHARM', '', 'A PRETEND CO. PRODUCTION', '', 'PEE KID ....... HIMSELF', 'PEE-WEE KID ... HIMSELF', 'PEE BOY ....... HIMSELF', '', 'THE THIRD GENERATOR', 'FACE AND SPOOKY GHOST', '', 'SPECIAL THANKS', 'CARL, LINDA, TP', '(STILL IN FOUR SHADES)', '', 'SUPER-16 FM SOUND DRIVER', 'PRETEND CO. SOUND LAB', '', 'NO KIDS WERE HELD', 'IN THE MAKING OF THIS GAME', '(ONE WAS.)', '', letGo ? 'HE WENT HOME.' : 'SEE YOU NEXT GENERATION.'];
+  const L = ['PEE KID³', 'THIRD TIME\'S THE CHARM', '', 'A PRETEND CO. PRODUCTION', '', 'PEE KID ....... HIMSELF', 'PEE-WEE KID ... HIMSELF', 'PEE BOY ....... HIMSELF', '', 'THE THIRD GENERATOR', 'FACE AND SPOOKY GHOST', '', 'SPECIAL THANKS', 'CARL, LINDA, TP', '(STILL IN FOUR SHADES)', '', 'SUPER-16 FM SOUND DRIVER', 'PRETEND CO. SOUND LAB', '', 'NO KIDS WERE HELD', 'IN THE MAKING OF THIS GAME', '(ONE WAS.)', '', ...(SAVE.hard ? ['HOLD IT MODE: CLEARED', '(HE HELD IT.)', ''] : []), letGo ? 'HE WENT HOME.' : 'SEE YOU NEXT GENERATION.'];
   let y = H + 10, t = 0; const prev = scene;
   scene = { update() { t++; y -= .45; }, draw() {
     if (letGo) cls(hex('#9bbc0f')); else { sky(0, H, mix(hex('#200840'), hex('#082040'), (Math.sin(t * .01) + 1) / 2), hex('#401040')); for (let i = 0; i < 40; i++) pset((i * 83 + t * (1 + i % 3)) % W, (i * 37) % H, WHITE); }
@@ -149,13 +149,30 @@ async function credits(letGo) {
     if (!letGo) { draw(KID.kid.run[(t >> 3) & 3], 40, 190, KIDPAL.kid); draw(KID.wee.run[(t >> 3) & 3], 70, 190, KIDPAL.wee); draw(KID.boy.run[(t >> 3) & 3], 100, 182, KIDPAL.boy); }
     else draw(LEGACY.carl, 150, 190, LEGPAL);
   } };
-  DBG.credits = 1; PKM.cleared = 1; savePKM();
+  DBG.credits = 1; PKM.cleared = 1; if (SAVE.hard) PKM.hardClear = 1; savePKM();
   while (y + L.length * 14 > 0 && !(t > 120 && pressed.start)) await nextFrame();
   await showCard(letGo ? ['THE END.', '', 'OKAY. CAN I GO HOME NOW?'] : ['THE END?', '', 'POTENTIAL: 100%'], 0, { bg: letGo ? hex('#0f380f') : BLACK, fg: letGo ? hex('#9bbc0f') : UI.name });
+  await nextCartridge(letGo);
   DBG.credits = 0; scene = prev; post.legacy = 0; LEGACY_AUDIO = false;
   store('pk_save', null); for (const k in SAVE) delete SAVE[k]; SAVE.photos = []; SAVE.stage = 1;
   PERMA = !!PKM.letgo && !PKM.upgraded;
   run(titleScreen);
+}
+
+// the old advertisement after the credits: the next cartridge on this hardware
+async function nextCartridge(letGo) {
+  let t = 0; const prev = scene;
+  scene = { update() { t++; }, draw() {
+    cls(BLACK); if (letGo) { ctext('SOMEWHERE, A BACKUP IS LISTENING.', 100, hex('#9bbc0f')); if (t > 120 && (t >> 4) & 1) { pset(156, 130, hex('#24dbff')); pset(164, 130, hex('#24dbff')); } return; }
+    ctext('COMING SOON ON SUPER-16', 30, UI.dim);
+    const k = Math.min(1, t / 60); for (let i = 0; i < 40; i++) { const x = 160 + Math.cos(i * .4 + t * .02) * 70 * k, y = 104 + Math.sin(i * .4 + t * .02) * 40 * k; pset(x, y, i & 1 ? hex('#ff24db') : hex('#6dff24')); }
+    if (t > 40) { text('FACE', 112, 84, hex('#6dff24'), 0, 4); text('FACE', 110, 82, hex('#ff24db'), BLACK, 4); }
+    if (t > 80) ctext('WHAT COULD HAPPEN', 124, WHITE);
+    if (t > 120) ctext('"NOBODY GETS LEFT BEHIND THIS TIME."', 150, UI.name);
+    if (t > 160) ctext('WITH THE FACE-FX CHIP', 176, UI.dim);
+  } };
+  for (; t < 240 && !(t > 60 && pressed.start); ) await nextFrame();
+  scene = prev;
 }
 
 // ---------- boot: chrome logo, digitized shout ----------
@@ -208,6 +225,7 @@ async function titleScreen() {
     drawScaled(KID.kid.stand, 110, 100, KIDPAL.kid, 2); drawScaled(KID.wee.stand, 146, 96, KIDPAL.wee, 2); drawScaled(KID.boy.stand, 182, 80, KIDPAL.boy, 2);
     if (PKM.letgo) draw(LEGACY.carl, 20, 190, LEGPAL);
     if (PKM.dog) { const dx = 280, dy = 196 + ((t >> 4) & 1); rectF(dx, dy, 14, 7, hex('#c08040')); rectF(dx + 12, dy - 5, 7, 7, hex('#c08040')); rectF(dx + 17, dy - 3, 3, 2, BLACK); rectF(dx + 14, dy - 4, 1, 1, BLACK); rectF(dx + 11, dy - 7, 3, 4, hex('#805020')); rectF(dx, dy + 7, 2, 4, hex('#c08040')); rectF(dx + 11, dy + 7, 2, 4, hex('#c08040')); rectF(dx - 3, dy - 2 + ((t >> 3) & 1), 3, 2, hex('#c08040')); }
+    if (PKM.hardClear) text('HELD IT', 8, 8, hex('#f8e040'), BLACK);
     ctext('(C) PRETEND CO.  SUPER-16', 212, hex('#c0a0d0'), BLACK);
   } };
   music(PERMA ? 'legacy' : 'title'); post.legacy = PERMA ? 1 : 0; LEGACY_AUDIO = PERMA;
@@ -215,10 +233,11 @@ async function titleScreen() {
   const opts = [], act = [];
   if (sv && sv.stage && STAGES[sv.stage]) { opts.push('CONTINUE (STAGE ' + secName(sv.stage) + ')'); act.push('cont'); }
   opts.push('NEW GAME'); act.push('new');
-  if (PKM.cleared) { opts.push('STAGE SELECT'); act.push('select'); }
+  if (PKM.cleared) { opts.push('STAGE SELECT'); act.push('select'); opts.push('TIME ATTACK'); act.push('ta'); opts.push('HOLD IT MODE'); act.push('hard'); }
   if (PKM.allPhotos) { opts.push(PKM.dog ? 'BISCUIT' : '???'); act.push('secret'); }
   if (PKM.letgo) { opts.push(PERMA ? 'TURN THE COLORS BACK ON' : 'LEAVE HIM ALONE'); act.push('perma'); }
-  const c = await choose(opts, { x: 100, y: 176 - (opts.length - 1) * 6 });
+  const c = await choose(opts, { x: 100, y: Math.min(176 - (opts.length - 1) * 6, H - opts.length * 12 - 16) });
+  if (act[c] === 'ta') return timeAttackMenu();
   if (act[c] === 'perma') {
     PKM.upgraded = PERMA ? 1 : 0; savePKM(); PERMA = !PERMA;
     if (PERMA) await say('Thank you.', 'PEE KID'); else await say('...Okay. I understand. Everybody needs the graphics.', 'PEE KID');
@@ -232,6 +251,7 @@ async function titleScreen() {
   }
   if (act[c] === 'secret') pickN = 99;
   for (const k in SAVE) delete SAVE[k]; SAVE.photos = []; SAVE.stage = 1; PL.unlocked = ['kid']; PL.asp = 'kid';
+  if (act[c] === 'hard') { SAVE.hard = 1; await say('HOLD IT MODE. POTENTIAL RISES TWICE AS FAST. ONE HEART. AN ACCIDENT SENDS YOU BACK TO THE LAST BATHROOM.'); }
   if (pickN) { for (const n of ORDER.slice(0, ORDER.indexOf(pickN))) SAVE['intro' + n] = 1; SAVE.hallpass = pickN !== 3 && world(pickN) >= 3 ? 1 : 0; PL.unlocked = ['kid', 'wee', 'boy'].slice(0, Math.max(1, Math.min(3, world(pickN) - 1))); if (pickN === 99) PL.unlocked = ['kid', 'wee', 'boy']; return startStage(pickN); }
   if (act[c] === 'cont') { Object.assign(SAVE, sv); SAVE.photos = sv.photos || []; PL.unlocked = sv.unlocked || ['kid']; for (const n of ORDER.slice(0, ORDER.indexOf(sv.stage) + 1)) SAVE['intro' + n] = 1; }
   await startStage(SAVE.stage);

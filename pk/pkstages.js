@@ -37,7 +37,7 @@ const STAGES = {
   11: { id: 11, title: 'MELTDOWN', theme: 'lab', music: 'chase', chase: 1.25,
     build() {
       const L = LB(120); L.ground(0, 119); L.col(0, 2, 11); L.col(119, 2, 11); L.put(4, 11, '@');
-      L.fill(12, 13, 12, 13, '.'); L.fill(18, 19, 10, 11, '#'); L.fill(24, 26, 12, 13, '.'); L.put(30, 11, 'J');
+      L.fill(12, 13, 12, 13, '.'); L.fill(18, 19, 10, 11, '#'); L.fill(24, 25, 12, 13, '.'); L.put(30, 11, 'J');
       L.plat(34, 37, 10); L.plat(39, 42, 8); L.plat(43, 45, 6); L.put(44, 5, 'F');
       L.fill(48, 50, 12, 13, '.'); L.fill(53, 54, 10, 11, '#'); L.put(57, 7, 'r');
       L.fill(61, 61, 10, 11, 'T'); L.fill(67, 67, 3, 11, 'M');

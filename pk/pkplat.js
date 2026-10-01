@@ -1,11 +1,11 @@
 'use strict';
 // ================= PEE KID³ -- platformer engine =================
 // POTENTIAL is the console's power. Below 25% the hardware can't hold 16-bit: LEGACY mode.
-const TS = 16, LH = 14;
+const TS = 16; let LH = 14; // LH: rows in the current level (14 = one screen; climbing sections are taller)
 const ASPECT = {
   kid: { name: 'PEE KID', w: 10, h: 22, run: 1.9, jump: 5.5, verb: 'ASK' },
   wee: { name: 'PEE-WEE KID', w: 10, h: 24, run: 2.1, jump: 6.7, verb: 'PERFORM' },
-  boy: { name: 'PEE BOY', w: 12, h: 32, run: 2.5, jump: 5.7, verb: 'INSPECT' },
+  boy: { name: 'PEE BOY', w: 12, h: 32, run: 2.5, jump: 6.0, verb: 'INSPECT' },
 };
 let LV = null, STG = null, PERMA = false;
 const PL = { x: 0, y: 0, vx: 0, vy: 0, on: false, face: 1, asp: 'kid', hurt: 0, dig: 3, pot: 50, coyote: 0, jbuf: 0, anim: 0, act: 0, ask: 0, halfJ: false, cx: 0, cy: 0, unlocked: ['kid'] };
@@ -51,13 +51,13 @@ const THEMES = {
 let TILES = null, TP = null;
 
 // ---------- level ----------
-function LB(w) { // level builder
-  const g = Array.from({ length: LH }, () => Array(w).fill('.'));
+function LB(w, h = 14) { // level builder
+  const g = Array.from({ length: h }, () => Array(w).fill('.'));
   const b = {
-    w, g,
-    put(x, y, ch) { if (x >= 0 && y >= 0 && x < w && y < LH) g[y][x] = ch; return b; },
+    w, h, g,
+    put(x, y, ch) { if (x >= 0 && y >= 0 && x < w && y < h) g[y][x] = ch; return b; },
     fill(x0, x1, y0, y1, ch) { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) b.put(x, y, ch); return b; },
-    ground(x0, x1, top = 12) { return b.fill(x0, x1, top, LH - 1, '#'); },
+    ground(x0, x1, top = 12) { return b.fill(x0, x1, top, h - 1, '#'); },
     plat(x0, x1, y) { return b.fill(x0, x1, y, y, '='); },
     col(x, y0, y1, ch = '#') { return b.fill(x, x, y0, y1, ch); },
   };
@@ -65,9 +65,11 @@ function LB(w) { // level builder
 }
 function loadLevel(stage) {
   STG = stage; const L = stage.build();
+  if (stage.boss && BOSSES[stage.boss] && BOSSES[stage.boss].arena) arenaize(L, stage); // a boss room at the end of the level
+  LH = L.g.length;
   TILES = themeTiles(THEMES[stage.theme].P); TP = THEMES[stage.theme].P;
   LV = { w: L.w, g: L.g.map(r => r.slice()), revealed: {}, theme: THEMES[stage.theme] };
-  ENTS = []; SHOTS = []; FX = []; PULSE = null;
+  ENTS = []; SHOTS = []; FX = []; PULSE = null; ARENA = null; BOSS = null; RISE = null;
   for (let y = 0; y < LH; y++) for (let x = 0; x < LV.w; x++) {
     const c = LV.g[y][x], wx = x * TS, wy = y * TS;
     const E = { J: 'juice', F: 'photo', H: 'heart' }[c];
@@ -78,10 +80,12 @@ function loadLevel(stage) {
     if (c === '@') { PL.cx = wx; PL.cy = wy + 8; LV.g[y][x] = '.'; }
     if (c === 'k') { ENTS.push({ kind: 'machine', x: wx, y: wy - 8, w: 16, h: 24, cool: 60 + rnd(60), stun: 0, freeze: 0 }); LV.g[y][x] = '.'; }
     if (c === 'l') { ENTS.push({ kind: 'spot', x: wx, y: 0, base: wx + 8, ph: x * .7, stun: 0, freeze: 0, w: 0, h: 0 }); LV.g[y][x] = '.'; }
+    const X = MORE_FOES[c]; if (X) { ENTS.push(X(wx, wy, stage)); LV.g[y][x] = '.'; }
   }
   for (const n of stage.npcs || []) ENTS.push(Object.assign({ kind: 'npc', w: 16, h: 32 }, n, { x: n.x * TS, y: n.y * TS - 16 }));
   ENTS = ENTS.filter(e => !(e.kind === 'photo' && SAVE.photos.includes(e.id)));
   CHASE = stage.chase ? { x: 0, v: stage.chase } : null; SIGNT = 0;
+  if (stage.rise) RISE = { y: 0, v: stage.rise };
   respawn();
 }
 const tileAt = (tx, ty) => (tx < 0 || tx >= LV.w) ? '#' : (ty < 0 ? '.' : ty >= LH ? '.' : LV.g[ty][tx]);
@@ -98,10 +102,10 @@ function boxHits(x, y, w, h, fn) { for (let ty = Math.floor(y / TS); ty <= Math.
 const A = () => ASPECT[PL.asp];
 // stages come in two sections: 1 / 11 are 1-1 / 1-2, ... 99 is the secret one
 const world = id => id > 10 && id < 99 ? (id / 10 | 0) : id;
-const secName = id => id === 99 ? '?-?' : world(id) + '-' + (id > 10 ? 2 : 1);
+let secName = id => id === 99 ? '?-?' : world(id) + '-' + (id > 10 ? 2 : 1);
 
 // ---------- player ----------
-function respawn() { PL.x = PL.cx; PL.y = PL.cy - A().h + 8; PL.vx = PL.vy = 0; PL.hurt = 60; camX = clamp(PL.x - W / 2, 0, LV.w * TS - W); if (CHASE) CHASE.x = PL.cx - 200; }
+function respawn() { PL.x = PL.cx; PL.y = PL.cy - A().h + 8; PL.vx = PL.vy = 0; PL.hurt = 60; PL.helped = 0; camX = clamp(PL.x - W / 2, 0, LV.w * TS - W); camY = clamp(PL.y - H / 2, 0, LH * TS - H); if (CHASE) CHASE.x = PL.cx - 200; if (RISE) RISE.y = PL.cy + 200; }
 function hurt(why) {
   if (PL.hurt > 0 || PERMA) return;
   PL.dig--; PL.hurt = 90; PL.vy = -3.5; PL.vx = -PL.face * 2.5; PL.pot = Math.min(100, PL.pot + 8);
@@ -109,7 +113,7 @@ function hurt(why) {
   FX.push({ t: 50, x: PL.x, y: PL.y - 10, s: why || 'HEY!' });
   if (PL.dig <= 0) run(async () => {
     await say(pick(['The adults took over.', 'They handled him. That\'s what adults call it.', 'Too many grown-ups.']));
-    PL.dig = 3; respawn();
+    PL.dig = SAVE.hard ? 1 : 3; respawn();
   });
 }
 function moveX(dx) {
@@ -178,7 +182,7 @@ function platUpdate() {
   const a = A();
   if (SHAKE_T > 0 && --SHAKE_T === 0) post.shake = 0;
   if (!busy) {
-    PL.pot = Math.min(100, PL.pot + (PERMA || STG.forceLegacy ? 0 : .028));
+    PL.pot = Math.min(100, PL.pot + (PERMA || STG.forceLegacy ? 0 : SAVE.hard ? .056 : .028));
     if (PL.pot >= 100 && !PERMA && !STG.forceLegacy) run(accident);
   }
   const legacyTarget = PERMA || STG.forceLegacy || PL.pot < 25 ? 1 : 0;
@@ -187,7 +191,7 @@ function platUpdate() {
   legacyNow = post.legacy > .5; LEGACY_AUDIO = legacyNow;
   if (legacyNow !== was && !PERMA) { if (legacyNow) sfx('powerdown'); else { sfx('power'); banner('HARDWARE: SUPER-16', 90); } if (legacyNow && boxHits(PL.x, PL.y, a.w, a.h, solidAt)) PL.y -= TS; }
   if (!busy) {
-    const dir = (held.right ? 1 : 0) - (held.left ? 1 : 0);
+    const dir = PL.helped > 0 ? 0 : (held.right ? 1 : 0) - (held.left ? 1 : 0);
     PL.act = PL.asp === 'wee' && held.a && PL.on ? PL.act + 1 : 0;
     if (PL.act) { PL.vx *= .6; if (PL.act === 1) sfx('crowd'); }
     else {
@@ -201,7 +205,7 @@ function platUpdate() {
       if (pressed.start) run(pauseMenu);
     }
   }
-  PL.jbuf = Math.max(0, PL.jbuf - 1); PL.ask = Math.max(0, PL.ask - 1); PL.hurt = Math.max(0, PL.hurt - 1);
+  PL.jbuf = Math.max(0, PL.jbuf - 1); PL.ask = Math.max(0, PL.ask - 1); PL.hurt = Math.max(0, PL.hurt - 1); if (PL.helped > 0) PL.helped--;
   // dialogs/menus freeze the player in place: no leftover momentum, gravity or hazards
   if (busy) { PL.vx = 0; PL.act = 0; }
   else {
@@ -220,16 +224,18 @@ function platUpdate() {
   for (const s of SHOTS) {
     s.x += s.vx; s.t--;
     if (boxHits(s.x, s.y, 6, 6, solidAt)) s.t = 0;
-    for (const e of ENTS) if ((e.kind === 'adult' || e.kind === 'drone') && !e.stun && s.t > 0 && s.x > e.x - 4 && s.x < e.x + e.w && s.y > e.y - 4 && s.y < e.y + e.h) { e.stun = 200; s.t = 0; sfx('stun'); FX.push({ t: 50, x: e.x - 8, y: e.y - 12, s: pick(['UH.', 'WELL...', 'I MEAN...', 'THAT\'S NOT--', 'GOOD QUESTION.']) }); }
+    if (s.t > 0 && BOSS && bossShot(s)) s.t = 0;
+    for (const e of ENTS) if ((e.kind === 'adult' || e.kind === 'drone' || e.stunnable) && !e.stun && s.t > 0 && s.x > e.x - 4 && s.x < e.x + e.w && s.y > e.y - 4 && s.y < e.y + e.h) { e.stun = 200; s.t = 0; sfx('stun'); FX.push({ t: 50, x: e.x - 8, y: e.y - 12, s: pick(['UH.', 'WELL...', 'I MEAN...', 'THAT\'S NOT--', 'GOOD QUESTION.']) }); }
   }
   SHOTS = SHOTS.filter(s => s.t > 0);
   // the inspect pulse (reveals hidden blocks, stuns the nearest adults)
   if (PULSE) {
     PULSE.r += 4;
-    for (let ty = 0; ty < LH; ty++) for (let tx = 0; tx < LV.w; tx++) if (tileAt(tx, ty) === '?' && !LV.revealed[tx + ',' + ty] && Math.hypot(tx * TS + 8 - PULSE.x, ty * TS + 8 - PULSE.y) < PULSE.r) {
+    for (let ty = Math.max(0, Math.floor((PULSE.y - 120) / TS)); ty < Math.min(LH, Math.ceil((PULSE.y + 120) / TS)); ty++) for (let tx = 0; tx < LV.w; tx++) if (tileAt(tx, ty) === '?' && !LV.revealed[tx + ',' + ty] && Math.hypot(tx * TS + 8 - PULSE.x, ty * TS + 8 - PULSE.y) < PULSE.r) {
       if (!boxHits(PL.x, PL.y, a.w, a.h, (x, y) => x === tx && y === ty)) { LV.revealed[tx + ',' + ty] = 1; sfx('ok'); FX.push({ t: 40, x: tx * TS - 8, y: ty * TS - 10, s: 'CLUE!' }); }
     }
-    for (const e of ENTS) if ((e.kind === 'adult' || e.kind === 'drone') && Math.hypot(e.x + 7 - PULSE.x, e.y + 20 - PULSE.y) < Math.min(PULSE.r, 60)) e.stun = Math.max(e.stun, 90);
+    for (const e of ENTS) if ((e.kind === 'adult' || e.kind === 'drone' || e.stunnable) && Math.hypot(e.x + 7 - PULSE.x, e.y + 20 - PULSE.y) < Math.min(PULSE.r, 60)) e.stun = Math.max(e.stun, 90);
+    if (BOSS && !PULSE.bossed && Math.hypot(BOSS.x - PULSE.x, BOSS.y - PULSE.y) < PULSE.r + 30) { PULSE.bossed = 1; bossInspect(); }
     if (PULSE.r > 110) PULSE = null;
   }
   // entities
@@ -253,18 +259,24 @@ function platUpdate() {
     if ((e.kind === 'juice' || e.kind === 'photo' || e.kind === 'heart') && !e.got && PL.x < e.x + e.w && PL.x + a.w > e.x && PL.y < e.y + e.h && PL.y + a.h > e.y) {
       e.got = 1;
       if (e.kind === 'juice') { PL.pot = Math.min(99, PL.pot + 25); sfx('ok'); FX.push({ t: 40, x: e.x - 10, y: e.y - 8, s: '+25% POTENTIAL' }); }
-      if (e.kind === 'heart') { PL.dig = Math.min(3, PL.dig + 1); sfx('ok'); }
+      if (e.kind === 'heart') { PL.dig = Math.min(SAVE.hard ? 1 : 3, PL.dig + 1); sfx('ok'); }
       if (e.kind === 'photo') { SAVE.photos.push(e.id); savePK(); sfx('get'); run(() => photoFound(SAVE.photos.length)); }
     }
   }
+  for (const e of ENTS) if (e.upd) e.upd(e, a);
+  if (BOSS) bossUpdate(a);
   ENTS = ENTS.filter(e => !e.got);
   for (const f of FX) f.t--; FX = FX.filter(f => f.t > 0);
   gimmicks(a);
   if (STG.tick) STG.tick();
   // camera
-  const tx = PL.x + a.w / 2 - W / 2 + PL.face * 24;
-  camX += (clamp(tx, 0, LV.w * TS - W) - camX) * .12;
+  const tx = ARENA ? ARENA.x0 : PL.x + a.w / 2 - W / 2 + PL.face * 24;
+  camX += (clamp(tx, 0, LV.w * TS - W) - camX) * (ARENA ? .08 : .12);
   camX = clamp(camX, 0, LV.w * TS - W);
+  const ty = PL.y + a.h / 2 - H / 2 - 8;
+  camY += (clamp(ty, 0, LH * TS - H) - camY) * .14; camY = clamp(camY, 0, LH * TS - H);
+  if (ARENA) PL.x = clamp(PL.x, ARENA.x0 + 2, ARENA.x0 + W - a.w - 2);
+  if (STG.arenaAt && !LV.bossStarted && !busy && PL.x > STG.arenaAt * TS && BOSSES[STG.boss]) run(startBoss);
 }
 async function accident() {
   PL.pot = 0; PL.dig = Math.max(1, PL.dig - 1);
@@ -272,6 +284,7 @@ async function accident() {
   await say(pick(['...Oh no.', '...I told you I had to go. I told everybody.', '...']), A().name);
   await say(pick(['THE GENERATOR LOST ALL POTENTIAL. SOMEWHERE, AN ADULT IS VERY UPSET ABOUT THE GRAPHICS.', 'POTENTIAL: 0%. THE UPGRADE IS OVER UNTIL HE NEEDS TO GO AGAIN.']));
   if (STG.onAccident) await STG.onAccident();
+  if (SAVE.hard) { await say('HOLD IT MODE: BACK TO THE LAST BATHROOM.'); respawn(); }
 }
 
 // ---------- render ----------
@@ -285,7 +298,7 @@ function drawFar(th, par, col, kind, seed, base) {
   }
 }
 function drawTileAt(c, tx, ty) {
-  const x = tx * TS - Math.round(camX), y = ty * TS;
+  const x = tx * TS - Math.round(camX), y = ty * TS - Math.round(camY);
   if (c === '.' || x < -16 || x > W) return;
   if (c === 'L') { if (post.legacy > .3) draw(TILES.L, x, y, LEGPAL); else if (frame % 40 < 20) frameRect(x + 4, y + 4, 8, 8, TP[3]); return; }
   if (c === 'M') { if (!legacyNow) draw(TILES.M[(frame >> 2) % 3], x, y, TP); return; }
@@ -308,11 +321,14 @@ function platDraw() {
   drawFar(th, .2, hex(th.far), th.farKind, 11, 150);
   drawFar(th, .5, hex(th.mid), th.farKind === 'lockers' ? 'lockers' : th.farKind, 57, 190);
   const x0 = Math.floor(camX / TS);
-  for (let ty = 0; ty < LH; ty++) for (let tx = x0; tx <= x0 + 21; tx++) drawTileAt(tileAt(tx, ty), tx, ty);
+  const y0 = Math.floor(camY / TS);
+  for (let ty = y0; ty <= Math.min(LH - 1, y0 + 14); ty++) for (let tx = x0; tx <= x0 + 21; tx++) drawTileAt(tileAt(tx, ty), tx, ty);
+  if (RISE) drawRise();
   // entities
   for (const e of ENTS) {
-    const x = Math.round(e.x - camX), y = Math.round(e.y);
-    if (x < -40 || x > W + 40) continue;
+    const x = Math.round(e.x - camX), y = Math.round(e.y - camY);
+    if (x < -40 || x > W + 40 || y < -60 || y > H + 40) continue;
+    if (e.draw2) { e.draw2(e, x, y); continue; }
     if (e.kind === 'adult') { draw(ADULT[e.sk][e.stun || e.freeze ? 0 : (e.anim | 0) & 1], x - 5, y - 4, ADULTPAL[e.sk], e.dir < 0); if (e.stun) text('?', x + 4, y - 12 + Math.round(Math.sin(frame * .2) * 2), hex('#f8f800')); if (e.freeze) text('!', x + 4, y - 12, hex('#f8f8f8')); }
     else if (e.kind === 'drone') { rectF(x, y, 16, 8, hex('#303040')); rectF(x + 5, y + 2, 6, 4, hex('#f82020')); rectF(x - 2, y - 2, 20, 2, hex('#808090')); if (e.stun) text('?', x + 4, y - 10, hex('#f8f800')); }
     else if (e.kind === 'juice') { const b = Math.round(Math.sin(frame * .1 + e.x) * 2); rectF(x + 2, y + b, 8, 12, hex('#f8a020')); rectF(x + 2, y + b, 8, 3, hex('#f8f8f8')); rectF(x + 7, y - 3 + b, 1, 4, hex('#f8f8f8')); frameRect(x + 1, y - 1 + b, 10, 14, BLACK); }
@@ -324,20 +340,24 @@ function platDraw() {
     }
   }
   // player
-  const a = A(), K = KID[PL.asp], px = Math.round(PL.x - camX) - (24 - a.w) / 2, py = Math.round(PL.y) - (K.stand.h - a.h) + 1;
+  if (BOSS) bossDraw();
+  const a = A(), K = KID[PL.asp], px = Math.round(PL.x - camX) - (24 - a.w) / 2, py = Math.round(PL.y - camY) - (K.stand.h - a.h) + 1;
   let S = K.stand;
   if (PL.act) S = K.act[(frame >> 3) & 1]; else if (PL.ask > 12) S = K.ask; else if (!PL.on) S = K.jump; else if (Math.abs(PL.vx) > .3) S = K.run[(PL.anim | 0) & 3];
   if (!(PL.hurt && (frame >> 2) & 1)) draw(S, px, py, KIDPAL[PL.asp], PL.face < 0);
+  if (PL.helped > 0 && (frame >> 3) & 1) text('HELPED', px - 4, py - 12, hex('#dbb6ff'));
   if (PL.act) { for (let i = 0; i < 3; i++) text(pick(['*', '+', '!']), px + 4 + Math.round(Math.sin(frame * .1 + i * 2) * 20), py - 10 - i * 6, hex('#f8e040')); }
-  for (const s of SHOTS) { const x = Math.round(s.x - camX); const w = s.s.length * 6 + 6; rectF(x - 2, s.y - 2, w, 11, WHITE); frameRect(x - 3, s.y - 3, w + 2, 13, BLACK); text(s.s, x + 1, s.y, BLACK, 0); }
+  for (const s of SHOTS) { const x = Math.round(s.x - camX), sy = Math.round(s.y - camY); const w = s.s.length * 6 + 6; rectF(x - 2, sy - 2, w, 11, WHITE); frameRect(x - 3, sy - 3, w + 2, 13, BLACK); text(s.s, x + 1, sy, BLACK, 0); }
   // UP prompt over his head when there's something to do here
-  if (!busy && PL.on && scene === platScene) { const t = nearThing(); if (t) { const lab = t === 'T' ? 'BATHROOM' : t === 'D' ? 'EXIT' : 'TALK', w = lab.length * 6 + 16, bx = Math.round(PL.x - camX + a.w / 2 - w / 2), by = Math.round(PL.y) - 22 + ((frame >> 4) & 1);
+  if (!busy && PL.on && scene === platScene) { const t = nearThing(); if (t) { const lab = t === 'T' ? 'BATHROOM' : t === 'D' ? 'EXIT' : 'TALK', w = lab.length * 6 + 16, bx = Math.round(PL.x - camX + a.w / 2 - w / 2), by = Math.round(PL.y - camY) - 22 + ((frame >> 4) & 1);
     rectF(bx, by, w, 12, BLACK); frameRect(bx, by, w, 12, UI.name); arrowGlyph('up', bx + 3, by + 2, UI.name); text(lab, bx + 14, by + 3, WHITE, 0); } }
-  if (PULSE) for (let a2 = 0; a2 < 64; a2++) pset(PULSE.x - camX + Math.cos(a2 / 64 * 6.28) * PULSE.r, PULSE.y + Math.sin(a2 / 64 * 6.28) * PULSE.r * .6, hex('#f8e040'));
-  for (const f of FX) { if (f.spark) pset(f.x - camX, f.y - (20 - f.t), hex('#f8f8a0')); else text(f.s, Math.round(f.x - camX), Math.round(f.y - (50 - f.t) * .3), hex('#f8f8f8')); }
+  if (PULSE) for (let a2 = 0; a2 < 64; a2++) pset(PULSE.x - camX + Math.cos(a2 / 64 * 6.28) * PULSE.r, PULSE.y - camY + Math.sin(a2 / 64 * 6.28) * PULSE.r * .6, hex('#f8e040'));
+  for (const f of FX) { if (f.spark) pset(f.x - camX, f.y - camY - (20 - f.t), hex('#f8f8a0')); else text(f.s, Math.round(f.x - camX), Math.round(f.y - camY - (50 - f.t) * .3), hex('#f8f8f8')); }
   drawGimmicks();
   if (STG.draw) STG.draw();
   hud();
+  if (BOSS) bossBar();
+  if (SAVE.ta) taHud();
 }
 function hud() {
   panel(0, 0, W, 22);
@@ -360,11 +380,15 @@ let CHASE = null, SIGNT = 0;
 const CAUGHT = ['THE GENERATOR GOT HIM BACK. FOR A SECOND.', 'IT PULLED HIM IN. IT LET HIM GO. IT LIKES TO DO THAT.', 'Nope. Nope nope nope.'];
 function gimmicks(a) {
   const px = PL.x + a.w / 2, touch = e => PL.x < e.x + e.w && PL.x + a.w > e.x && PL.y < e.y + e.h && PL.y + a.h > e.y;
+  if (RISE && !busy) {
+    RISE.y = Math.min(RISE.y - (legacyNow ? RISE.v * .35 : RISE.v), PL.y + 260);
+    if (PL.y + a.h > RISE.y + 4) run(async () => { sfx('glitch'); post.flash = .6; await wait(5); post.flash = 0; await say(pick(STG.riseLines || CAUGHT)); PL.dig = Math.max(1, PL.dig - 1); respawn(); });
+  }
   if (CHASE && !busy) {
     CHASE.x = Math.max(CHASE.x + (legacyNow ? CHASE.v * .35 : CHASE.v), PL.x - 280);
     if (PL.x < CHASE.x + 6) run(async () => { sfx('glitch'); post.flash = .7; await wait(5); post.flash = 0; await say(pick(CAUGHT)); PL.dig = Math.max(1, PL.dig - 1); respawn(); });
   }
-  if (STG.signs && !busy && ++SIGNT >= STG.signs) { SIGNT = 0; const hi = rnd(2), top = STG.roof * TS; ENTS.push({ kind: 'sign', hi, x: camX + W + 10, y: hi ? top - 62 : top - 18, w: 34, h: hi ? 22 : 18 }); }
+  if (STG.signs && !busy && !ARENA && ++SIGNT >= STG.signs) { SIGNT = 0; const hi = rnd(2), top = STG.roof * TS; ENTS.push({ kind: 'sign', hi, x: camX + W + 10, y: hi ? top - 62 : top - 18, w: 34, h: hi ? 22 : 18 }); }
   for (const e of ENTS) {
     if (e.kind === 'sign' && !busy) { e.x -= legacyNow ? 1.2 : 3.2; if (e.x < camX - 60) e.got = 1; if (!legacyNow && touch(e)) hurt('ROAD SIGN!'); }
     if (e.kind === 'machine') {
@@ -384,6 +408,7 @@ function gimmicks(a) {
   if (ENTS.some(e => e.got)) ENTS = ENTS.filter(e => !e.got);
 }
 function drawGimmicks() {
+  const oy = Math.round(camY);
   for (const e of ENTS) {
     const x = Math.round(e.x - camX);
     if (e.kind === 'spot' && !legacyNow && !e.stun) {
@@ -391,12 +416,20 @@ function drawGimmicks() {
       for (let y = 22; y < floor; y++) { const hw = 4 + (y / floor) * 14, cx = Math.round(e.bx - camX); for (let xx = Math.max(0, cx - hw | 0); xx < Math.min(W, cx + hw); xx++) FB[y * W + xx] = mix(FB[y * W + xx], hex('#f8f0a0'), .3); }
     }
     if (x < -40 || x > W + 40) continue;
-    if (e.kind === 'machine') { rectF(x, e.y, 16, 24, hex('#504860')); rectF(x + 2, e.y + 2, 12, 8, e.stun || e.freeze ? hex('#303030') : hex('#f83030')); rectF(x + 4, e.y + 12, 8, 8, hex('#202028')); frameRect(x, e.y, 16, 24, BLACK); if (e.stun) text('?', x + 5, e.y - 10, hex('#f8f800')); }
-    if (e.kind === 'ball') { rectF(x, e.y + 1, 8, 6, hex('#e83828')); rectF(x + 1, e.y, 6, 8, hex('#e83828')); rectF(x + 2, e.y + 1, 2, 2, hex('#f8a080')); }
-    if (e.kind === 'sign') { rectF(x + 15, e.hi ? e.y + 22 : e.y + 12, 4, e.hi ? 40 : 6, hex('#808890')); rectF(x, e.y, 34, e.hi ? 22 : 12, hex('#207838')); frameRect(x, e.y, 34, e.hi ? 22 : 12, WHITE); text(e.hi ? 'EXIT' : 'SLOW', x + 5, e.y + (e.hi ? 8 : 3), WHITE, 0); }
+    if (e.kind === 'machine') { const y = e.y - oy; rectF(x, y, 16, 24, hex('#504860')); rectF(x + 2, y + 2, 12, 8, e.stun || e.freeze ? hex('#303030') : hex('#f83030')); rectF(x + 4, y + 12, 8, 8, hex('#202028')); frameRect(x, y, 16, 24, BLACK); if (e.stun) text('?', x + 5, y - 10, hex('#f8f800')); }
+    if (e.kind === 'ball') { const y = e.y - oy; rectF(x, y + 1, 8, 6, hex('#e83828')); rectF(x + 1, y, 6, 8, hex('#e83828')); rectF(x + 2, y + 1, 2, 2, hex('#f8a080')); }
+    if (e.kind === 'sign') { const y = e.y - oy; rectF(x + 15, e.hi ? y + 22 : y + 12, 4, e.hi ? 40 : 6, hex('#808890')); rectF(x, y, 34, e.hi ? 22 : 12, hex('#207838')); frameRect(x, y, 34, e.hi ? 22 : 12, WHITE); text(e.hi ? 'EXIT' : 'SLOW', x + 5, y + (e.hi ? 8 : 3), WHITE, 0); }
   }
   if (CHASE) {
     const cx = CHASE.x - camX;
     if (cx > -30) for (let y = 22; y < H; y++) { const w = cx + Math.sin(y * .12 + frame * .25) * 6 + Math.sin(y * .05 - frame * .1) * 4; if (w > 0) { rectF(0, y, w, 1, mix(hex('#f83890'), hex('#38d8f8'), (Math.sin(y * .07 + frame * .15) + 1) / 2)); rectF(w - 2, y, 2, 1, WHITE); } }
   }
+}
+
+let RISE = null, ARENA = null, BOSS = null;
+function drawRise() {
+  const top = Math.round(RISE.y - camY); if (top > H) return;
+  const [c1, c2] = STG.riseCol || ['#30d8f8', '#2050a0'];
+  for (let y = Math.max(22, top - 6); y < H; y++) { const wv = Math.sin(y * .1 + frame * .2) * 3, edge = top + Math.sin(frame * .1) * 2 + wv; if (y < edge) continue; rectF(0, y, W, 1, mix(hex(c1), hex(c2), clamp((y - edge) / 60, 0, 1))); }
+  for (let x = 0; x < W; x += 4) pset(x, top + Math.round(Math.sin(x * .1 + frame * .2) * 2), WHITE);
 }

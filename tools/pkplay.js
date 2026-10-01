@@ -7,8 +7,10 @@ const ctx = { document: { getElementById: el, documentElement: {} }, addEventLis
   localStorage: { getItem: k => k in LS ? LS[k] : null, setItem: (k, v) => LS[k] = v, removeItem: k => delete LS[k] }, console, Math, setInterval() {}, setTimeout, setImmediate, Date, Promise, JSON, Object };
 ctx.window = ctx; vm.createContext(ctx);
 const R = s => vm.runInContext(s, ctx);
-for (const f of ['../g2/engine2', '../g2/fm', 'pkart', 'pkplat', 'pkstages', 'pkstory', 'pkmain'])
+for (const f of ['../g2/engine2', '../g2/fm', 'pkart', 'pkplat', 'pkstages', 'pkstory', 'pkmore', 'pkmain'])
   R(fs.readFileSync(f + '.js', 'utf8').replace(/\nfit\(\); requestAnimationFrame\(loop\); run\(boot\);\s*$/, '\n'));
+R('globalThis.PK_START = ' + JSON.stringify(process.env.START || '') + '; globalThis.PK_TRACE = ' + (+process.env.TRACE || 0) + ';');
 R(fs.readFileSync(__dirname + '/pkbotbody.js', 'utf8'));
 const start = +(process.argv[2] || 1), max = +(process.argv[3] || 60000);
+if (process.env.PRE) R(process.env.PRE);
 R(`BOT.start(${start}, ${max}, ${JSON.stringify(process.env.WANT || '')})`).then(r => console.log(r), e => console.log('ERR', e));

@@ -47,7 +47,7 @@ The story source is `PEE_WEE_KID_AND_COMPANY.md`. The reference art is `peekid.p
 
 **The user supplies reference images for new characters, so check the repo root before designing any sprites.**
 
-Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, `pkmain`.
+Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, `pkmore`, `pkmain`.
 
 - **`pkart.js`**: kid sprites and portraits (`KIDPAL`, `kidSprite`, `kidPortrait`, `WEE_SHOCK`), the adult sprites, and the Gen-1 characters as 4-shade `LEGACY` relics.
 - **`pkplat.js`**: the platformer.
@@ -70,6 +70,12 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
   - Stage 4: Takahashi (chat types, text-to-speech says it, then a d20 action roll), and a suspect who moves only when you look away.
   - Stage 5: the finale with two endings.
   - Also: the Presentation rhythm game, 16 photos (`PHOTOS` and `photoText(id)`), the secret stage, and the "Biscuit" dog ending.
+- **`pkmore.js`** (second content pass, layered on top of the earlier files):
+  - **More enemies** (map chars via `MORE_FOES`): `g` thrower, `f` charger (forklift, luggage, AV cart…), `w` whistler (ground waves), `d` dog, `y` Yokoid prototype ("MAY I HELP YOU?" holds you still for a moment; ground only), `z` bouncing spark. `addTo(id, list)` drops them into existing sections.
+  - **Bosses** (`BOSSES`, non-violent; you win by asking, performing or inspecting): `loader` (11), `tourbus` (21), `bag` (31, Miss Nose's bag), `figure` (41, a chase where inspecting gathers evidence and the figure always escapes), `gen` (51, three phases, one per kid). `arenaize` appends a locked arena to a section, and the arena is a checkpoint.
+  - **Climbing sections** (levels taller than 14 rows; `LH` and `camY`), each with a rising hazard (`stage.rise`): 12 THE SHAFT, 32 THE STAIRWELL, 52 THE TOWER (vent, then wee-only ledges, then hidden steps for Pee Boy).
+  - **Post-game** (after a clear): TIME ATTACK (per-section best times in `PKM.ta`), and HOLD IT MODE (`SAVE.hard`: potential rises twice as fast, one heart, an accident sends you back to the last bathroom, and a HELD IT badge on the title).
+  - **Foreshadowing for FACE and YOKO**: an IMPROVEMENT LOG terminal in 1-1, a lavender figure on a bus-stage billboard, Yokoid prototypes in stage 5, and the "COMING SOON: FACE" ad after the credits.
 - **`pkmain.js`**: boot (chrome logo and a spoken "Pretend co!"), a screen that "imports" Gen-1 save data, the title screen, stage select, the secret-stage unlock, pause and photo album, credits, and every FM track.
 
 **Endings**
@@ -301,7 +307,10 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
 - Spooky Ghost late episodes: `BOT=bot_ghost3.js node tools/play.js ghost "$(node tools/ghostseed.js 3)"` (use 5 for episode 5). The final "all 15 cue cards" check fails with a seeded save, which is expected. The Ghost bot sometimes stalls in haunting when a guest is unreachable. That's bot pathing, not a game bug.
 - Gen-1 bot: `node tools/play.js carl|linda|ghost|tp` plays the whole game headless with button inputs, using `botlib.js` and `bot_<game>.js`.
 - PEE KID³ bot: `node tools/pkplay.js <startStageId> <maxFrames>`.
-  - Set `WANT=GO` to take the GO ending.
+  - Set `WANT=GO` to take the GO ending, and `WANT=,hard` to pick HOLD IT MODE on the title. `PRE="<js>"` runs code before the start (for example `PRE="PKM.cleared=1"`).
+  - `START=x:y:asp` places the kid at a tile after the stage starts, and `TRACE=1` logs position and input every 4 frames.
+  - Climbing sections use a BFS route planner (`climbAI`). It is slow but gets there; The Tower takes around 17k frames for the bot.
+  - `node tools/pkgrid.js <stageId> [fromRow] [toRow]` prints a level's tile grid. `node tools/pkview.js <stageId> <tileX> <tileY|-> <frames> [asp]` saves screenshots (a dummy kid, good for looking at bosses).
   - It prints dialog, "stuck at…" lines and CREDITS. A full run is about 55k frames and takes about 10 minutes of real time.
   - The AI is in `pkbotbody.js`. It uses `DBG.mode` hooks for the minigames: `standup`, `qte`, `kbd`, `rhythm`.
 - `node tools/freezecheck.js` checks that the player can't move, fall or get hurt while a dialog is open. This was a real bug.

@@ -5,7 +5,7 @@ const el = () => ({ style: {}, getContext: () => ({ createImageData: (w, h) => (
 const ctx = { document: { getElementById: el, documentElement: {} }, addEventListener() {}, innerWidth: 800, innerHeight: 720, requestAnimationFrame() {}, navigator: {},
   localStorage: { getItem: () => null, setItem() {} }, console, Math, setInterval() {}, setTimeout, setImmediate, Date, Promise, JSON, Object };
 ctx.window = ctx; vm.createContext(ctx);
-for (const f of ['../g2/engine2', '../g2/fm', 'pkart', 'pkplat', 'pkstages', 'pkstory', 'pkmain'])
+for (const f of ['../g2/engine2', '../g2/fm', 'pkart', 'pkplat', 'pkstages', 'pkstory', 'pkmore', 'pkmain'])
   vm.runInContext(fs.readFileSync(f + '.js', 'utf8').replace(/\nfit\(\); requestAnimationFrame\(loop\); run\(boot\);\s*$/, '\n'), ctx);
 const [n, tx, pot, out] = [+process.argv[2] || 1, +process.argv[3] || 5, +process.argv[4] || 50, process.argv[5] || 'shot.png'];
 vm.runInContext(`(async () => {

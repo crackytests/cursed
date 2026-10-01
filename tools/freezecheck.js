@@ -5,7 +5,7 @@ const el = () => ({ style: {}, getContext: () => ({ createImageData: (w, h) => (
 const ctx = { document: { getElementById: el, documentElement: {} }, addEventListener() {}, innerWidth: 800, innerHeight: 720, requestAnimationFrame() {}, navigator: {},
   localStorage: { getItem: () => null, setItem() {} }, console, Math, setInterval() {}, setTimeout, setImmediate, Date, Promise, JSON, Object };
 ctx.window = ctx; vm.createContext(ctx);
-for (const f of ['../g2/engine2', '../g2/fm', 'pkart', 'pkplat', 'pkstages', 'pkstory', 'pkmain'])
+for (const f of ['../g2/engine2', '../g2/fm', 'pkart', 'pkplat', 'pkstages', 'pkstory', 'pkmore', 'pkmain'])
   vm.runInContext(fs.readFileSync(f + '.js', 'utf8').replace(/\nfit\(\); requestAnimationFrame\(loop\); run\(boot\);\s*$/, '\n'), ctx);
 vm.runInContext(`(async () => {
   let T = 0; const step = async (n, keys = {}) => { for (let i = 0; i < n; i++) { for (const k of BTNS) kb[k] = keys[k] ? 1 : 0; T += 17; loop(T); for (let j = 0; j < 4; j++) await new Promise(r => setImmediate(r)); } };
