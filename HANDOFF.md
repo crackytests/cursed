@@ -184,7 +184,7 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
   - CARL 1's White Suits rebranded: the Head of Containment is now the **HEAD OF CONTENT**.
   - With FOCUS GROUP and LEGAL he makes up the Sequel Committee, and their product is **HU-MAN**: a focus-tested "normal human" Carl.
   - Every line HU-MAN says is one of the character bible's "Too generic" examples (`QUIPS` in `c2argue.js`).
-- **Script load order**: `engine2`, `fm`, `../pk/pkart`, `../g2/cast`, `../face/faceart`, `../yoko/yart`, `c2art`, `c2tiles`, `c2bong`, `c2world`, `c2argue`, `c2road`, `c2dance`, `c2maps`, `c2maps2`, `c2story`, `c2story2`, `c2main`.
+- **Script load order**: `engine2`, `fm`, `../pk/pkart`, `../g2/cast`, `../face/faceart`, `../yoko/yart`, `c2art`, `c2tiles`, `c2bong`, `c2world`, `c2argue`, `c2road`, `c2dance`, `c2maps`, `c2maps2`, `c2story`, `c2story2`, `c2more`, `c2main`.
 - **`c2art.js`**: Carl's top-down sprite (`carlSprite(dir, f, throwing, P)`), HU-MAN, a generic `person()` builder (`PEOPLE`), companions (Garfield, Bruce the shark, Ghost), enemies, bosses, items, and new portraits. `carlPortrait(mood)` has moods `n w a s h`, plus `shades` and `jaw`, which HUMAN% forces (`carlMood`).
 - **`c2tiles.js`**:
   - 14 themed 16×16 tilesets, built on first use by `tileset(name)`.
@@ -203,7 +203,7 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
     - Each loss in an arena bumps `C2.nerf[flag]`; on the retry `focusNerf` cuts the boss's HP 15% per loss (up to 45%) with a FOCUS GROUP banner.
     - Spawns that land in a wall are moved to open floor, anything overlapping a wall may walk out of it, and loot bounces off walls. Keep boss minions away from shelves and doorways anyway.
   - Player controls: A throws the equipped bong (holding A keeps your facing), B talks or rolls, tap C smokes (haze), hold C at a full meter to turn HU-MAN.
-  - Enemy AIs: `chase shoot roll hop orbit float`.
+  - Enemy AIs: `chase shoot roll hop orbit float`. An enemy can have a `draw(e)` instead of a sprite (bubbles, jet skis, gulls, weevils).
   - Companions: Garfield ACCUSEs (double damage) and Bruce CHOMPs.
   - HUD: COOL, LV, HUMAN%, the HU-MAN meter, bux, the equipped bong, and the Committee's objective marker.
   - `OBJ` and `routeTo()` are shared by the marker and the test bot. Routing goes through locked doors on purpose, so the story explains the lock when you arrive.
@@ -215,15 +215,21 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
 - **`c2road.js`**: one pseudo-3D road projector used for DESERT BUS TURBO (`desertBusTurbo`) and JUMP THE SHARK (`jumpTheShark`), plus the Space-Harrier renderer (`inSpace('waves'|'boss')`).
   - Road palettes use index 1 as the main color and 15 as the outline.
   - Gates and ramps are checked on every segment crossed, because fast skiers skip segments.
-- **`c2dance.js`**: THE BOOGALOO (`boogaloo()`), call and response on a 112 BPM beat clock. The bot reads `DANCE.want`.
-- **`c2maps.js` / `c2maps2.js`**: 17 maps.
+- **`c2dance.js`**: THE BOOGALOO (`boogaloo(o)`), call and response on a 112 BPM beat clock. `o.rounds` sets the length and `o.partner` (`{ name, title, spr, P }`) replaces HU-MAN, as the moon's Blanket Choir does. The bot reads `DANCE.want`.
+- **`c2maps.js` / `c2maps2.js` / `c2more.js`**: 24 maps.
   - The lot, the A.S.S. and the Mall of the Future: `ship lot mall emporium lostfound sequel`.
   - `desert diner lake`.
   - The backlot and the three crossover sets: `backlot setface setpk setyoko`.
   - `moon`.
   - The dark maps below: `facility below`.
   - The finale: `studio`.
+  - Added by the content pass (`c2more.js`): `marina boathouse` (episode 3), `moonhall reactor` (episode 5), `backstage segA segB` (episode 7).
 - **`c2story.js` / `c2story2.js`**: the seven episodes, 8 tapes, 5 deliveries (Dispatch's radio in the A.S.S.), the finale and the endings.
+  - **`c2more.js`** is the content pass. It is loaded after `c2story2.js` and adds maps, people (`PEOPLE` entries plus `bustPort()` portraits), drawn enemies, loot crates (`lootCrate()`), two tracks, and the story for the three expanded episodes:
+    - **Episode 3**: the Committee sends Carl to the marina for a JACKET (argue the Cool Guy), a RAMP (clear the Gull King out of the boathouse) and SKIS (jet-ski waves, then Chad the Lifeguard). `marinaObj()` points at whatever is left.
+    - **Episode 5**: Comrade Carl wants a shift first. The commune hall's work board lists three: the potato field (a weevil arena on the moon map), the Blanket Choir (a 3-round dance) and the reactor (three valves, a blast door, then THE FIVE-YEAR PLAN). `moonObj()` points at the next one.
+    - **Episode 7**: it starts BACKSTAGE (cast cameos in the wings, craft services, a save box). Segment A (cold-open waves and a Robo Mall Cop rerun) and Segment B (the season's enemies in four waves) must be cleared before the stage door opens. The studio's `studioEnter()` does HU-MAN's entrance.
+    - It replaces `lakeCommittee`, `startEp7` and `comradeTalk` (the last by wrapping it). Their old versions were deleted from `c2story2.js` so nothing depends on which declaration loads last.
   - `C(text, mood)` is Carl speaking. `CL(line, huLine)` swaps to the HU-MAN line at HUMAN% ≥ 70. `laugh()` is the laugh track, which goes silent in A VERY SPECIAL EPISODE.
 - **`c2main.js`**: boot (the publisher is YOKO LTD. if `yoko_meta.perma`), the BONG-FX card, the "released after the generation ended" card, the title, saves, the cold open (four-shade "PREVIOUSLY ON CARL"), and about 27 FM tracks.
   - New patches: `guitar`, `sax`, `surf`.
@@ -311,7 +317,7 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
 - `node tools/c2shot.js <map> <tx> <ty> [frames] [inputs] [prefix]`: screenshot a map. `EP=n` and `FLAGS=a,b` set the state first.
 - `node tools/c2set.js bus|ski|space|dance`: run one set piece headless with a simple driver. It prints the result.
 - `SETUP='js' UNTIL='js' PRINT='js' node tools/c2scene.js [maxFrames]`: run the bot from a set-up state instead of from boot (for example one boss fight). It prints where things ended up.
-- `node tools/c2unit.js`: about 30 branch tests. Each calls a story function directly in an odd state (deliveries, companion swap, shop, notes, every ending, continue in the studio, losing your cool) and checks the result. Run it after story changes; it takes a few minutes.
+- `node tools/c2unit.js`: about 50 branch tests. Each calls a story function directly in an odd state (deliveries, companion swap, shop, notes, every ending, continue in the studio, losing your cool) and checks the result. Run it after story changes; it takes a few minutes.
 - **Full playthrough**: `FAST=1 WANT="end=boogaloo|renewed|canceled|dream|belowbelow,tapes=1,comp=garf" node tools/c2play.js [maxFrames]`.
   - `FAST=1` skips rendering. It's about 3× faster, but frames are still slow in node: a full game is roughly 150k–250k frames, which is 30–60 minutes.
   - `META=none` hides the other games' saves; `YOKO=true|empire` fakes YOKO's endings.

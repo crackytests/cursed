@@ -194,7 +194,7 @@ var BOT = (() => {
     if (st.act === 'haze' && dT <= 4 && WD.haze <= 0 && PL.smokeCD <= 0 && F % 10 === 0) { press('c'); return; }
     if (st.act !== 'exit' && dT <= 1 && WD.M.signs) { // a sign next to the target (a jukebox, a door plaque): face it and read it
       const nb = [[0, -1], [0, 0], [-1, 0], [1, 0], [0, 1]].map(([dx, dy]) => [tx + dx, ty + dy]).find(([x, y]) => WD.M.signs[x + ',' + y]);
-      const entNear = WD.ents.some(q => q.talk && live(q) && Math.hypot(q.x - tx * 16 - 8, q.y - ty * 16 - 14) < 20);
+      const entNear = WD.ents.some(q => q.talk && live(q) && Math.hypot(q.x - tx * 16 - 8, q.y - ty * 16 - 14) < 20 + (q.reach || 0));
       if (nb && !entNear) {
         if (ptx !== tx || pty !== ty) { moveTo(tx * 16 + 8, ty * 16 + 12, 2); return; }
         const it = interactTarget(); if (it && it.sign) { if (F % 8 === 0) press('b'); return; }

@@ -364,7 +364,7 @@ MAPS2.below = { theme: 'lost', name: 'BELOW BELOW', music: () => WD.arena ? 'bos
   arena: { x: 8, y: 2, w: 24, h: 8, flag: 'hocDown', start: () => hocStart(), waves: [], done: () => hocDown() },
 };
 function drawPile(e) { const x = e.x - camX, y = e.y - camY; if (F2('pilesDown')) { for (let i = 0; i < 9; i++) rectF(x - 26 + (i * 11) % 48, y - 6 + ((i * 3) % 6), 10, 4, hex(['#926d49', '#db2424', '#2449b6', '#dbb624', '#b6b6b6'][i % 5])); return; } if (WD.haze > 0 && ((WD.t >> 2) & 1)) return; for (let i = 0; i < 9; i++) rectF(x - 16 + (i * 7) % 28, y - 20 + ((i * 5) % 14), 10, 8, hex(['#926d49', '#db2424', '#2449b6', '#dbb624', '#b6b6b6'][i % 5])); }
-MAPS2.studio = { theme: 'studio', name: 'STUDIO 219', music: () => WD.arena ? 'human' : 'boogaloo', noComp: 0, enter: () => studioResume(),
+MAPS2.studio = { theme: 'studio', name: 'STUDIO 219', music: () => WD.arena ? 'human' : 'boogaloo', noComp: 0, enter: () => studioEnter(),
   arena: { x: 1, y: 3, w: 24, h: 10, flag: 'huDown', if: () => F2('finaleOn'), start: () => finalePhase1(), waves: [], done: () => finalePhase2() },
   rows: rows(`
 ##########################

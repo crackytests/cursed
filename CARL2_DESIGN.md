@@ -130,6 +130,15 @@ Each episode opens on a sitcom title card and the Committee's NOTE. Between epis
    - The counter: "You just missed them. Again." If you're eligible, they left a claim ticket with his name on it.
 7. **SERIES FINALE — THE BOOGALOO.** HU-MAN in three phases: action, argument, dance. Then the Committee's final offer.
 
+## Content pass (after launch)
+
+Bot timing showed episodes 3, 5 and 7 were mostly one set piece and a scene (about a minute of play each at bot speed). Each got a hub with three things to do, built from the existing engine (`carl2/c2more.js`):
+
+- **Episode 3, Lake Mead Marina.** Jumping the shark now needs a JACKET, SKIS and a RAMP. Argue the Cool Guy at FONZ-O-RAMA (weak to DENIAL: not trying to be cool is the coolest move). Ask Old Salt at Bait, Tackle & Ramp, then clear the gulls and THE GULL KING (his crown is a French fry bent into a W) out of the boathouse. Win the skis on the far pier: jet-ski waves, then Chad the Lifeguard (whistle rings, life-ring nets, phase-2 dashes). Then the Committee, the jacket goes on, and the boat.
+- **Episode 5, the Commune.** Comrade Carl won't talk until you do a shift; fair is the whole idea. The hall's work board lists three: the potato field (space-weevil waves on the moon map), the Blanket Choir (a 3-round dance-off with the choir in HU-MAN's place) and the potato reactor (three valves open a blast door to THE FIVE-YEAR PLAN, a clipboard that has been running for twelve years). The hall has beet soup that restores composure.
+- **Episode 7, Backstage.** The finale starts in the wings. Craft services (two free pretzels, then the bong shop), a save box, and the whole cast watching: NEW FACE, PEE KID, YOKO (or the Empress), Spooky Ghost, CEO Linda in the booth, and whichever companion isn't with you. Segment A, THE COLD OPEN, replays the pilot fast, with waves and a Robo Mall Cop rerun. Segment B, THE MONTAGE, throws the whole season's enemies at you in four waves. Then the stage door opens and HU-MAN makes his entrance.
+- **Everywhere new:** loot crates with a bong in them (one per new map, rolled at a level or two above the episode), and two new tracks (`marina`, `backstage`).
+
 ## Endings
 
 | Ending | How | What happens |

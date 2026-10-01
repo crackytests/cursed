@@ -8,7 +8,7 @@ function makePhrase(r) { // positions in half-beats (0..7) inside the four-beat 
 }
 async function boogaloo(o = {}) {
   const fpb = 3600 / 112, pre = 4; // 4 beats of count-in
-  Object.assign(DANCE, { t: 0, fpb, meter: 50, round: -1, rounds: o.rounds || 8, done: 0, res: { perfect: 0, good: 0, miss: 0 }, streak: 0, poseC: null, poseH: null, feed: [], want: null, cur: null });
+  Object.assign(DANCE, { partner: o.partner || null, t: 0, fpb, meter: 50, round: -1, rounds: o.rounds || 8, done: 0, res: { perfect: 0, good: 0, miss: 0 }, streak: 0, poseC: null, poseH: null, feed: [], want: null, cur: null });
   DANCE.phrases = []; for (let r = 0; r < DANCE.rounds; r++) DANCE.phrases.push(makePhrase(r));
   DBG.mode = 'dance'; DBG.dance = DANCE;
   const pv = scene, pm = curName; music(null);
@@ -74,9 +74,9 @@ function drawDance() {
   const cy = 64 - bob(4) + (D.poseC && D.poseC.k === 'down' ? 8 : 0), hy = 48 - bob(3) + (D.poseH && D.poseH.k === 'down' ? 8 : 0);
   drawScaled(CS.carl.d[D.poseC ? 2 : (beat & 1)], 50, cy, C2 && C2.human >= 70 ? CP.human : CP.carl, 3.2, D.poseC && D.poseC.k === 'left');
   poseOverlay(50, cy, 3.2, D.poseC, hex('#242449'));
-  drawScaled(CS.human.d[D.poseH ? 2 : (beat & 1)], 200, hy, CP.human, 3, D.poseH && D.poseH.k === 'left');
+  const pt = D.partner; drawScaled(pt ? pt.spr[D.poseH ? 0 : (beat & 1)] : CS.human.d[D.poseH ? 2 : (beat & 1)], 200, hy, pt ? pt.P : CP.human, 3, D.poseH && D.poseH.k === 'left');
   poseOverlay(200 + 2, hy, 3, D.poseH, hex('#dbb692'));
-  text('CARL', 70, 52, hex('#6dff24')); text('HU-MAN', 226, 40, hex('#ffdb49'));
+  text('CARL', 70, 52, hex('#6dff24')); text(D.partner ? D.partner.name : 'HU-MAN', 226, 40, hex('#ffdb49'));
   // audience
   for (let i = 0; i < 22; i++) { const x = i * 15, h = 8 + ((i * 7) % 5) + (beat % 2 ? (i & 1) * 2 : 0); circF(x + 7, 214 - h, 6, hex('#101020')); rectF(x + 1, 214 - h + 4, 12, 20, hex('#101020')); }
   // the phrase track
@@ -91,7 +91,7 @@ function drawDance() {
   }
   if (D.count > 0) ctext(D.count <= 4 ? String(D.count) : '', 90, WHITE, BLACK, 4);
   // meter: a tug of war
-  rectA(0, 0, W, 16, BLACK, .7); text('THE BOOGALOO', 4, 4, hex('#ff49db')); text('ROUND ' + Math.max(1, D.round + 1) + '/' + D.rounds, 90, 4, WHITE);
+  rectA(0, 0, W, 16, BLACK, .7); text(D.partner && D.partner.title || 'THE BOOGALOO', 4, 4, hex('#ff49db')); text('ROUND ' + Math.max(1, D.round + 1) + '/' + D.rounds, 90, 4, WHITE);
   rectF(160, 5, 150, 6, hex('#ffdb49')); rectF(160, 5, 150 * D.meter / 100, 6, hex('#6dff24')); rectF(160 + 75, 3, 1, 10, WHITE);
   if (D.judge && D.judge.t > 0) { D.judge.t--; ctext(D.judge.s, 110, D.judge.s === 'PERFECT' ? hex('#ffffff') : D.judge.s === 'GOOD' ? hex('#6dff24') : hex('#ff4949'), BLACK, 2); }
   D.feed.slice(-3).forEach((f, i) => text((f.u + ': ' + f.m).toUpperCase().slice(0, 30), 4, 20 + i * 9, UI.dim));

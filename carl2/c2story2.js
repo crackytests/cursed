@@ -153,18 +153,6 @@ async function lakeEnter() {
   await committeeNote(3);
   setObj('Talk to the Committee on the beach', 'lake', 14, 10);
 }
-async function lakeCommittee() {
-  if (F2('jacket')) return say(pick(['The A.S.S. is at the end of the dock. It is a boat now.', 'Ratings are waiting, Carl.']), HOC);
-  await say('Carl. The parcel is across the lake. Dock 219. Also, ratings are down.', HOC);
-  await say('You\'re going to jump a shark.', HOC);
-  await C('A what.', 'w'); await C('A WHAT.', 'a');
-  await say('The A.S.S. has been reclassified as a boat. Boats are fine. You may ride behind it.', LG);
-  await say('Put this on.', HOC); sfx('get');
-  await say('CARL GOT: A LEATHER JACKET. IT\'S HOT. IT\'S A LAKE. IT\'S NINETY DEGREES.');
-  await C('Why do I need a jacket to jump a shark. Why do I need to jump a shark. Chat, is this a thing? Is this a thing shows do?', 'w');
-  if (C2.comp === 'garf') await say('It\'s a thing shows do. It\'s usually the end of them.', GF);
-  setF2('jacket'); setObj('Get on the A.S.S. (end of the dock)', 'lake', 17, 20);
-}
 async function boatTalk() {
   if (!F2('jacket')) return C('That\'s my ship. Why is it in the water. Why is it wearing a life vest. Who put a life vest on my ship.', 'a');
   const c = await ask('JUMP THE SHARK?', null, ['LET\'S DO THIS', 'NOT YET']); if (c !== 0) return;
@@ -553,19 +541,6 @@ async function lostFoundSpecial() {
 }
 
 // ================= EPISODE 7: SERIES FINALE =================
-async function startEp7() {
-  C2.ep = 7; saveC2();
-  await epCard(7, 'SERIES FINALE', 'Give them what they want.');
-  delete C2.flags.special;
-  scene = worldScene; loadMap('studio', 12, 12, 'u'); post.fade = 1; music(null); await fadeIn(.06);
-  laugh('[APPLAUSE]');
-  await say('LIVE, FROM STUDIO 219: THE SERIES FINALE OF CARL 2!', 'ANNOUNCER');
-  await C('It\'s a studio. There\'s an audience. There were never an audience. There was always an audience.', 'w');
-  await say('Ladies and gentlemen... HU-MAN!', 'ANNOUNCER');
-  await say('Nobody tells me what to do.', HU); laugh('[AUDIENCE CHEERS]');
-  await C('Everybody tells you what to do! That\'s your whole thing! You\'re a NOTE! You\'re a note with a CHIN!', 'a');
-  setF2('finaleOn');
-}
 async function finalePhase1() {
   music('human');
   bossEnt({ id: 'hu2', name: 'HU-MAN', x: 13 * 16, y: 5 * 16, hp: 220 + C2.lv * 10, spr: CS.human.d, scale: 1.4, P: CP.human, box: [22, 36], hitY: 20,
@@ -742,4 +717,3 @@ async function facelessTalk2() {
 }
 
 // continuing a save made in the finale's studio: start the show again
-async function studioResume() { if (C2.ep === 7 && !F2('huDown') && !F2('finaleOn')) { await say('LIVE, FROM STUDIO 219: THE SERIES FINALE. (AGAIN.)', 'ANNOUNCER'); setF2('finaleOn'); } }
