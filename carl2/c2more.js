@@ -235,7 +235,7 @@ async function choirTalk() {
   if (!F2('shiftAsked')) return say('We are the Blanket Choir. We sing the blanket song. You may listen. Listening is not a shift.', CHO);
   await say('The blanket song is a dance. Everything on this moon is a dance. Follow us.', CHO);
   await C('I can dance. I think I can dance. I\'ve never danced. I\'ve been in a lot of situations where I should have danced.', 'w');
-  const r = await boogaloo({ rounds: 3, partner: { name: 'THE CHOIR', title: 'THE BLANKET SONG', spr: CS.people.choir, P: CS.people.choir[0].P } });
+  const r = await boogaloo({ rounds: 3, partner: { name: 'THE CHOIR', title: 'BLANKET SONG', spr: CS.people.choir, P: CS.people.choir[0].P } });
   if (!r.win) return say('...That was a different song. Again. Songs are for everyone. Even the wrong one.', CHO);
   setF2('shiftChoir'); sfx('get'); C2.pretzels += 1;
   await say('Red, red, red! You\'re in the choir now. Here: a ration. It\'s a pretzel. Everything here is a pretzel.', CHO);

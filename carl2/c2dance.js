@@ -51,7 +51,7 @@ function judge(s, soft) {
   else { D.res.miss++; D.meter = Math.max(0, D.meter - (soft ? 1.5 : 3.5)); D.streak = 0; if (!soft) sfx('hurt'); }
   D.judge = { s, t: 26 };
   if (D.streak && D.streak % 6 === 0) { D.meter = Math.min(100, D.meter + 6); D.feed.push({ u: pick(CHATTERS2), m: 'CARL CARL CARL', t: 120 }); laugh('[THE AUDIENCE GOES WILD]'); }
-  if (s === 'MISS' && Math.random() < .4) D.feed.push({ u: pick(CHATTERS2), m: pick(['L', 'he\'s off beat', 'come on carl', 'HU-MAN is so smooth tho', 'smooth is boring']), t: 120 });
+  if (s === 'MISS' && Math.random() < .4) D.feed.push({ u: pick(CHATTERS2), m: pick(['L', 'he\'s off beat', 'come on carl', (DANCE.partner ? DANCE.partner.name.toLowerCase() : 'HU-MAN') + ' is so smooth tho', 'smooth is boring']), t: 120 });
 }
 function poseOverlay(x, y, sc, pose, arm, flip) { // arms drawn over a scaled sprite, by pose
   const k = pose && pose.k, c = arm, sx = x + 8 * sc, sy = y + 15 * sc, L = 7 * sc;
@@ -91,7 +91,7 @@ function drawDance() {
   }
   if (D.count > 0) ctext(D.count <= 4 ? String(D.count) : '', 90, WHITE, BLACK, 4);
   // meter: a tug of war
-  rectA(0, 0, W, 16, BLACK, .7); text(D.partner && D.partner.title || 'THE BOOGALOO', 4, 4, hex('#ff49db')); text('ROUND ' + Math.max(1, D.round + 1) + '/' + D.rounds, 90, 4, WHITE);
+  rectA(0, 0, W, 16, BLACK, .7); const ttl = D.partner && D.partner.title || 'THE BOOGALOO'; text(ttl, 4, 4, hex('#ff49db')); text('ROUND ' + Math.max(1, D.round + 1) + '/' + D.rounds, Math.max(90, 12 + ttl.length * 6), 4, WHITE);
   rectF(160, 5, 150, 6, hex('#ffdb49')); rectF(160, 5, 150 * D.meter / 100, 6, hex('#6dff24')); rectF(160 + 75, 3, 1, 10, WHITE);
   if (D.judge && D.judge.t > 0) { D.judge.t--; ctext(D.judge.s, 110, D.judge.s === 'PERFECT' ? hex('#ffffff') : D.judge.s === 'GOOD' ? hex('#6dff24') : hex('#ff4949'), BLACK, 2); }
   D.feed.slice(-3).forEach((f, i) => text((f.u + ': ' + f.m).toUpperCase().slice(0, 30), 4, 20 + i * 9, UI.dim));
