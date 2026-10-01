@@ -1,7 +1,7 @@
 // SAVE THE WORLD headless runner. node tools/swplay.js [maxFrames]
 // env: BOT=mash (default: the real bot in swbot.js), SHOTS=f1,f2 (png frames), SETUP='js' (runs after load), LOG=1
 const G2 = require('./g2vm'), path = require('path'), fs = require('fs');
-const files = require('./swvm').filter(f => fs.existsSync(path.join(G2.ROOT, f + '.js')));
+const files = require(process.env.GAME === 'end' ? './endvm' : './swvm').filter(f => fs.existsSync(path.join(G2.ROOT, f + '.js')));
 const LS = {}; const ctx = G2.load(files, LS);
 const R = s => G2.R(ctx, s);
 const max = +(process.argv[2] || 20000), shots = (process.env.SHOTS || '').split(',').filter(Boolean).map(Number);

@@ -13,8 +13,9 @@ var BOT = (() => {
   let blackN = 0;
   function decide() {
     if ((DLG || MENUS.length) && post.fade > .85 && !CARD) { if (++blackN === 12) B0.log('WARN dialog on a black screen: ' + (DLG ? (DLG.who || '') + ' ' + DLG.lines.join(' ') : MENUS[0].opts.join('/')) + ' map=' + G.map); } else if (!DLG && !MENUS.length && post.fade < .1) blackN = 0;
-    if (DBG.credits || (B0.until && B0.until())) { B0.done = 1; return; }
+    if (DBG.credits || DBG.ended || (B0.until && B0.until())) { B0.done = 1; return; }
     if (DBG.fdbg && frame % 30 === 0) B0.log('DEC scene=' + (scene === fieldScene ? 'field' : scene === worldScene ? 'world' : scene === menuScene ? 'menu' : 'other') + ' busy=' + busy + ' lock=' + FIELD_LOCK + ' dlg=' + !!DLG + ' menus=' + MENUS.length + ' B=' + !!(B && !B.done));
+    if (typeof TITLE === 'undefined' && (!G || (!G.map && !G.inWorld && !M))) { tap(frame % 4 < 2 ? 'a' : 'down'); return; }
     if (typeof TITLE !== 'undefined' && TITLE.opts.length && scene && !G.map && !G.inWorld && !M) { if (TITLE.opts[TITLE.i] !== 'NEW GAME') tap('down'); else tap('a'); return; }
     if (CARD) { tap('a'); return; }
     if (MENUS.length) { const m = MENUS[MENUS.length - 1]; const want = pickMenu(m); if (m.i !== want) tap(want > m.i ? 'down' : 'up'); else tap('a'); return; }
@@ -42,7 +43,16 @@ var BOT = (() => {
   }
   // ---------------- battles ----------------
   let bplan = null;
+  function rewindBot() {
+    const e = B.log && B.log[B.pos], m = B.menu; if (B.results) { tap('a'); return; } if (!e || !m) return;
+    let want = -1;
+    if (m.title === 'WHO DID IT?') want = B.party.findIndex(u => u.id === e.hero);
+    else if (m.title) want = m.items.findIndex(it => it.t === 'UN-' + e.cmd);
+    if (want < 0) { tap('b'); return; }
+    if (m.i !== want) tap(want > m.i ? 'down' : 'up'); else tap('a');
+  }
   function battleBot() {
+    if (B.rewind) { rewindBot(); return; }
     if (DBG.bdbg && frame % 120 === 0) B0.log('BDBG menu=' + (B.menu ? (B.menu.title || '-') + ':' + B.menu.items.map(i => i.t).join('|') + '@' + B.menu.i : 'none') + ' cursor=' + (B.cursor ? B.cursor.units.map(u => u.name).join('+') : 'none') + ' plan=' + (bplan ? bplan.cmd + '/' + bplan.sub + '->' + (bplan.target && bplan.target.name) : 'none') + ' ready=' + B.readyQ.map(u => u.name) + ' acting=' + B.acting + ' q=' + B.actQ.length);
     if (B.results) { tap('a'); return; }
     const m = B.menu;

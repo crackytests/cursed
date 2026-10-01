@@ -15,6 +15,7 @@ Lost games from a studio that never existed.
 | YOKO: What Happened | https://crackytests.github.io/cursed/yoko/ |
 | CARL 2: Hu-Man Boogaloo | https://crackytests.github.io/cursed/carl2/ |
 | SAVE THE WORLD: A Pretend Co. Gaiden | https://crackytests.github.io/cursed/stw/ |
+| THE END: A Pretend Co. Gaiden | https://crackytests.github.io/cursed/end/ |
 
 **Generation 1 — handheld (160×144, 4 shades)**
 - `index.html` — CARL: Above & Below Nevada
@@ -28,6 +29,7 @@ Lost games from a studio that never existed.
 - `yoko/` — YOKO: What Happened (adventure + support battles, YKO-1 chip; it closes the generation)
 - `carl2/` — CARL 2: Hu-Man Boogaloo (action RPG + arguments + pseudo-3D + a dance-off, BONG-FX chip; it came out anyway)
 - `stw/` — SAVE THE WORLD: A Pretend Co. Gaiden (16-bit epic RPG: active-time battles, combos, save crystals, an airship on the WORLD-FX scaling chip; out of continuity)
+- `end/` — THE END: A Pretend Co. Gaiden (it plays backwards: from the ending at level 99 back through four shades and plain text to the publisher logo)
 
 FACE and YOKO are a pair: play FACE first. Both read the saves of every other PRETEND CO. game.
 CARL 2 is the sequel to CARL, released after the generation ended. It's where the series jumps the shark.

@@ -396,10 +396,25 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
   - Some short names are already taken: `KID` (pkart) and `M` (swfield's current map). The story helpers are `KD`, `MV` and `LK`.
   - On this machine, bash heredocs collapse doubled backslashes, so escaped quotes inside JS strings get lost. Edit with the Edit tool, or keep apostrophes out of inserted strings.
 
+### THE END: A Pretend Co. Gaiden (`end/`): done and bot-tested
+
+- **The inversion of the whole project: it plays backwards.** It loads all of STW (minus `swmain`) and turns it around. You start at the ending at level 99 with everyone, and play back to the boot screen.
+  - The credits roll the wrong way, then an UNSAVING bar empties.
+  - Music plays reversed and sentences come out in reverse order.
+  - The hero moonwalks. Chests take items back.
+  - Levels go 99→1 and money and party members drain away.
+  - Fights are **rewinds**: the battle already happened. You undo the log from the top by naming who did it and how (UN-FIGHT, UN-MAGIC...). A wrong guess is a PARADOX.
+  - Past the cliff, GENERATION ONE (four shades, letterboxed to a handheld screen: Carl, Linda, Ghost, then a bargain bin with a towel cartridge), GENERATION ZERO (a text prompt), then the PRETEND CO. logo fades in, "THE BEGINNING.", and it sends you to CARL (`../`).
+- **`endcore.js`**: the `say` override (`R()` is the plain say), reversed `TRACKS`, `drawLead`, `forgetStories()` (wipes every map's old scenes), `openChest`, `setLevels`, `rewindTo(p)`, `unjoin`.
+- **`endrewind.js`**: `rewind(spec)`, `makeLog`, `heroMoves` (Pee Kid only has UN-ASK).
+- **`endstory.js`**: `STOPS` in reverse story order. `goStop` → `runStop` chains them and autosaves `end_save`.
+- **`endgen.js`**: Gen 1 (`gbTone`, `G1`, `g1*` maps), Gen 0, `theBeginning()`, `end_meta`.
+- **`endmain.js`**: boot, backwards credits, title, `newEnd()`.
+
 ## Storage keys (localStorage; the games read each other's)
 
-- Saves: `carl_sav`, `linda_sav`, `ghost_sav`, `pk_save`, `face_save`, `yoko_save`, `carl2_save`, `stw_save` (three slots).
-- Metas: `carl_meta`, `linda_meta`, `ghost_meta`, `tp_mem`, `pk_meta`, `face_meta`, `yoko_meta`, `carl2_meta`, `stw_meta`.
+- Saves: `carl_sav`, `linda_sav`, `ghost_sav`, `pk_save`, `face_save`, `yoko_save`, `carl2_save`, `stw_save` (three slots), `end_save`.
+- Metas: `carl_meta`, `linda_meta`, `ghost_meta`, `tp_mem`, `pk_meta`, `face_meta`, `yoko_meta`, `carl2_meta`, `stw_meta`, `end_meta`.
 - FACE reads every older meta as "potential" (what could still happen). YOKO reads every meta, including `face_meta`, as "the record" (what happened).
 
 ## Gotchas
@@ -481,6 +496,7 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
   - `node tools/swworldpng.js [1|2]` renders the overworld.
   - `node tools/g2sheet.js stw "<draw code>"` renders art sheets.
   - `node tools/swrun.js "<setup>" frames "<print>"` and `STATE=x node tools/swdbg.js frames "<expr>"` are for poking at the game state.
+- THE END: `GAME=end node tools/swplay.js 40000` plays it from boot to the logo in about 29k frames (file list: `tools/endvm.js`). The bot answers rewinds from `B.log`. Screenshots show the raw framebuffer, so Gen 1 looks full color in PNGs; the four-shade crush happens in `present()`.
 
 ### CARL 2 tools
 
