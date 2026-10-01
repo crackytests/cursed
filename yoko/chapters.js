@@ -340,7 +340,7 @@ async function chapter3() {
   await say('YOKO CAN NOW OVERRULE: TAKE DIRECT CONTROL OF AN ALLY\'S TURN (2 FOCUS). IT ALWAYS WORKS. THEY ALWAYS REMEMBER. THEIR TRUST DROPS, AND THE RECORD KEEPS COUNT.');
 }
 async function chapterCard(n, title) {
-  checkpoint(n);
+  checkpoint(n); ADV.ch = n;
   await fadeOut(.08); scene = { draw() { cls(BLACK); } }; post.fade = 0;
   await showCard(['CHAPTER ' + n, '', title], 130, { bg: hex('#000024'), fg: hex('#92ffff') });
 }

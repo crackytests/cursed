@@ -1,6 +1,6 @@
 // FACE freeze check: while a dialog / choice / card / pause is up, bullets, enemies and the player must not move and nothing can hurt him.
 const G = require('./g2vm');
-const ctx = G.load(['g2/engine2', 'g2/fm', 'pk/pkart', 'g2/cast', 'face/faceart', 'face/shmup', 'face/stages', 'face/story', 'face/poly', 'face/fmain'], {});
+const ctx = G.load(['g2/engine2', 'g2/fm', 'pk/pkart', 'g2/cast', 'face/faceart', 'face/shmup', 'face/stages', 'face/story', 'face/content', 'face/poly', 'face/fmain'], {});
 (async () => {
   G.R(ctx, `anyKey = true; FACE_SCAN = scanPotential(); newRun(); SAVEINTRO = 1; run(() => startStage(2));`);
   let fails = 0;

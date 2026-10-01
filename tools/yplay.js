@@ -6,7 +6,7 @@ if (pk === 'kept') LS.pk_meta = JSON.stringify({ cleared: 1, kept: 1, endings: 1
 if (pk === 'letgo') LS.pk_meta = JSON.stringify({ cleared: 1, letgo: 1, endings: 1 });
 if (fc !== 'none') LS.face_meta = JSON.stringify({ cleared: 1, ending: fc, sponsor: 1, toldGhost: 1, kid: process.env.KID || (pk === 'letgo' ? 'absent' : fc === 'kid' ? 'took' : 'freed'), apologized: 1, restores: 7, integrity: 88 });
 if (process.env.ALLMETA) { LS.carl_meta = JSON.stringify({ endings: 1, secret: 1 }); LS.ghost_meta = JSON.stringify({ endings: 1 }); LS.tp_mem = JSON.stringify({ done: 1, vault: true, msgs: ['hello chat'] }); LS.linda_meta = JSON.stringify({ endings: 1 }); }
-const ctx = G.load(['g2/engine2', 'g2/fm', 'pk/pkart', 'g2/cast', 'face/faceart', 'yoko/yart', 'yoko/battle', 'yoko/adv', 'yoko/chapters', 'yoko/chapters2', 'yoko/ymain'], LS);
+const ctx = G.load(['g2/engine2', 'g2/fm', 'pk/pkart', 'g2/cast', 'face/faceart', 'yoko/yart', 'yoko/battle', 'yoko/adv', 'yoko/chapters', 'yoko/chapters2', 'yoko/content', 'yoko/ymain'], LS);
 G.R(ctx, fs.readFileSync(path.join(__dirname, 'ybot.js'), 'utf8'));
 const want = {}; for (const kv of (process.env.WANT || '').split(',').filter(Boolean)) { const [k, v] = kv.split('='); want[k] = v; }
 G.R(ctx, 'BOT.set(' + JSON.stringify(want) + ')');

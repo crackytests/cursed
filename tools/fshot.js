@@ -1,7 +1,7 @@
 // FACE screenshots: node tools/fshot.js <stage 1-6> <frame1,frame2,...> [prefix]   (bot plays in god mode; PNGs land in tools/shots/)
 const G = require('./g2vm'), fs = require('fs'), path = require('path');
 const LS = { pk_meta: JSON.stringify({ kept: 1, cleared: 1 }) };
-const ctx = G.load(['g2/engine2', 'g2/fm', 'pk/pkart', 'g2/cast', 'face/faceart', 'face/shmup', 'face/stages', 'face/story', 'face/poly', 'face/fmain'], LS);
+const ctx = G.load(['g2/engine2', 'g2/fm', 'pk/pkart', 'g2/cast', 'face/faceart', 'face/shmup', 'face/stages', 'face/story', 'face/content', 'face/poly', 'face/fmain'], LS);
 G.R(ctx, fs.readFileSync(path.join(__dirname, 'fbot.js'), 'utf8'));
 G.R(ctx, 'BOT.set(' + JSON.stringify(Object.fromEntries((process.env.WANT || '').split(',').filter(Boolean).map(s => s.split('=')))) + '); DBG.god = 1;');
 const st = +process.argv[2] || 1, frames = (process.argv[3] || '300').split(',').map(Number), pre = process.argv[4] || 's' + st;

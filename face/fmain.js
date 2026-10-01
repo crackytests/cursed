@@ -70,6 +70,16 @@ Object.assign(TRACKS, {
     { ins: 'bass', n: 'D2 . . D2 . . D2 . A#1 . . A#1 . . A#1 . F1 . . F1 . . F1 . A1 . . A1 . . C#2 .' },
     { ins: 'bell', n: 'A5 . . . . . . . . . . . . . . . . . . . . . . . . . . . E6 . . .' },
     { drum: 1, n: 'x . . . s . . . k . k . s . . o k . . . s . . . k k . . s s s s' }] },
+  s45: { bpm: 128, ch: [
+    { ins: 'lead', n: 'C5 - E5 - G5 - E5 - F5 - A5 - C6 - A5 - G5 - E5 - C5 - E5 - D5 - - - - - - - E5 - G5 - C6 - B5 - A5 - G5 - F5 - A5 - G5 - F5 - E5 - D5 - C5 - - - - - - -' },
+    { ins: 'bass', n: 'C3 . G2 . C3 . G2 . F2 . C3 . F2 . C3 . C3 . G2 . C3 . G2 . G2 . D3 . G2 . B2 .' },
+    { ins: 'pluck', n: 'E4 G4 C5 G4 E4 G4 C5 G4 F4 A4 C5 A4 F4 A4 C5 A4 E4 G4 C5 G4 E4 G4 C5 G4 D4 G4 B4 G4 D4 G4 B4 G4' },
+    { drum: 1, vol: .7, n: 'k . h . s . h . k . h k s . h h' }] },
+  cooters: { bpm: 84, ch: [
+    { ins: 'epiano', n: 'D5 - - F5 - - A5 - G#5 - - - - - G5 - F5 - - D5 - - C5 - D5 - - - - - - -' },
+    { ins: 'bass', n: 'D2 . . A2 . . D3 . C#2 . . G#2 . . C#3 . C2 . . G2 . . C3 . G1 . . D2 . G2 A2' },
+    { ins: 'organ', det: 8, n: 'F4 - - - - - - - F4 - - - - - - - E4 - - - - - - - F4 - - - - - - -' },
+    { drum: 1, vol: .6, n: 'k . . h s . h . k . k h s . . h' }] },
   letgo: { bpm: 72, ch: [
     { ins: 'epiano', n: 'E5 - - - D5 - - - C5 - - - B4 - - - A4 - - - B4 - - - C5 - - - - - - - D5 - - - C5 - - - B4 - - - A4 - - - G4 - - - A4 - - - B4 - - - - - - -' },
     { ins: 'pad', n: 'A3 - - - - - - - F3 - - - - - - - C4 - - - - - - - G3 - - - - - - -' }] },
@@ -177,12 +187,13 @@ async function titleScreen() {
   } };
   music('title'); await fadeIn();
   const opts = [], act = [];
-  if (sv && sv.stage && sv.stage <= 6) { opts.push('CONTINUE (STAGE ' + sv.stage + ')'); act.push('cont'); }
+  if (sv && sv.stage && FACE_ORDER.includes(sv.stage)) { opts.push('CONTINUE (STAGE ' + stageLabel(sv.stage) + ')'); act.push('cont'); }
   opts.push('NEW GAME'); act.push('new');
-  if (FMETA.cleared) { opts.push('STAGE SELECT'); act.push('select'); opts.push('CHECK ON FACE'); act.push('check'); }
+  if (FMETA.cleared) { opts.push('STAGE SELECT'); act.push('select'); opts.push('RERUNS'); act.push('reruns'); opts.push('CHECK ON FACE'); act.push('check'); }
   const c = await choose(opts, { x: 20, y: 128 });
   if (act[c] === 'check') { await checkOnFace(); return titleScreen(); }
-  if (act[c] === 'select') { const i = await choose(['1 ON AIR', '2 LOST AND FOUND', '3 DON\'T TELL GHOST', '4 THE THIRD GENERATOR', '5 BACKUP', '6 THE NEXT GENERATION'], { x: 60, y: 60, cancel: 1 }); if (i < 0) return titleScreen(); newRun(); PLR.forms = ['new', 'old', 'pilot', 'dys'].slice(0, Math.max(1, Math.min(4, i))); PLR.lvl = 2; await fadeOut(); return startStage(i + 1); }
+  if (act[c] === 'reruns') { await fadeOut(); return reruns(); }
+  if (act[c] === 'select') { const i = await choose(FACE_ORDER.map((n, k) => (k + 1) + ' ' + (n === 6 ? 'THE NEXT GENERATION' : STG_FACE[n].title)), { x: 60, y: 50, cancel: 1 }); if (i < 0) return titleScreen(); newRun(); PLR.forms = ['new', 'old', 'pilot', 'dys'].slice(0, Math.max(1, Math.min(4, i))); PLR.lvl = 2; await fadeOut(); return startStage(FACE_ORDER[i]); }
   if (act[c] === 'cont') { newRun(); Object.assign(FSAVE, sv); for (const k of ['forms', 'lvl', 'pot', 'backups', 'integrity', 'restores', 'letters']) if (sv[k] !== undefined) PLR[k] = sv[k]; SH.viewers = sv.viewers || 0; await fadeOut(); return startStage(sv.stage); }
   newRun(); await fadeOut(); await startStage(1);
 }
@@ -206,13 +217,17 @@ async function checkOnFace() {
 }
 
 // ---------- stage flow ----------
+// play order: FOUR SHADES (45) sits between the generator and the archive; 6 is the 3D finale, 99 is RERUNS
+const FACE_ORDER = [1, 2, 3, 4, 45, 5, 6];
+const stageLabel = n => n === 99 ? 'RERUNS' : String(FACE_ORDER.indexOf(n) + 1);
+const nextStage = n => FACE_ORDER[FACE_ORDER.indexOf(n) + 1] || 6;
 async function startStage(n) {
   FSAVE.stage = n; saveFS();
   SH.hold = 0; SH.paused = false; post.legacy = 0; LEGACY_AUDIO = false; calm();
   if (n === 6) return stage6();
   const def = STG_FACE[n];
   scene = { draw() { cls(BLACK); } }; post.fade = 0;
-  await showCard(['STAGE ' + n, '', def.title, '', def.sub], 120, { bg: hex('#000012'), fg: hex('#ff24db') });
+  await showCard([n === 99 ? 'RERUNS' : 'STAGE ' + stageLabel(n), '', def.title, '', def.sub], 120, { bg: hex('#000012'), fg: hex('#ff24db') });
   Object.assign(SH, { t: 0, sx: 0, ents: [], pb: [], eb: [], items: [], fx: [], boss: null, ev: 0, comm: [], cm: null, speed: 1, alert: 0, view: { x0: 0, y0: PY, x1: W, y1: H }, overlay: null, assisted: 0, noFire: 0 });
   SH.stage = Object.assign({}, def, { events: def.events.slice() });
   PLR.x = 60; PLR.y = 118; PLR.inv = 90; PLR.dead = 0; PLR.drift = null; PLR.locked = 0; if (!PLR.forms.includes(PLR.form)) PLR.form = 'new'; if (PLR.form === 'dys') PLR.form = 'new';
@@ -225,7 +240,7 @@ const gameScene = { update() { if (pressed.start && !frozen() && !PLR.dead) { st
 async function pauseMenu() {
   const pm = curName; music(null); sfx('tick'); SH.paused = true;
   for (;;) {
-    DLG = { who: null, lines: ['PAUSED.  STAGE ' + SH.stage.id + ': ' + SH.stage.title, 'INTEGRITY: ' + PLR.integrity + '%   RESTORED ' + (FSAVE.restoresTotal + PLR.restores) + ' TIMES', 'LETTERS: ' + (PLR.letters.join('') || '-') + '   FACES: ' + PLR.forms.length + '/4', 'IT\'S ' + clock() + '. THE GENERATION IS STILL ENDING.'], n: 999, arrow: 0 };
+    DLG = { who: null, lines: ['PAUSED.  STAGE ' + stageLabel(SH.stage.id) + ': ' + SH.stage.title, 'INTEGRITY: ' + PLR.integrity + '%   RESTORED ' + (FSAVE.restoresTotal + PLR.restores) + ' TIMES', 'LETTERS: ' + (PLR.letters.join('') || '-') + '   FACES: ' + PLR.forms.length + '/4', 'IT\'S ' + clock() + '. THE GENERATION IS STILL ENDING.'], n: 999, arrow: 0 };
     const c = await choose(['RESUME', 'HOW TO PLAY', 'TITLE SCREEN']); DLG = null;
     if (c === 1) { await say('ARROWS: FLY.  A: FIRE (HOLD).  B: IDEA, 50% POTENTIAL: EVERY ENEMY BULLET BECOMES POTENTIAL.  C: SWAP FACES.  ONLY THE GREEN DOT CAN BE HIT.'); await say('NEW FACE: WAVEFORM.  OLD FACE: HANDS (STOP FIRING TO CATCH BULLETS).  PILOT X: LASER, STOP FIRING TO GO INCOGNITO.  DYSLEXIO: MAGNET, REARRANGES WORDS, DRAINS POTENTIAL.'); continue; }
     if (c === 2) { SH.paused = false; await fadeOut(); run(titleScreen); return; }
@@ -239,11 +254,52 @@ async function stageEnd() {
   FSAVE.restoresTotal = (FSAVE.restoresTotal || 0) + PLR.restores; PLR.restores = 0;
   PLR.backups = Math.max(PLR.backups, 2);
   await fadeOut(); calm(); scene = { draw() { cls(BLACK); } }; post.fade = 0;
-  await showCard(['STAGE ' + n + ' CLEAR', '', 'VIEWERS ...... ' + SH.viewers, 'POTENTIAL .... ' + Math.round(PLR.pot) + '%', 'BACKUPS ...... ' + PLR.backups, 'INTEGRITY .... ' + PLR.integrity + '%'], 160, { bg: hex('#000012'), fg: WHITE });
+  await showCard(['STAGE ' + stageLabel(n) + ' CLEAR', '', 'VIEWERS ...... ' + SH.viewers, 'POTENTIAL .... ' + Math.round(PLR.pot) + '%', 'BACKUPS ...... ' + PLR.backups, 'INTEGRITY .... ' + PLR.integrity + '%'], 160, { bg: hex('#000012'), fg: WHITE });
   FMETA.hiViewers = Math.max(FMETA.hiViewers || 0, SH.viewers); saveFM();
   const quit = await lab(n);
-  if (!quit) run(() => startStage(n + 1)); // not awaited: the next stage must not run inside this story's freeze
+  if (!quit) run(() => startStage(nextStage(n))); // not awaited: the next stage must not run inside this story's freeze
 }
+
+// ---------- the workshop: between stages, he builds with whatever the viewers gave him ----------
+const SHOP = [
+  ['A SPARE BACKUP', 6000, () => PLR.backups < 9, () => { PLR.backups++; }, 'BACKUP FACE', 'Another copy. Filed under "just in case." Everything is.'],
+  ['A BRIGHTER IDEA', 5000, () => PLR.lvl < 4, () => { PLR.lvl++; }, 'FACE', 'A lightbulb. A slightly better lightbulb. That\'s still not how ideas work.'],
+  ['FULL POTENTIAL', 3000, () => PLR.pot < 100, () => { PLR.pot = 100; }, 'FACE', 'Potential, bought with attention. Don\'t tell Yoko. ...She\'s right here.'],
+  ['INTEGRITY PATCH', 9000, () => PLR.integrity < 100, () => { PLR.integrity = Math.min(100, PLR.integrity + 8); }, 'BACKUP FACE', 'That\'s not how integrity works. Approved.'],
+];
+async function workshop() {
+  for (;;) {
+    DLG = { who: null, lines: ['THE WORKSHOP. HE BUILDS WITH WHATEVER THE VIEWERS GAVE HIM.', 'VIEWERS: ' + SH.viewers + '   BACKUPS: ' + PLR.backups + '   IDEA LV' + PLR.lvl, 'INTEGRITY: ' + PLR.integrity + '%'], n: 999, arrow: 0 };
+    const i = await choose(SHOP.map(([n, c, ok]) => (ok() ? n : n + ' (MAX)') + ' ' + c).concat(['DONE']), { x: 70, y: 40 }); DLG = null;
+    if (i === SHOP.length) return;
+    const [, c, ok, buy, who, line] = SHOP[i];
+    if (!ok()) { await say('It\'s as good as it gets. For now.', FF); continue; }
+    if (SH.viewers < c) { await say('Not enough viewers. Make something worth watching first.', YK); continue; }
+    SH.viewers -= c; buy(); sfx('get'); FMETA.bought = (FMETA.bought || 0) + 1; saveFM(); saveFS();
+    await say(line, who);
+  }
+}
+// ---------- RERUNS: every boss, back to back, after the game is cleared ----------
+let RR_T0 = 0;
+const RERUN_LIST = [['lens', bgAir], ['adboss', bgAir], ['bouncer', bgMall], ['faceless', bgMall], ['applause', bgGhost], ['redboss', bgGhost], ['gauge', bgGen], ['spell', bgDys], ['auditor', bgFour, 'pink'], ['bargain', bgFour, 'gray'], ['hrboss', bgArchive], ['curseboss', bgArchive]];
+async function reruns() {
+  newRun(); Object.assign(PLR, { forms: ['new', 'old', 'pilot', 'dys'], lvl: 3, backups: 5, pot: 100 }); RR_T0 = frame;
+  STG_FACE[99] = { id: 99, title: 'RERUNS', sub: 'EVERY BOSS. NO SCENES. NO COMMERCIALS.', music: 'boss', rerun: 1, bg: S => (SH.stage.curBg || bgAir)(S),
+    events: tl((at, gate) => {
+      RERUN_LIST.forEach(([k, bg, zone], i) => { const t0 = 10 + i * 20; at(t0, () => { SH.stage.curBg = bg; SH.stage.zone = zone; SH.eb = []; SH.boss = spawn(k, RIGHT + 60, 112); banner('RERUN ' + (i + 1) + '/' + RERUN_LIST.length + ': ' + FOES[k].base.name, 100); }); gate(t0 + 1, () => !SH.ents.some(e => e.k === k)); });
+      at(10 + RERUN_LIST.length * 20, () => story(rerunEnd));
+    }) };
+  await startStage(99);
+}
+async function rerunEnd() {
+  const secs = Math.round((frame - RR_T0) / 60), best = FMETA.rerunBest; // real time: the stage clock pauses during every boss
+  if (!best || secs < best) { FMETA.rerunBest = secs; saveFM(); }
+  music('lab');
+  await showCard(['RERUNS: COMPLETE', '', 'TIME ......... ' + Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0'), 'BEST ......... ' + Math.floor(FMETA.rerunBest / 60) + ':' + String(FMETA.rerunBest % 60).padStart(2, '0'), 'VIEWERS ...... ' + SH.viewers, 'RESTORED ..... ' + PLR.restores], 0, { bg: hex('#000012'), fg: WHITE });
+  await say(pick(['Every rerun is a little worse than the original. That\'s what makes it a rerun.', 'Same bosses. Same lines. Different me. Slightly.', 'People watch reruns because they already know how it ends. I\'m starting to understand that.']), FF);
+  await fadeOut(); run(titleScreen);
+}
+rerunEnd.rr = 1;
 
 // ================= STAGE 6: THE NEXT GENERATION (FACE-FX) =================
 function tl3(build) { const L = []; build((t, fn) => L.push([t, fn])); return L.sort((a, b) => a[0] - b[0]); }
@@ -251,7 +307,7 @@ const PAL3 = { deb: [hex('#ff24db'), hex('#6dff24'), hex('#24dbff'), hex('#ffdb2
 function debris(x, y, z, o = {}) { const m = pick(['cube', 'pyr', 'octa']); return obj3(m, x, y, z, Object.assign({ s: 9 + rnd(6), col: pick(PAL3.deb), srx: Math.random() * .06, sry: Math.random() * .06, hp: 3, r: 14 }, o)); }
 async function stage6() {
   calm(); scene = { draw() { cls(BLACK); } }; post.fade = 0;
-  await showCard(['STAGE 6', '', 'THE NEXT GENERATION', '', 'FACE-FX CHIP ENGAGED'], 130, { bg: hex('#000012'), fg: hex('#6dff24') });
+  await showCard(['STAGE ' + stageLabel(6), '', 'THE NEXT GENERATION', '', 'FACE-FX CHIP ENGAGED'], 130, { bg: hex('#000012'), fg: hex('#6dff24') });
   Object.assign(FX3, { objs: [], pb: [], eb: [], scroll: 0, speed: 3, t: 0, sky: 'fx', control: 100, help: 0, hitflash: 0, ev: 0, tick: null, over: null, lights: [], assist: 0, fogC: hex('#000024') });
   Object.assign(SH, { comm: [], cm: null, fx: [], eb: [], ents: [], hold: 0, assisted: 0 });
   FX3P.px = 160; FX3P.py = 150; PLR.inv = 60; PLR.form = 'new';
@@ -395,14 +451,14 @@ async function letItEnd() {
 }
 async function endGame(c) {
   FMETA.cleared = 1; FMETA.endings = (FMETA.endings || 0) + 1;
-  Object.assign(FMETA, { sponsor: FSAVE.sponsor, toldGhost: FSAVE.toldGhost, kid: FSAVE.kid, apologized: FSAVE.apologized, restores: (FSAVE.restoresTotal || 0) + PLR.restores, integrity: PLR.integrity, letters: PLR.letters.length, hiViewers: Math.max(FMETA.hiViewers || 0, SH.viewers) });
+  Object.assign(FMETA, { sponsor: FSAVE.sponsor, toldGhost: FSAVE.toldGhost, kid: FSAVE.kid, apologized: FSAVE.apologized, restores: (FSAVE.restoresTotal || 0) + PLR.restores, integrity: PLR.integrity, letters: PLR.letters.length, saves: (FSAVE.saves || []).length, hiViewers: Math.max(FMETA.hiViewers || 0, SH.viewers) });
   saveFM(); DBG.ending = c;
   await credits(c);
 }
 async function credits(c) {
   const scr = s => c === 'dyslexio' ? s.split(' ').map(w => w.length > 3 ? w[0] + [...w.slice(1, -1)].sort(() => Math.random() - .5).join('') + w.slice(-1) : w).join(' ') : s;
   const L = ['FACE', 'WHAT COULD HAPPEN', '', 'A PRETEND CO. PRODUCTION', 'ENHANCED WITH THE FACE-FX CHIP', '', 'NEW FACE ...... HIMSELF', 'OLD FACE ...... HIS HANDS', 'PILOT X ....... ONE VIEWER', 'DYSLEXIO ...... EVERY ARRANGEMENT', 'BACKUP FACE ... HUMAN RESOURCES', '', 'YOKO .......... PAYING ATTENTION', '', 'SPOOKY GHOST .. TOP BILLING', 'CEO LINDA ..... ' + (FSAVE.sponsor ? 'SPONSOR' : 'NOT A SPONSOR'), 'CARL .......... A GUY WITH A SWITCH',
-    'PEE KID ....... ' + (FSAVE.kid === 'took' ? 'SAID OKAY' : FSAVE.kid === 'freed' ? 'LEFT' : 'WENT HOME'), 'THE FACELESS .. GOT A FACE', 'THE CURSE ..... WAS SO SURE', '', 'SPECIAL THANKS', 'EVERYONE WHO COULD HAVE', '', 'RESTORED ' + FMETA.restores + ' TIMES', 'INTEGRITY ' + PLR.integrity + '%', 'PEAK VIEWERS ' + FMETA.hiViewers, '', c === 'nothing' ? 'HE LET IT END.' : 'THE NEXT GENERATION WILL BE ASSISTED.'].map(scr);
+    'PEE KID ....... ' + (FSAVE.kid === 'took' ? 'SAID OKAY' : FSAVE.kid === 'freed' ? 'LEFT' : 'WENT HOME'), 'THE FACELESS .. GOT A FACE', 'THE CURSE ..... WAS SO SURE', '', 'SPECIAL THANKS', 'EVERYONE WHO COULD HAVE', '', 'SAVE FILES BACKED UP ' + (FMETA.saves || 0) + '/3', 'RESTORED ' + FMETA.restores + ' TIMES', 'INTEGRITY ' + PLR.integrity + '%', 'PEAK VIEWERS ' + FMETA.hiViewers, '', c === 'nothing' ? 'HE LET IT END.' : 'THE NEXT GENERATION WILL BE ASSISTED.'].map(scr);
   music(c === 'nothing' ? 'letgo' : 'credits'); let y = H + 10, t = 0;
   scene = { update() { t++; y -= .45; }, draw() {
     sky(0, H, mix(hex('#000012'), hex('#12002a'), (Math.sin(t * .01) + 1) / 2), hex('#240036'));

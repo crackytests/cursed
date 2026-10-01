@@ -50,11 +50,12 @@ var BOT = (() => {
     o.forEach((c, i) => { let v = (tried[key(c)] || 0) * 10 + (c === 'MOVE' ? 25 : 0) + (c === 'THINK' ? 12 : 0); if (v < bv) { bv = v; bi = i; } });
     tried[key(o[bi])] = (tried[key(o[bi])] || 0) + 1; lastCmd = o[bi];
     const S = SCN[sc]; const map = { LOOK: 'look', TALK: 'talk', TRANSLATE: 'translate', SUGGEST: 'suggest', MOVE: 'move' }[o[bi]];
-    if (map) { const names = Object.keys(S[map]()); let ti = 0, tv = 1e9; names.forEach((n, i) => { let v = (tried[sc + '|' + o[bi] + '|' + n] || 0) * 10 + (map === 'move' && ADV.visited[sceneIdFor(n)] ? 5 : 0) + (map === 'suggest' ? -30 : 0); if (v < tv) { tv = v; ti = i; } }); tried[sc + '|' + o[bi] + '|' + names[ti]] = (tried[sc + '|' + o[bi] + '|' + names[ti]] || 0) + 1; plan = names.length === 1 && map !== 'move' ? [] : [names[ti]]; }
+    if (map) { const names = Object.keys(S[map]()); let ti = 0, tv = 1e9; names.forEach((n, i) => { let v = (tried[sc + '|' + o[bi] + '|' + n] || 0) * 10 + (map === 'move' && ADV.visited[sceneIdFor(n)] ? 5 : 0) + (map === 'move' && W8.explore && EXITS.includes(n) && names.some(m => !EXITS.includes(m) && !ADV.visited[sceneIdFor(m)]) ? 500 : 0) + (map === 'suggest' ? -30 : 0); if (v < tv) { tv = v; ti = i; } }); tried[sc + '|' + o[bi] + '|' + names[ti]] = (tried[sc + '|' + o[bi] + '|' + names[ti]] || 0) + 1; plan = names.length === 1 && map !== 'move' ? [] : [names[ti]]; }
     return bi;
   }
-  const SIDS = { 'THE MALL': 'x', SUITORS: 'suitors', 'LINDA\'S OFFICE': 'office', 'GARF\'S DINER': 'garfs', 'THE ATRIUM': 'atrium', 'GHOST\'S DRESSING ROOM': 'studio', 'THE ARCHIVE': 'archive', 'THE GENERATOR': 'generator', 'THE TOWER': 'tower', 'MY OLD APARTMENT': 'apartment', 'THE GATE': 'testgate', 'THE PLAZA': 'plaza', 'THE BRIDGE': 'bridge' };
+  const SIDS = { COOTERS: 'cooters', 'GARFEILD\'S DINER': 'mdiner', 'THE MANDOLIN SCHOOL': 'school', 'THE BARRACKS': 'barracks', 'THE DECK': 'deck', 'THE MALL': 'x', SUITORS: 'suitors', 'LINDA\'S OFFICE': 'office', 'GARF\'S DINER': 'garfs', 'THE ATRIUM': 'atrium', 'GHOST\'S DRESSING ROOM': 'studio', 'THE ARCHIVE': 'archive', 'THE GENERATOR': 'generator', 'THE TOWER': 'tower', 'MY OLD APARTMENT': 'apartment', 'THE GATE': 'testgate', 'THE PLAZA': 'plaza', 'THE BRIDGE': 'bridge' };
   const sceneIdFor = n => SIDS[n];
+  const EXITS = ['THE GATE', 'THE BRIDGE']; // explore=1: see every room before taking a chapter's exit
   function walkAI() {
     const w = DBG.walk; if (!w) return;
     const want = { restore: 'restore', empire: 'empire', open: 'open', true: 'true' }[W8.end || 'restore'];
@@ -76,6 +77,7 @@ var BOT = (() => {
     if (CARD) { const s = CARD.lines.join('/'); if (s !== lastSay) { lastSay = s; L('CARD ' + s); } if (F % 4 === 0) press('a'); apply(); return; }
     if (DBG.credits) { if (F % 2) hold('start'); apply(); return; }
     if (DBG.mode === 'walk') { walkAI(); apply(); return; }
+    if (DBG.mode === 'mandolin') { const t = DBG.t(); for (const n of DBG.notes) if (!n.done && Math.abs(n.at - t) <= 2) { const k = ['a', 'b', 'c'][n.l]; if (!last[k]) want[k] = 1; } apply(); return; }
     if (F % 8 === 0) press('a');
     apply();
   }

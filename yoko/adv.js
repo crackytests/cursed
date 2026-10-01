@@ -2,7 +2,7 @@
 // ================= YOKO — adventure scenes: the detective-game half =================
 // A scene: { title, bg, people(), look(), talk(), translate(), think(), suggest(), move(), enter() }
 // Each list function returns { 'LABEL': async () => {...} } and is re-read every time, so flags change what's there.
-const ADV = { cur: null, flags: {}, visited: {}, t: 0, loop: false, hint: '', mood: 0, lead: null };
+const ADV = { cur: null, flags: {}, visited: {}, t: 0, loop: false, hint: '', mood: 0, lead: null, ch: 0 };
 const SCN = {};
 const FL = k => !!ADV.flags[k];
 const setFL = (k, v = 1) => { ADV.flags[k] = v; };
@@ -20,11 +20,13 @@ async function advLoop() {
   while (ADV.loop) {
     const S = SCN[ADV.cur];
     const avail = CMDS.filter(([, k]) => S[k] && (k === 'think' || Object.keys(S[k]()).length));
+    if (typeof showNotes === 'function' && Object.keys(ADV.flags).some(k => k.startsWith('rq_'))) avail.push(['NOTES', 'notes']); // the requests she's written down
     DBG.mode = 'adv';
     const i = await choose(avail.map(c => c[0]));
     DBG.mode = null;
     const [label, key] = avail[i];
     if (key === 'think') { await S.think(); continue; }
+    if (key === 'notes') { await showNotes(); continue; }
     const L = S[key](), names = Object.keys(L);
     const j = names.length === 1 && key !== 'move' ? 0 : await choose(names, { y: 24, cancel: 1 });
     if (j < 0) continue;

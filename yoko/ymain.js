@@ -176,7 +176,7 @@ async function titleScreen() {
 }
 function resetRun() {
   for (const k in ADV.flags) delete ADV.flags[k]; for (const k in ADV.visited) delete ADV.visited[k]; for (const k in PARTY) delete PARTY[k];
-  Object.assign(YREC, { overrule: 0, suggest: 0, followed: 0, ignored: 0, assist: 0, translate: 0, restore: 0, fell: 0, battles: 0, wins: 0, trust: {}, riddles: 0 });
+  Object.assign(YREC, { overrule: 0, suggest: 0, followed: 0, ignored: 0, assist: 0, translate: 0, restore: 0, fell: 0, battles: 0, wins: 0, trust: {}, riddles: 0, helped: 0 });
   Object.assign(YOKO_CAN, { ASSIST: 1, TRANSLATE: 1, SUGGEST: 1, WAIT: 1, RESTORE: 0, OVERRULE: 0 });
   ADV.lead = null; ADV.hint = ''; ADV.mood = 0;
 }
@@ -191,7 +191,7 @@ async function runFrom(i) { for (let k = i; k < CHAPTERS.length; k++) { if (k > 
 
 // ================= ENDINGS =================
 async function ending(k) {
-  YMETA.ends = YMETA.ends || {}; YMETA.ends[k] = 1; YMETA.cleared = 1; YMETA.overrules = YREC.overrule; YMETA.last = k; saveYM(); DBG.ending = k;
+  YMETA.ends = YMETA.ends || {}; YMETA.ends[k] = 1; YMETA.cleared = 1; YMETA.overrules = YREC.overrule; YMETA.helped = Math.max(YMETA.helped || 0, YREC.helped || 0); YMETA.last = k; saveYM(); DBG.ending = k;
   store('yoko_save', null);
   const T = { s: CAST.img.newface, P: CAST.P.newface };
   ADV.cur = 'throne'; scene = advScene; post.legacy = 0;
@@ -247,8 +247,14 @@ async function ending(k) {
     await colorParade();
     await showCard(['THE SUPER-16 GENERATION IS OVER.', '', 'NOBODY WAS LEFT BEHIND.'], 240, { bg: BLACK, fg: hex('#ffdb24') });
   }
+  await helpedCards();
   if (trustJB() >= 70) { ADV.cur = 'garfs'; scene = advScene; await say('Hey. Assistant. JB. You wanted to know.', JB); await say('It stands for Justice, Basically.', JB); await say('Don\'t tell anybody.', JB); setFL('jbTold'); }
   await ycredits(k);
+}
+// the requests, afterwards: where the people she helped ended up
+async function helpedCards() {
+  const done = Object.keys(REQ).filter(id => reqState(id) === 2).map(id => REQ[id][2]);
+  for (let i = 0; i < done.length; i += 4) await showCard(['AFTERWARDS', ''].concat(done.slice(i, i + 4).flatMap(l => wrapT(l, 44).concat(['']))).slice(0, -1), 0, { bg: hex('#000024'), fg: hex('#dbdbff') });
 }
 const trustJB = () => (PARTY[JB] || {}).trust || 0;
 // the one time the hardware can draw them
@@ -265,7 +271,7 @@ async function ycredits(k) {
   const L = ['YOKO', 'WHAT HAPPENED', '', 'A PRETEND CO. PRODUCTION', '(THE LAST ONE ON THIS HARDWARE)', '', 'YOKO .......... THE ONE WHO STAYED', 'THE EMPRESS ... THE ONE WHO DIDN\'T', 'WARWORLD YOKO . THE ONE AT THE FRONT', 'THE YOKOIDS ... ON SHIFT', '',
     'JB GARFIELD ... ' + (FL('jbTold') ? 'JUSTICE, BASICALLY' : 'PRIVATE EYE'), 'CARL .......... A GUY WITH A SWITCH', 'SPOOKY GHOST .. THE AUDIENCE', 'PEE KID ....... ASKED', 'CEO LINDA ..... BRAND PROTECTION', 'BACKUP FACE ... HR', '',
     'KARL, SPOOKEY, LYNDA', 'THEIR POTENTIAL, REALIZED', '', 'FACE .......... ' + { restore: 'RESTORED', empire: 'ARCHIVED', open: 'A RECORDING', true: 'A PERSON' }[k], '',
-    'THE RECORD', 'OVERRULED ........ ' + YREC.overrule, 'SUGGESTIONS TAKEN  ' + YREC.followed + '/' + YREC.suggest, 'ASSISTS .......... ' + YREC.assist, 'TRANSLATIONS ..... ' + YREC.translate, 'RESTORES ......... ' + YREC.restore, 'THE TEAM FELL .... ' + YREC.fell, '',
+    'THE RECORD', 'OVERRULED ........ ' + YREC.overrule, 'SUGGESTIONS TAKEN  ' + YREC.followed + '/' + YREC.suggest, 'ASSISTS .......... ' + YREC.assist, 'TRANSLATIONS ..... ' + YREC.translate, 'RESTORES ......... ' + YREC.restore, 'PEOPLE HELPED .... ' + (YREC.helped || 0) + '/' + Object.keys(REQ).length, 'THE TEAM FELL .... ' + YREC.fell, '',
     'SPECIAL THANKS', 'EVERYONE WHO PLAYED ALL OF THEM', '', { restore: 'SEE YOU NEXT GENERATION.', empire: 'EVERYONE IS DOING VERY WELL.', open: 'GREEN, THEN HOME.', true: 'WHAT HAPPENS NEXT IS UP TO YOU.' }[k]];
   music(k === 'open' ? 'letend' : 'ycredits'); let y = H + 10, t = 0;
   scene = { update() { t++; y -= .45; }, draw() {

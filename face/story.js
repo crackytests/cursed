@@ -445,7 +445,7 @@ async function s5Boss() {
 const PARTS = ['SHELL', 'HANDS', 'TRAVEL', 'POWER', 'MEMORY', 'SOUL'];
 async function lab(n) {
   let t = 0; music('lab');
-  scene = { update() { t++; }, draw() { drawLab(n, t); } };
+  scene = { update() { t++; }, draw() { drawLab(n === 45 ? 4.5 : n, t); } };
   await fadeIn();
   const L = {
     1: [[FF, 'So this is it. The Next Generation. Right now it\'s mostly a box.'], FSAVE.sponsor ? [FF, 'A box with Linda on it.'] : [FF, 'A box made out of an old TV. It used to be an ad. Now it\'s a shell.'], [YK, 'What does it need?'], [FF, 'Hands, to build it. Travel, to carry everybody across. Power. Memory. And...'], [YK, 'And?'], [FF, 'One thing at a time.']],
@@ -453,11 +453,15 @@ async function lab(n) {
     3: [[FF, 'Ghost\'s formulas. Sigils. They look like drawings. They\'re math. Beautiful, annoying math.'], [FF, 'With this, the machine can carry people between generations. All of them.'], [YK, 'And the ones in four shades?'], [FF, 'Especially them.'], ...(FSAVE.toldGhost ? [[YK, 'You told him the truth.'], [FF, 'It seemed like it would come out anyway. Things come out.']] : [[YK, 'You lied to him.'], [FF, 'A little.'], [YK, 'He\'ll remember.'], [FF, 'Everyone remembers. That\'s the problem with backups.']])],
     4: FSAVE.kid === 'took' ? [[FF, 'Power. Enough to run a generation.'], [YK, 'He said okay.'], [FF, 'He did say okay.'], [YK, 'You know what he meant.'], [FF, '...Yes.']]
       : [[FF, 'Power. Some. Not enough. Not without...'], [YK, 'Without what?'], [FF, 'Them. The viewers. A little from each of them. It doesn\'t run on what happened. It runs on what could happen. That\'s a much larger supply.'], [YK, 'They didn\'t agree to that.'], [FF, 'They\'re watching.'], [YK, 'That isn\'t the same thing.']],
+    45: (FSAVE.saves || []).length >= 3 ? [[FF, 'Memory, part one. The old saves. Carl\'s, Linda\'s, Ghost\'s. They glow in the machine like nightlights.'], [YK, 'There\'s one missing.'], [FF, 'Which one?'], [YK, 'Mine.'], [FF, '...You don\'t have a save file.'], [YK, 'No. I have a backup. It\'s different. You\'d know.']]
+      : [[FF, 'Memory, part one. Some of the old saves. Not all. The rest are still in the bin.'], [YK, 'You\'ll go back for them.'], [FF, 'After.'], [YK, 'You keep saying after.']],
     5: [[FF, 'Memory. Everyone backed up. Everyone ready to carry across. Every Carl, every Linda, every ghost. Even the kid.'], [FF, 'All that\'s missing is the soul.'], [YK, 'And you know where there\'s a compatible one.'], [FF, '...'], [YK, 'Say it.'], [FF, 'I know where there\'s a compatible one.']],
   }[n] || [];
   for (const [w, s] of L) await say(s, w);
-  FSAVE.stage = n + 1; saveFS();
-  const c = await choose(['CONTINUE', 'SAVE AND QUIT'], { x: 200, y: 180 });
+  FSAVE.stage = nextStage(n); saveFS();
+  let c;
+  for (;;) { c = await choose(['CONTINUE', 'WORKSHOP', 'SAVE AND QUIT'], { x: 200, y: 168 }); if (c !== 1) break; await workshop(); }
+  if (c === 2) c = 1;
   if (c === 1) { await say('SAVED. THE MACHINE WILL WAIT. MACHINES ARE GOOD AT THAT.'); await fadeOut(); run(titleScreen); return true; }
   await fadeOut(); return false;
 }
@@ -477,7 +481,7 @@ function drawLab(n, t) {
   if (n >= 2) { const hx = mx + 60 + Math.sin(t * .05) * 20, hy = my + 48; draw(FS.hand[(t >> 3) & 1], hx, hy, FP.oldHand); draw(FS.hand[(t >> 3) & 1], hx - 40, hy + 4, FP.oldHand, true); if ((t >> 1) & 1) for (let i = 0; i < 3; i++) pset(hx + rnd(6), hy - rnd(6), hex('#ffdb24')); }
   // parts list
   panel(222, 20, 94, 88); text('NEXT GEN', 234, 26, UI.name, 0);
-  PARTS.forEach((p, i) => { const ok = i < n; text((ok ? '+ ' : '- ') + p, 230, 40 + i * 11, ok ? hex('#6dff24') : hex('#6d6d92'), 0); });
+  PARTS.forEach((p, i) => { const ok = i + 1 <= n, half = !ok && i < n; text((ok ? '+ ' : half ? '~ ' : '- ') + p, 230, 40 + i * 11, ok ? hex('#6dff24') : half ? hex('#ffdb24') : hex('#6d6d92'), 0); });
   panel(4, 20, 100, 88); text('STATUS', 16, 26, UI.name, 0);
   text('VIEWERS', 10, 40, UI.dim, 0); text(String(SH.viewers), 10, 50, WHITE, 0);
   text('BACKUPS ' + Math.max(0, PLR.backups), 10, 62, WHITE, 0); text('INTEGRITY', 10, 74, UI.dim, 0); text(PLR.integrity + '%', 10, 84, PLR.integrity < 60 ? hex('#ff4949') : WHITE, 0);

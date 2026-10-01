@@ -12,7 +12,8 @@ var BOT = (() => {
     if (o.includes('TAKE HIS POTENTIAL')) return W8.kid === 'free' ? 1 : 0;
     if (o.includes('APOLOGIZE')) return W8.apology === '0' ? 1 : 0;
     if (o.includes('NOTHING. LET IT END.')) { const want = { core: 'YOKO', kid: 'THE KID', viewers: 'EVERYONE', nothing: 'NOTHING', dyslexio: 'D-Y-S' }[W8.soul || 'core']; const i = m.opts.findIndex(x => x.startsWith(want)); return i < 0 ? 0 : i; }
-    if (o.includes('SAVE AND QUIT')) return W8.quitLab && !BOT.quitDone ? (BOT.quitDone = 1, 1) : 0;
+    if (o.includes('SAVE AND QUIT')) { if (m._pick === undefined) m._pick = W8.quitLab && !BOT.quitDone ? (BOT.quitDone = 1, 2) : W8.shop && BOT.shopAt !== SH.stage.id ? (BOT.shopAt = SH.stage.id, 1) : 0; return m._pick; } // decided once per menu
+    if (o.includes('A SPARE BACKUP')) { if (m._pick === undefined) { const i = m.opts.findIndex(x => x.startsWith(W8.shop || 'A SPARE') && !x.includes('(MAX)')); m._pick = i >= 0 && !BOT.boughtAt ? (BOT.boughtAt = 1, i) : (BOT.boughtAt = 0, m.opts.length - 1); } return m._pick; }
     if (o.includes('RESTORE') && o.includes('LET HIM GO')) return 0;
     if (o.includes('RESUME')) return 0;
     return 0;

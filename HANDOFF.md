@@ -125,6 +125,18 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
     3. DON'T TELL GHOST: spotlights, stealth, the chat snitch, then RED FACE and Ghost.
     4. THE THIRD GENERATOR: the kid (depends on PK's save), the Dyslexio transformation, then THE SPELLCHECKER.
     5. BACKUP: Backup Face's HR review, the incident file (the Yoko core is Prototype 1), then THE CURSE.
+- **`content.js`** (content pass, loaded after `story.js`):
+  - **FOUR SHADES (stage id 45)**: Face uses Ghost's travel math to go back into the Gen-1 cartridges and back up their save files.
+    - The background changes zone by zone: Carl's desert (DMG green), Linda's mall (pink), Ghost's old show (red), then the gray bargain-bin aisle. Everything is drawn in four shades except Face.
+    - Shoot a `cartsave` free, then catch the `save` item. `FSAVE.saves` and `face_meta.saves` record it, and the credits count it.
+    - Mid-boss: THE AUDITOR. Boss: THE BARGAIN BIN.
+  - **COOTERS** segment in stage 2: bunny Lindas, a lavender "DECORATION" that speaks (Evil Yoko foreshadowing), and the mid-boss THE BOUNCER (velvet-rope walls with a gap).
+  - **New mid-bosses**: THE APPLAUSE SIGN in stage 3 (only hurtable while lit) and THE GAUGE in stage 4 (PK's potential gauge; at 100% it floods).
+  - `spliceEvents(id, build)` adds events to an existing timeline.
+  - **9-bit gotcha**: the two lightest DMG greens round to the same color. Draw Game Boy detail with `dith()` or the darker shades.
+- **Stage order** lives in `fmain.js`: `FACE_ORDER = [1, 2, 3, 4, 45, 5, 6]`. `stageLabel(id)` gives the displayed number (45 shows as STAGE 5, BACKUP as 6, the 3D finale as 7), and `nextStage(id)` gives what comes next.
+- **WORKSHOP** in the lab between stages (`SHOP` in `fmain.js`): spend VIEWERS on a spare backup, an idea level, full potential, or an integrity patch.
+- **RERUNS** (title screen, after a clear): all 12 bosses back to back (stage id 99, `rerun: 1`). `story()` skips every scene while `SH.stage.rerun` is set; only functions marked `.rr` still run. The best time is `face_meta.rerunBest`, measured in real frames.
 - **`poly.js`**: the FACE-FX chip, a flat-shaded polygon renderer.
   - Stage 6 is a 3D rail shooter ("the next generation is 3D").
   - The soul choice leads to the armada. Shots show ASSISTED; hits show +HELP and drain CONTROL, ending in INPUT REASSIGNED and then SUPERUSER: YOKO.
@@ -167,6 +179,16 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
   - 4 MANDOLIN: Mandela-spelled signs, and full-color Karl, Spookey Ghost and Lynda.
   - 5 WARWORLD: the Linda franchises; CEO Linda joins.
   - 6 THE EMPRESS: `debate()`, whose charges are built from *your* save data. Then `walk()`, where INPUT ASSIGNED: YOU and you walk Yoko to a console.
+- **`content.js`** (content pass, loaded after `chapters2.js`):
+  - **Requests**: 10 small jobs people ask Yoko for (`REQ`, chapter in `REQ_CH`).
+    - `reqOpen` / `reqDone` track them, and `YREC.helped` counts completions.
+    - A **NOTES** command appears in the adventure menu once any request exists. It lists the current chapter's open requests, finished ones, and ones left behind (their rooms are gone).
+    - The count becomes a charge in the Empress `debate()`. An **AFTERWARDS** card after the ending says where each helped person ended up, and the credits show PEOPLE HELPED.
+  - `extend(sceneId, key, extra)` adds entries to an existing scene's look/talk/translate/suggest/move lists without editing the chapter files.
+  - **New rooms**:
+    - COOTERS (chapter 1): Juan the importer, "the Decoration" (an Evil Yoko relay), and a bunny-Linda battle.
+    - GARFEILD'S DINER and THE MANDOLIN SCHOOL (chapter 4). The school has a 3-lane A/B/C rhythm game, `mandolinLesson()`.
+    - THE BARRACKS (chapter 5): Endless Yoko units whose AI buffs the weakest one (`trooper`, `troopMove`).
 - **`ymain.js`**: boot (PRETEND CO. glitches into YOKO LTD.), the YKO-1 chip screen, THE RECORD (reads every game's meta), title, chapter select, checkpoints, the endings with the full-color parade, credits and music.
 - **Endings**:
   - `restore`: repair access only.
@@ -304,6 +326,8 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
   - The bot (`fbot.js`) dodges with a threat field, bombs when crowded, and swaps to Dyslexio for words.
   - A full run is about 30k frames and takes about 10 minutes.
 - FACE freeze check: `node tools/ffreeze.js`.
+- FACE RERUNS: `GOD=1 node tools/freruns.js`. FACE Workshop: add `shop=A SPARE` to `WANT` in `fplay.js`.
+- YOKO single-scene render: `node tools/yscene.js cooters|mdiner|school|barracks|lesson|battle:<bg>:<foe,foe>` writes `tools/shots/y_*.png`.
 - YOKO full playthrough: `WANT="end=restore|empire|open|true,over=0|1" FACE=core|kid|viewers|nothing|dyslexio|none PK=kept|letgo|none node tools/yplay.js [maxFrames]`.
   - Add `CH=n` to start at chapter n.
   - The bot (`ybot.js`) explores scenes least-tried-first, plays the battles with a real support policy, picks debate answers, and walks to the console.

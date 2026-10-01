@@ -138,6 +138,11 @@ async function debate() {
     dyslexio: { q: 'He tried to be every arrangement at once.', r: { SILENCE: [-10, 5, [[YO, '...'], [EY, 'Fair.']]] } },
     none: { q: 'He hasn\'t done it yet. But he will.', r: { CONTEXT: [-15, 10, [[YO, 'Then it hasn\'t happened. You can\'t judge what hasn\'t happened.'], [EY, 'I judge what will. That\'s what paying attention is for.']]] } } }[f.cleared ? f.ending : 'none'];
   C.push(Object.assign({ w: {} }, soul));
+  const hp = YREC.helped || 0; // the requests: small things, on the way here
+  C.push({ q: hp ? 'You helped ' + hp + ' of them on the way here. A ride. A drink. A cup of coffee. Small things.' : 'You walked past all of them. Nobody asked you for anything. You noticed that, didn\'t you.',
+    r: hp >= 6 ? { CONTEXT: [-15, 15, [[YO, 'Small things are the job. Big things are made of them.'], [EY, '...I started with small things.']]], CONCEDE: [-10, 10, [[YO, 'Yes. They asked.'], [EY, 'And you answered. Every time. I remember doing that.']]] }
+      : hp >= 1 ? { CONCEDE: [-5, 5, [[YO, 'Some of them.']]], CONTEXT: [0, 5, [[YO, 'I helped the ones in front of me.'], [EY, 'That\'s how it starts.']]] }
+      : { CONCEDE: [5, -10, [[YO, 'I was busy.'], [EY, 'You were. That\'s what I said about the first world.']]] }, w: {} });
   const n = YREC.overrule;
   C.push({ q: 'And you. You overruled your friends ' + n + ' time' + (n === 1 ? '' : 's') + ' on the way here.', r: n <= 3 ? { CONTEXT: [-15, 10, [[YO, 'Only when I had to.'], [EY, 'I say that too.']]], CONCEDE: [-5, 5, [[YO, 'Yes.']]] } : { CONCEDE: [5, 5, [[YO, 'Yes.'], [EY, 'You agree with me more than you think.']]], CONTEXT: [10, -15, [[YO, 'Only when I had to.'], [EY, 'Every time? Really?']]] },
     w: Object.fromEntries(party.filter(k => trustOf(k) >= 60).map(k => [k, [-10, 5, [[k, 'She helped me more than she bossed me. By a lot. I counted. I didn\'t count. It felt like a lot.']]]])) });

@@ -6,7 +6,8 @@ const SH = { t: 0, sx: 0, stage: null, ents: [], pb: [], eb: [], items: [], fx: 
 const PLR = { x: 60, y: 118, form: 'new', forms: ['new'], lvl: 1, pot: 30, backups: 3, inv: 0, dead: 0, cd: 0, still: 0, stealth: 0, hands: [{ x: 0, y: 0 }, { x: 0, y: 0 }], integrity: 100, restores: 0, letters: [], locked: 0, drift: null };
 const frozen = () => SH.hold > 0 || !!DLG || MENUS.length > 0 || !!CARD || SH.paused;
 // a blocking story beat: the whole playfield stops while it runs
-function story(fn) { SH.hold++; return run(async () => { try { await fn(); } finally { SH.hold = Math.max(0, SH.hold - 1); } }); }
+function story(fn) { if (SH.stage && SH.stage.rerun && !fn.rr) return Promise.resolve(); // RERUNS: bosses only, no scenes
+  SH.hold++; return run(async () => { try { await fn(); } finally { SH.hold = Math.max(0, SH.hold - 1); } }); }
 const dist2 = (ax, ay, bx, by) => (ax - bx) * (ax - bx) + (ay - by) * (ay - by);
 const eyeX = () => PLR.x, eyeY = () => PLR.y; // PLR.x/y IS the third eye; the head is drawn around it
 
@@ -237,6 +238,7 @@ function collect(it) {
   if (it.k === 'orb') { PLR.pot = Math.min(100, PLR.pot + 2); SH.viewers += 1; if (SH.t % 3 === 0) sfx('blip', [1800, 300]); }
   else if (it.k === 'bulb') { PLR.lvl = Math.min(4, PLR.lvl + 1); sfx('get'); SH.fx.push({ k: 'txt', x: PLR.x - 20, y: PLR.y - 24, s: PLR.lvl >= 4 ? 'IDEA: MAX' : 'IDEA LV' + PLR.lvl, t: 50, c: hex('#ffdb24') }); if (PLR.lvl === 2 && !FMETA.bulbTip) { FMETA.bulbTip = 1; saveFM(); comm('FACE', 'An idea. A lightbulb. That\'s not how ideas work. I\'m keeping it.', 100); } }
   else if (it.k === 'backup') { PLR.backups++; sfx('get'); banner('+1 BACKUP', 60); }
+  else if (it.k === 'save') { FSAVE.saves = FSAVE.saves || []; if (!FSAVE.saves.includes(it.ch)) FSAVE.saves.push(it.ch); sfx('get'); banner('BACKED UP: ' + it.ch, 120); SH.viewers += 1500; }
   else if (it.k === 'letter') { if (!PLR.letters.includes(it.ch)) PLR.letters.push(it.ch); sfx('object'); banner('A LETTER: "' + it.ch + '"  (' + PLR.letters.length + '/8)', 120); SH.viewers += 500; }
 }
 
@@ -306,6 +308,7 @@ function drawItems() {
     if (it.k === 'orb') draw(FS.orb[((it.t >> 3) + (x & 1)) & 3], x - 3, y - 3, FP.item);
     else if (it.k === 'bulb') draw(FS.bulb[(it.t >> 4) & 1], x - 6, y - 7, FP.item);
     else if (it.k === 'backup') draw(FS.backup, x - 6, y - 6, FP.item);
+    else if (it.k === 'save') { const T = TONE4[it.z || 'dmg']; rectF(x - 7, y - 7, 15, 15, (it.t >> 3) & 1 ? WHITE : T[1]); rectF(x - 5, y - 5, 11, 11, T[3]); text('S', x - 2, y - 3, T[0], 0); }
     else if (it.k === 'letter') { rectF(x - 6, y - 7, 13, 14, (it.t >> 3) & 1 ? hex('#ffdb24') : hex('#ff24db')); rectF(x - 5, y - 6, 11, 12, hex('#240024')); text(it.ch, x - 2, y - 3, hex('#ffdb24'), 0); }
   }
 }
