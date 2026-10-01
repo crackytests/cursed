@@ -126,7 +126,7 @@ var BOT = (() => {
     if (!last.b && want.b) hold('b');
     let goalX = bx - 110, act = false;
     if (k === 'bag') { if (e.watch > 0) { if (be('kid')) { goalX = bx - 70; act = true; } } else if (be('wee')) { goalX = bx - 90; if (dist < 150 && PL.on) { hold('a'); return; } } }
-    else if (k === 'gen') { if (e.phase === 1) { if (be('kid')) act = e.open > 0; } else if (e.phase === 2) { if (be('wee')) { goalX = bx - 150; if (dist < 190 && PL.on) { hold('a'); return; } } } else if (be('boy')) { goalX = bx - 110; if (dist < 180 && F % 30 === 0) press('a'); } }
+    else if (k === 'gen') { if (e.phase === 1) { if (be('kid')) act = e.open > 0; } else if (e.phase === 2) { if (be('wee')) { goalX = bx - 150; if (dist < 190 && PL.on) { hold('a'); return; } } } else if (be('boy')) { goalX = bx - 110; if (dist < 180 && e.open > 0 && !PULSE) press('a'); } }
     else if (be('kid')) act = e.open > 0;
     const gx = goalX - cx; if (Math.abs(gx) > 10) hold(gx > 0 ? 'right' : 'left'); else if ((dx > 0 ? 1 : -1) !== PL.face) hold(dx > 0 ? 'right' : 'left');
     if (act && (dx > 0 ? 1 : -1) === PL.face && F % 12 === 0) press('a');

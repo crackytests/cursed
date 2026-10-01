@@ -96,10 +96,10 @@ function arenaize(L, st) {
 }
 async function startBoss() {
   const B = BOSSES[STG.boss], st = STG; LV.bossStarted = 1;
-  if (B.arena) { ARENA = { x0: st.arenaX * TS }; const floor = st.arenaFloor || 12; for (let y = 0; y < floor; y++) LV.g[y][st.arenaX] = '#'; sfx('door'); PL.cx = ARENA.x0 + 40; PL.cy = (floor - 1) * TS + 8; } // losing your hearts here restarts the fight, not the level
+  if (B.arena) { ARENA = { x0: st.arenaX * TS }; const floor = st.arenaFloor || 12; for (let y = 0; y < floor; y++) LV.g[y][st.arenaX] = '#'; sfx('door'); PL.cx = ARENA.x0 + 40; PL.cy = (floor - 1) * TS + 8; } // losing your hearts here puts him back at the arena door, not the start of the level
   CHASE = null; if (B.music !== null) music(B.music || 'boss');
   await B.intro();
-  BOSS = Object.assign({ hp: B.hp, max: B.hp, t: 0, open: 0, hits: 0 }, B.init(st)); BOSS.def = B;
+  BOSS = Object.assign({ hp: B.hp, max: B.hp, t: 0, open: 0, hits: 0 }, B.init(st)); BOSS.def = B; BOSS.home = [BOSS.x, BOSS.y];
   banner(B.name, 90);
 }
 function bossUpdate(a) {
@@ -149,8 +149,10 @@ const BOSSES = {
     upd(e, a) {
       const FY = 12 * TS;
       if (e.air) { e.vy += .3; e.y += e.vy; if (e.y >= FY - e.h) { e.y = FY - e.h; e.air = 0; e.open = 120; sfx('land'); post.shake = 3; SHAKE_T = 10; for (const d of [-1, 1]) proj(e.x + 22 + d * 26, FY - 10, d * 2.4, 0, { icon: 'wave', g: 0, w: 12, h: 8, t: 200, hard: 1, say: 'WHUMP!' }); } return; }
-      if (!e.open) { e.x += Math.sign(PL.x - e.x) * .55; e.x = clamp(e.x, ARENA.x0 + 20, ARENA.x0 + W - 70); }
-      if (--e.cd <= 0) { e.cd = 210; e.air = 1; e.vy = -6.5; sfx('jump'); }
+      // it lumbers after him but keeps arm's length (it's a loader, not a tackler), and it backs off if he gets under it
+      if (!e.open) { const dx = PL.x - (e.x + 22), want = Math.abs(dx) > 90 ? Math.sign(dx) : Math.abs(dx) < 60 ? -Math.sign(dx || 1) : 0; e.x += want * .55; e.x = clamp(e.x, ARENA.x0 + 20, ARENA.x0 + W - 70); }
+      // two questions in, the technician panics: shorter waits, and the second half stomps twice in a row
+      if (--e.cd <= 0) { e.cd = e.hits >= 2 ? (e.double ? 40 : 160) : 210; e.double = e.hits >= 2 && !e.double; e.air = 1; e.vy = -6.5; sfx('jump'); }
       if (!e.open && e.t % 95 === 40) { const dx = PL.x - e.x; proj(e.x + 20, e.y - 6, clamp(dx / 55, -3, 3), -4, { icon: 'battery', hard: 1, say: 'ZAP!' }); }
     },
     onAsk(e) { if (e.open) bossHit(e, ['I... it\'s my job?', 'Why AM I in a robot?', 'I don\'t actually know why.', '...Can I go home too?'][e.hits] || '...'); else bossNo(e, 'CAN\'T HEAR YOU!'); },
@@ -169,7 +171,11 @@ const BOSSES = {
     weak: e => ({ x: e.x + 2, y: e.y + 6, w: 34, h: 52 }),
     upd(e, a) {
       e.y = 10 * TS - 72 + Math.round(Math.sin(e.t * .2)); if (--e.cd <= 0) { e.cd = 190; e.open = 100; sfx('ask'); }
-      if (e.t % 70 === 30) { const dx = PL.x - e.x; proj(e.x + 10, e.y + 10, clamp(dx / 55, -3.4, -.6), -3.6, { icon: 'headshot', hard: 1, say: 'SIGNED!' }); }
+      // headshots: tossed, not aimed (he isn't looking; he's posing). they lob in a little volley of two
+      if (e.t % 95 === 30 || e.t % 95 === 48) { const dx = PL.x - e.x + (rnd(5) - 2) * 18; proj(e.x + 10, e.y + 10, clamp(dx / 55, -3.4, -.6), -3.6, { icon: 'headshot', hard: 1, say: 'SIGNED!' }); }
+      // three questions in: he honks and lurches forward. back off, or get bumped
+      if (e.hits >= 3 && e.t % 300 === 150) { e.lurch = 60; sfx('powerdown'); FX.push({ t: 40, x: e.x - 10, y: e.y - 12, s: 'HONK HONK!' }); }
+      if (e.lurch > 0) { e.lurch--; e.x = e.home[0] - Math.round(Math.sin(Math.PI * (60 - e.lurch) / 60) * 70); }
       if (e.open && e.open % 33 === 10) proj(e.x, e.y + 30 + rnd(12), -3, 0, { icon: 'dvd', g: 0, hard: 1, say: 'DVD!' });
       if (e.t % 420 === 200 && ENTS.filter(x => x.kind === 'thrower').length < 2) { const t = MORE_FOES.g(e.x - 20, 9 * TS, STG); ENTS.push(t); FX.push({ t: 50, x: e.x - 40, y: e.y - 10, s: 'ENTOURAGE!' }); }
     },
@@ -183,28 +189,36 @@ const BOSSES = {
       await say('(THE BAG FROM THE CLASSROOM HOPS INTO THE GYM. SOMETHING IN IT IS VERY INTERESTED IN HIM.)');
       await say('RECESS IS OVER. INSTRUCTIONS ARE BEGINNING.', 'MISS NOSE');
       await say('I have an act! Everybody stops for the act!', WE2);
-      await say('PERFORM (PEE-WEE, HOLD A) AND SHE STOPS TO WATCH. THEN SWAP TO PEE KID (C) AND ASK HER SOMETHING (A).');
+      await say('PERFORM (PEE-WEE, HOLD A) UNTIL SHE STOPS TO WATCH. THEN SWAP TO PEE KID (C) AND ASK HER SOMETHING (A). SHE GETS HARDER TO IMPRESS.');
     },
     init(st) { return { x: ARENA.x0 + 200, y: 12 * TS - 30, w: 30, h: 30, vx: 0, vy: 0, air: 0, cd: 80, watch: 0 }; },
     weak: e => ({ x: e.x - 4, y: e.y - 24, w: 38, h: 54 }),
     upd(e, a) {
       const FY = 12 * TS; if (e.watch > 0) { e.watch--; e.open = e.watch; return; }
       if (e.air) { e.vy += .3; e.x = clamp(e.x + e.vx, ARENA.x0 + 20, ARENA.x0 + W - 50); e.y += e.vy; if (e.y >= FY - e.h) { e.y = FY - e.h; e.air = 0; sfx('land'); } return; }
-      if (--e.cd <= 0) { e.cd = 110; e.air = 1; e.vy = -6; e.vx = Math.sign(PL.x - e.x) * 1.8; }
+      const show = PL.act && Math.abs(e.x - PL.x) < 160; if (!show) e.won = 0; // stop the act and you lose her
+      if (!show && --e.cd <= 0) { e.cd = 110 - e.hits * 15; e.air = 1; e.vy = -6; e.vx = Math.sign(PL.x - e.x) * (1.8 + e.hits * .3); }
       if (e.t % 60 === 20) { const W8 = pick(['SIT.', 'STAND.', 'BE THE FIRE.', 'HOLD IT.', 'NO RUNNING.']); proj(e.x + 6, e.y - 10, Math.sign(PL.x - e.x) * 2.4, 0, { icon: 'word', word: W8, g: 0, w: W8.length * 6, h: 9, hard: 1, say: 'DISRUPTIVE!' }); }
     },
-    onPerform(e) { if (!e.watch) { e.watch = 150; e.air = 0; e.y = 12 * TS - e.h; sfx('crowd'); FX.push({ t: 50, x: e.x - 20, y: e.y - 30, s: 'SHE\'S WATCHING.' }); } },
-    onAsk(e) { if (e.watch) { bossHit(e, ['THAT IS A QUESTION. QUESTIONS ARE DISRUPTIVE.', 'WHO TOLD YOU YOU COULD ASK?', 'I... DON\'T HAVE AN ANSWER FOR THAT.', 'RE-EVALUATING.'][e.hits] || '...'); e.watch = 0; } else bossNo(e, 'RAISE YOUR HAND FIRST.'); },
+    // she's a tough crowd: the act has to win her over (longer every time), and she watches for less each time
+    onPerform(e) { if (e.watch || e.air) return; e.won = (e.won || 0) + 1; const need = 30 + e.hits * 25;
+      if (e.won % 20 === 0 && e.won < need) FX.push({ t: 24, x: e.x - 10, y: e.y - 30, s: pick(['...HM.', 'GO ON.', 'AND?', '...']) });
+      if (e.won >= need) { e.won = 0; e.watch = 150 - e.hits * 25; e.y = 12 * TS - e.h; sfx('crowd'); FX.push({ t: 50, x: e.x - 20, y: e.y - 30, s: 'SHE\'S WATCHING.' }); } },
+    onAsk(e) { if (e.watch) { bossHit(e, ['THAT IS A QUESTION. QUESTIONS ARE DISRUPTIVE.', 'WHO TOLD YOU YOU COULD ASK?', 'I... DON\'T HAVE AN ANSWER FOR THAT.', 'RE-EVALUATING.'][e.hits] || '...'); e.watch = 0; e.cd = 30; } else bossNo(e, 'RAISE YOUR HAND FIRST.'); },
     draw(e, x, y) { const sq = e.air ? 0 : 2; rectF(x, y + sq, 30, 30 - sq, hex('#806040')); rectF(x + 2, y + 2 + sq, 26, 3, hex('#a07850')); rectF(x + 12, y - 4 + sq, 6, 6, hex('#604020'));
-      if (e.watch || e.t % 60 < 30) { const hy = y - 20; circF(x + 15, hy + 8, 10, hex('#f8f0f0')); circF(x + 15, hy + 11, 3, hex('#f82020')); rectF(x + 9, hy + 4, 3, 3, BLACK); rectF(x + 18, hy + 4, 3, 3, BLACK); circF(x + 5, hy + 1, 4, hex('#f86828')); circF(x + 25, hy + 1, 4, hex('#f86828')); if (e.watch && (frame >> 3) & 1) text('!', x + 13, hy - 12, hex('#f8f800')); } },
+      if (e.watch || e.t % 60 < 30) { const hy = y - 20; circF(x + 15, hy + 8, 10, hex('#f8f0f0')); circF(x + 15, hy + 11, 3, hex('#f82020')); rectF(x + 9, hy + 4, 3, 3, BLACK); rectF(x + 18, hy + 4, 3, 3, BLACK); circF(x + 5, hy + 1, 4, hex('#f86828')); circF(x + 25, hy + 1, 4, hex('#f86828')); if (e.watch && (frame >> 3) & 1) text('!', x + 13, hy - 12, hex('#f8f800')); }
+      if (e.won && !e.watch) { const need = 30 + e.hits * 25; rectF(x - 4, y - 36, 38, 4, BLACK); rectF(x - 3, y - 35, Math.round(36 * Math.min(1, e.won / need)), 2, hex('#f878b8')); } },
     async outro() { SAVE.bagDone = 1; await say('THAT WAS... A GOOD ACT. NOTED.', 'MISS NOSE'); await say('NOW. CLASS IS IN SESSION.', 'MISS NOSE'); } },
   // ---- 4-2: THE FIGURE. a chase across the rooftops. he always gets away. inspect him for evidence while you can ----
   figure: { key: 'figure', name: 'THE FIGURE', hp: 1, arena: 0, music: null, harmless: 1,
     async intro() { await say('(ON THE NEXT ROOF: A FIGURE. IT SEES HIM. IT RUNS.)'); await say('That\'s him. That\'s... someone. Stay on him.', BY2); await say('KEEP UP. INSPECT HIM (A) WHEN YOU\'RE CLOSE: EVERY CLUE COUNTS. HE ALWAYS GETS AWAY. THAT\'S NOT THE POINT.'); },
-    init(st) { return { x: PL.x + 140, y: 0, w: 0, h: 0, harmless: 1, ev: SAVE.evidence || 0, evCool: 0, goneAt: 118 * TS }; },
+    init(st) { return { x: PL.x + 140, y: PL.y, w: 0, h: 0, harmless: 1, ev: SAVE.evidence || 0, evCool: 0, goneAt: 118 * TS }; },
     upd(e, a) {
-      const lead = e.x - PL.x, sp = lead < 100 ? 2.7 : lead > 190 ? 0 : 1.9; // close enough to see, never close enough to catch e.x += sp; if (e.evCool > 0) e.evCool--;
-      let gy = LH * TS; for (let ty = 0; ty < LH; ty++) if (solidAt(Math.floor((e.x + 6) / TS), ty)) { gy = ty * TS; break; } e.y += ((gy - 40) - e.y) * .2;
+      const lead = e.x - PL.x, sp = lead < 100 ? 2.7 : lead > 190 ? 0 : 1.9; // close enough to see, never close enough to catch
+      e.x += sp; if (e.evCool > 0) e.evCool--;
+      // runs the rooftops; over a gap he's mid-leap (keeps his height, a little arc)
+      let gy = null; for (let ty = 0; ty < LH; ty++) if (solidAt(Math.floor((e.x + 6) / TS), ty)) { gy = ty * TS; break; }
+      if (gy !== null) e.y += ((gy - 24) - e.y) * .2; else e.y -= sp * .4;
       if (sp === 0 && frame % 90 === 0) FX.push({ t: 40, x: e.x - 4, y: e.y - 12, s: '...' });
       if (e.x >= e.goneAt) { e.hp = 0; }
     },
@@ -217,7 +231,7 @@ const BOSSES = {
     async intro() {
       await say('(THE HEART OF THE THIRD GENERATOR. IT HAS STOPPED ASKING NICELY. IT HAS STARTED ASKING LOUDLY.)');
       await say('It wants all three of us.', KD2); await say('Then it gets all three of us! One at a time!', WE2); await say('In order. Like a procedure.', BY2);
-      await say('FIRST: PEE KID ASKS THE EYE WHEN IT OPENS. THEN: PEE-WEE PERFORMS UNTIL IT CALMS DOWN. LAST: PEE BOY INSPECTS ITS PANELS, ONE BY ONE.');
+      await say('FIRST: PEE KID ASKS THE EYE WHEN IT OPENS. THEN: PEE-WEE PERFORMS UNTIL IT CALMS DOWN. LAST: PEE BOY INSPECTS ITS PANELS, ONE BY ONE, WHEN THEY RATTLE.');
     },
     init(st) { return { x: ARENA.x0 + 214, y: 12 * TS - 128, w: 80, h: 128, phase: 1, calm: 0, panel: 0, cd: 100 }; },
     weak: e => ({ x: e.x + 6, y: e.y + 36, w: 50, h: 76 }),
@@ -225,16 +239,31 @@ const BOSSES = {
       if (e.t % (e.phase === 2 && PL.act ? 9999 : 120) === 50 && ENTS.filter(x => x.kind === 'spark').length < 3) { const s = MORE_FOES.z(e.x - 10, e.y + 40, STG); s.vx = -1.6; ENTS.push(s); }
       if (e.t % 160 === 90 && !(e.phase === 2 && PL.act)) proj(e.x - 4, 12 * TS - 10, -2.3, 0, { icon: 'wave', g: 0, w: 12, h: 8, t: 220, hard: 1, say: 'SURGE!' });
       if (e.phase === 1 && --e.cd <= 0) { e.cd = 170; e.open = 100; sfx('stun'); }
-      if (e.phase === 2 && PL.act && Math.abs(e.x - PL.x) < 200) { e.calm++; if (e.calm % 30 === 0) FX.push({ t: 40, x: e.x - 20, y: e.y + 10, s: 'IT\'S WATCHING.' }); if (e.calm >= 180) { e.phase = 3; e.hp = 3; sfx('get'); FX.push({ t: 80, x: e.x - 40, y: e.y, s: 'CALM. PANELS EXPOSED.' }); } }
+      if (e.phase === 2 && PL.act && Math.abs(e.x - PL.x) < 200) { e.calm++; if (e.calm % 30 === 0) FX.push({ t: 40, x: e.x - 20, y: e.y + 10, s: 'IT\'S WATCHING.' }); if (e.calm >= 180) { e.phase = 3; e.hp = 3; e.cd = 60; sfx('get'); banner('PEE BOY: INSPECT', 70); FX.push({ t: 80, x: e.x - 40, y: e.y, s: 'CALM. PANELS EXPOSED.' }); } }
+      else if (e.phase === 2 && e.calm > 0) e.calm = Math.max(0, e.calm - .5); // stop the show and it winds back up
+      // the panels only rattle loose now and then: inspect while one is rattling
+      if (e.phase === 3 && --e.cd <= 0) { e.cd = 150; e.open = 70; sfx('stun'); }
     },
-    onAsk(e) { if (e.phase !== 1) return bossNo(e, e.phase === 2 ? 'IT WANTS A SHOW.' : 'IT WANTS TO BE LOOKED AT. CLOSELY.'); if (e.open) { bossHit(e, ['WHY DO YOU NEED HIM?', 'WHAT HAPPENS IF HE LEAVES?'][e.hits] || '...'); if (e.hits >= 2) { e.phase = 2; e.hp = 4; FX.push({ t: 80, x: e.x - 50, y: e.y, s: 'IT\'S SCREAMING. GIVE IT A SHOW.' }); } } else bossNo(e, 'THE EYE IS CLOSED.'); },
-    onInspect(e) { if (e.phase !== 3) return; if (Math.abs(e.x - PL.x) > 190) return; e.panel++; e.hp = 3 - e.panel; sfx('object'); FX.push({ t: 60, x: e.x - 20, y: e.y + 20 + e.panel * 20, s: 'PANEL ' + e.panel + ' UNBOLTED.' }); },
+    bar(e, x, y, w) { const seg = (w - 8) / 3, prog = [Math.min(2, e.hits) / 2, e.phase > 2 ? 1 : e.phase === 2 ? e.calm / 180 : 0, e.phase === 3 ? e.panel / 3 : 0];
+      ['ASK', 'SHOW', 'LOOK'].forEach((l, i) => { const sx = x + i * (seg + 4), on = e.phase === i + 1; frameRect(sx, y, seg, 6, on ? WHITE : UI.dim); rectF(sx + 1, y + 1, Math.round((seg - 2) * Math.min(1, prog[i])), 4, hex(['#f878b8', '#f8e040', '#38f0f8'][i])); if (on) text(l, sx + seg - l.length * 6, y - 10, UI.dim, 0); }); },
+    onAsk(e) { if (e.phase !== 1) return bossNo(e, e.phase === 2 ? 'IT WANTS A SHOW.' : 'IT WANTS TO BE LOOKED AT. CLOSELY.'); if (e.open) { bossHit(e, ['WHY DO YOU NEED HIM?', 'WHAT HAPPENS IF HE LEAVES?'][e.hits] || '...'); if (e.hits >= 2) { e.phase = 2; e.hp = 4; banner('PEE-WEE: PERFORM', 70); FX.push({ t: 80, x: e.x - 50, y: e.y, s: 'IT\'S SCREAMING. GIVE IT A SHOW.' }); } } else bossNo(e, 'THE EYE IS CLOSED.'); },
+    onInspect(e) { if (e.phase !== 3) return; if (Math.abs(e.x - PL.x) > 190) return; if (!e.open) return bossNo(e, 'BOLTED TIGHT. WAIT FOR THE RATTLE.'); e.open = 0; e.panel++; e.hp = 3 - e.panel; sfx('object'); FX.push({ t: 60, x: e.x - 20, y: e.y + 20 + e.panel * 20, s: 'PANEL ' + e.panel + ' UNBOLTED.' }); },
     draw(e, x, y) { const pulse = (frame >> 3) & 1; rectF(x, y, 80, 128, hex('#482020')); frameRect(x, y, 80, 128, hex('#f84818')); for (let i = 0; i < 6; i++) rectF(x + 8, y + 10 + i * 18, 64, 4, pulse && e.phase !== 2 ? hex('#f8f818') : hex('#904040'));
       circF(x + 32, y + 64, 18, hex('#100808')); if (e.phase === 1 && e.open) { circF(x + 32, y + 64, 14, WHITE); circF(x + 32, y + 64, 6, hex('#f84818')); } else rectF(x + 16, y + 63, 32, 2, hex('#f84818'));
-      if (e.phase === 3) for (let k = 0; k < 3; k++) { const px = x + 54, py = y + 20 + k * 34; rectF(px, py, 20, 24, k < e.panel ? hex('#100808') : hex('#c06030')); if (k >= e.panel) { pset(px + 2, py + 2, WHITE); pset(px + 17, py + 2, WHITE); pset(px + 2, py + 21, WHITE); pset(px + 17, py + 21, WHITE); } }
+      if (e.phase === 3) for (let k = 0; k < 3; k++) { const px = x + 54 + (k === e.panel && e.open ? ((frame >> 1) & 1) * 3 - 1 : 0), py = y + 20 + k * 34; rectF(px, py, 20, 24, k < e.panel ? hex('#100808') : hex('#c06030')); if (k >= e.panel) { pset(px + 2, py + 2, WHITE); pset(px + 17, py + 2, WHITE); pset(px + 2, py + 21, WHITE); pset(px + 17, py + 21, WHITE); } }
       if (e.phase === 2) { rectF(x - 40, y - 12, 160, 6, BLACK); rectF(x - 39, y - 11, Math.round(158 * e.calm / 180), 4, hex('#f878b8')); text('CALM', x - 40, y - 22, WHITE, 0); }
       text('THIRD', x + 20, y + 112, hex('#f8c8a8'), 0); },
     async outro() { await say('(THE GENERATOR GOES QUIET. IT ONLY EVER RAN ON WHAT HE COULD DO. FOR A MOMENT IT HAS NOTHING TO DO.)'); } },
+};
+// out of hearts mid-fight: he's back by the arena door, so the boss steps back to its corner and the air clears.
+// (it used to keep standing on the respawn spot: CLANK, respawn, CLANK...) Progress on the boss is kept.
+const _respawnPK = respawn;
+respawn = function () {
+  _respawnPK();
+  const e = BOSS; if (!e || e.done || !ARENA) return;
+  [e.x, e.y] = e.home; e.vy = 0; e.air = 0; e.watch = 0;
+  ENTS = ENTS.filter(x => x.kind !== 'proj' && x.kind !== 'spark' && x.kind !== 'thrower');
+  PL.hurt = 120;
 };
 // the figure has no arena: it starts when he reaches the second roof
 BOSSES.figure.startAt = 6;
