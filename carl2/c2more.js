@@ -408,6 +408,7 @@ MAPS2.marina = { theme: 'lake', name: 'LAKE MEAD MARINA', music: () => WD.arena 
     { id: 'coolguy', tx: 9, ty: 2, spr: () => CS.people.coolguy, anim: 40, label: 'FONZ-O-RAMA', reach: 18, talk: () => coolGuyTalk() },
     { id: 'oldsalt', tx: 20, ty: 2, spr: () => CS.people.oldsalt, anim: 46, label: 'BAIT, TACKLE & RAMP', reach: 18, talk: () => oldSaltTalk() },
     { id: 'tower', tx: 32, ty: 12, solid: 1, hw: 8, hh: 5, draw: e => { const x = e.x - camX, y = e.y - camY; for (const dx of [-7, 5]) rectF(x + dx, y - 30, 2, 30, WHITE); rectF(x - 9, y - 34, 18, 5, hex('#db2424')); rectF(x - 8, y - 40, 16, 6, WHITE); if (!F2('skisWon') && !WD.arena) { const s = CS.people.lifeguard[(WD.t >> 5) & 1]; draw(s, x - 8, y - 62, s.P); } } },
+    { id: 'rope', tx: 27, ty: 10, hw: 16, hh: 6, solid: 1, if: () => !!WD.arena, draw: e => { const x = e.x - camX + 8, y = e.y - camY; for (const dx of [-15, 13]) rectF(x + dx, y - 14, 2, 14, hex('#b6926d')); for (let i = 0; i < 7; i++) rectF(x - 14 + i * 4, y - 11 + (i & 1), 4, 2, i & 1 ? WHITE : hex('#db2424')); } },
     lootCrate('marina1', 33, 2, 'LOST & FOUND BIN'),
   ],
   spawns: [{ k: 'gull', x: 14, y: 7, if: () => F2('marinaQuest') }, { k: 'gull', x: 26, y: 8, if: () => F2('marinaQuest') }, { k: 'jetski', x: 18, y: 8, if: () => F2('marinaQuest') && !F2('skisWon') }],
