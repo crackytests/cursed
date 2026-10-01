@@ -302,6 +302,7 @@ Script load order is `engine2`, `fm`, `pkart`, `pkplat`, `pkstages`, `pkstory`, 
   - Add `CH=n` to start at chapter n.
   - The bot (`ybot.js`) explores scenes least-tried-first, plays the battles with a real support policy, picks debate answers, and walks to the console.
 - Real browser: run `python3 -m http.server 8731` in the repo root, then `node tools/browser.js face/ 30`. It uses the global Playwright and reports console errors and frame cost.
+- Music harmony: `node tools/musiclint.js carl2|yoko|face [track]` lists each channel's loop length (`DRIFT` means the parts slide out of sync: every loop length should divide the longest) and the steps where two voices clash by a semitone. With a track name it prints every clash. Short passing notes are fine; held ones sound rough.
 - Music tone: with the same server, `node tools/audio.js yoko/ all 16 [wavDir]` renders every track offline and prints loudness, spectral centroid and the share of energy per band (below 250 Hz is the body; 2 kHz and up is the tin). With `wavDir` it writes WAVs to listen to.
 
 ### CARL 2 tools
