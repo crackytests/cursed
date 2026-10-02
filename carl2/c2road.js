@@ -303,7 +303,7 @@ async function inSpace(mode) {
       all.sort((a, b) => b.z - a.z);
       for (const it of all) {
         if (it.o) { const o = it.o, [sx, sy, k] = spProj(o.x, o.y, o.z), S = o.k === 'boss' ? RS.syn[(SP.t >> 4) & 1] : RS[o.k], sc = k * (o.k === 'boss' ? .03 : .0075) * (o.sz || 1); const [fx, fy] = spProj(o.x, 1, o.z); rectA(fx - S.w * sc / 3, fy, S.w * sc * .66, 3, BLACK, .3);
-          if (o.fl > 0) { o.fl--; drawScaledTint(S, sx - S.w * sc / 2, sy - S.h * sc / 2, sc, WHITE); } else drawSC(S, sx - S.w * sc / 2, sy - S.h * sc / 2, RP[o.k === 'boss' ? 'syn' : o.k === 'rock' ? 'rock' : o.k], sc, H); }
+          if (o.fl > 0 && (o.fl-- & 2)) { drawScaledTint(S, sx - S.w * sc / 2, sy - S.h * sc / 2, sc, WHITE); } else drawSC(S, sx - S.w * sc / 2, sy - S.h * sc / 2, RP[o.k === 'boss' ? 'syn' : o.k === 'rock' ? 'rock' : o.k], sc, H); }
         else if (it.s) { const [sx, sy, k] = spProj(it.s.x, it.s.y, it.s.z); const ic = bongIcon(it.s.b); drawSC(ic.s, sx - ic.s.w * k * .006, sy - ic.s.h * k * .006, ic.P, Math.max(.2, k * .012), H); }
         else { const [sx, sy, k] = spProj(it.e.x, it.e.y, it.e.z); circF(sx, sy, Math.max(1.5, k * .025), hex('#ff2424')); pset(sx, sy, WHITE); }
       }
@@ -325,7 +325,7 @@ function spawnSP(k, x, y, hp, o = {}) { SP.obj.push(Object.assign({ k, x, y, z: 
 function fireSP(o, n = 1) { for (let i = 0; i < n; i++) { const tx = (SP.px - W / 2) / SP.F, ty = (SP.py - 12 - SP.hor) / SP.F; SP.eshots.push({ x: o.x, y: o.y, z: o.z, vx: (tx - o.x) / (o.z / .09) + (i - (n - 1) / 2) * .012, vy: (ty - o.y) / (o.z / .09) }); } sfx('blip', [300, 40]); }
 function killSP(o) { o.dead = 1; const [sx, sy] = spProj(o.x, o.y, o.z); SP.fx.push({ x: sx, y: sy, t: 20 }); sfx('blip', [120, 40]); C2.bux += 1; if (o.k === 'pretz' && Math.random() < .3 && SP.hp < SP.maxhp) { SP.hp++; tickRoad('SPACE PRETZEL. +1 COOL.', 'CARL'); } DBG.kills = (DBG.kills || 0) + 1; if (o.k === 'boss') { SP.res.boss = 1; } }
 function spHurt() { if (SP.inv > 0 || DBG.god) return; SP.hp--; SP.inv = 70; sfx('hurt'); WD.shake = 12; tickRoad(pick(['Ow. OW. Space hurts.', 'Hit! I got hit. By space.', 'Okay I\'m fine, the A.S.S. is fine, nobody say it.']), 'CARL'); }
-function spawnBoss() { SP.boss = { k: 'boss', x: 0, y: -.35, z: 7, hp: 160, max: 160, r: .8, t: 0, sz: 1 }; SP.obj.push(SP.boss); tickRoad('THIS IS THE SYNDICATOR. EVERYTHING YOU DO WILL BE SHOWN AGAIN. FOREVER.', 'HEAD OF CONTENT'); }
+function spawnBoss() { SP.boss = { k: 'boss', x: 0, y: -.35, z: 7, hp: 160, max: 160, r: .8, t: 0, sz: 1, wz: 0 }; SP.obj.push(SP.boss); tickRoad('THIS IS THE SYNDICATOR. EVERYTHING YOU DO WILL BE SHOWN AGAIN. FOREVER.', 'HEAD OF CONTENT'); }
 function bossUpdSP(o) {
   o.x = Math.sin(o.t * .012) * .9; o.y = -.35 + Math.sin(o.t * .021) * .25; o.z = 6.5 + Math.sin(o.t * .008) * 1.5;
   if (o.t % 80 === 0) fireSP(o, o.hp < o.max / 2 ? 5 : 3);

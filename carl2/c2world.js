@@ -101,7 +101,7 @@ function spawnEnemy(k, x, y, o = {}) {
   const T = ENEMY[k]; if (!T) { console.error('no enemy', k); return null; }
   const lv = C2.ep || 1, hpScale = 1 + (lv - 1) * .28, hw0 = T.hw || 6;
   if (!T.ghost && !boxFree(x, y - 4, hw0, 4)) { let best = null, bd = 1e9; for (let dy = -48; dy <= 48; dy += 4) for (let dx = -48; dx <= 48; dx += 4) { const d = dx * dx + dy * dy; if (d < bd && boxFree(x + dx, y + dy - 4, hw0, 4)) { bd = d; best = [x + dx, y + dy]; } } if (best) [x, y] = best; }
-  const e = addEnt(Object.assign({ kind: 'enemy', k, x, y, hp: Math.round(T.hp * hpScale), spd: T.spd, ai: T.ai, dmg: T.dmg + Math.floor((lv - 1) / 2), hw: T.hw || 6, hh: 4, rad: 7, cd: 60 + rnd(90), dir: rnd(4), anim: T.anim || 14, spr: T.spr, P: T.P ? T.P() : null, T }, o));
+  const e = addEnt(Object.assign({ kind: 'enemy', k, x, y, hp: Math.round(T.hp * hpScale), spd: T.spd, ai: T.ai, dmg: T.dmg + Math.floor((lv - 1) / 2), hw: T.hw || 6, hh: 4, rad: 7, cd: 60 + rnd(90), dir: rnd(4), anim: T.anim || 14, spr: T.spr, P: T.P ? T.P() : null, draw: T.draw, T }, o));
   e.maxhp = e.hp; if (!e.P) { const s = entSprite(e); e.P = s && s.P; }
   if (WD.arena) e.arenaSpawned = 1; // only the fight's own enemies hold an arena shut
   return e;
