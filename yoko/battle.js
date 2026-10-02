@@ -88,7 +88,8 @@ const FOE = {
   guard: { name: 'MANDOLIN GUARD', hp: 18, atk: 5, spr: 'guard', lang: '♪~ HALT, FRIEND, HALT ~♪',
     think(f) { const t = pick(liveAllies()); return Math.random() < .5 ? { k: 'hit', t, pow: 5, text: 'A VERSE ABOUT ' + t.name + '. IT\'S NOT FLATTERING. (5 DAMAGE)' } : { k: 'tidy', text: 'A BALLAD. IT HEALS THE OTHER GUARDS.' }; } },
   test: { name: 'THE TEST', hp: 72, atk: 8, spr: 'test', big: 1, onlyRiddle: 1, lang: 'ANSWER.',
-    think(f) { const av = RIDDLES.filter(r => r.a === 'YOKO' || BT.allies.some(a => a.key === r.a && a.hp > 0)), R = av[f.turn % av.length]; return { k: 'riddle', r: R, pow: 8, text: 'THE RIDDLE: "' + R.q + '"  IT WANTS THAT PERSON TO ACT. (WRONG: EVERYONE TAKES 8)' }; } },
+    // it repeats a riddle until someone answers it, then moves on to the next one nobody has answered yet
+    think(f) { const av = RIDDLES.filter(r => r.a === 'YOKO' || BT.allies.some(a => a.key === r.a && a.hp > 0)); f.solved = f.solved || {}; const R = av.find(r => !f.solved[r.q]) || av[f.turn % av.length]; return { k: 'riddle', r: R, pow: 8, text: 'THE RIDDLE: "' + R.q + '"  IT WANTS THAT PERSON TO ACT. (WRONG: EVERYONE TAKES 8)' }; } },
   lindalite: { name: 'LINDA LITE', hp: 16, atk: 5, spr: 'linda', franchise: 1, lang: 'COMPANIONSHIP AT TWENTY PERCENT.',
     think(f) { const t = pick(liveAllies()); return Math.random() < .5 ? { k: 'sell', t, text: 'SHE\'S GOING TO SELL ' + t.name + ' COMPANIONSHIP. ' + t.name + ' WILL LOSE TWO TURNS.' } : { k: 'hit', t, pow: 5, text: 'SHE\'S GOING TO UPSELL ' + t.name + '. (5 DAMAGE)' }; } },
   lindamax: { name: 'LINDA MAX', hp: 24, atk: 7, spr: 'lindamax', franchise: 1, lang: 'COMPANIONSHIP AT ONE HUNDRED PERCENT. NON-REFUNDABLE.',
@@ -149,7 +150,8 @@ async function yokoTurn() {
     if (cost > BT.fp) { sfx('tick'); BT.msg = 'NOT ENOUGH FOCUS.'; await wait(40); continue; }
     if (cmd === 'WAIT') { BT.fp = Math.min(BT.fpMax, BT.fp + 2); await note1('YOKO WAITS. SHE\'S PAYING ATTENTION. (+2 FOCUS)'); return; }
     if (cmd === 'ASSIST') { const a = await pickAlly('ASSIST WHO?', a => a.hp > 0); if (!a) continue; BT.fp -= cost; a.pot = Math.min(3, a.pot + 1); a.trust = Math.min(100, a.trust + 3); a.lit = 1; YREC.assist++; sfx('ok'); await note1(pick(['YOKO HELPS ', 'YOKO STEADIES ', 'YOKO QUIETLY SETS UP ']) + a.name + '. POTENTIAL ' + a.pot + '/3.' + (a.pot >= 3 ? ' (REALIZED NEXT TURN!)' : '')); return; }
-    if (cmd === 'TRANSLATE') { const f = await pickFoe('TRANSLATE WHO?', f => !f.known); if (!f) continue; BT.fp -= cost; f.known = true; YREC.translate++; sfx('switch'); await say('"' + f.lang + '"', f.name); await say('It means: ' + f.intent.text.toLowerCase(), 'YOKO'); return; }
+    if (cmd === 'TRANSLATE') { if (!liveFoes().some(f => !f.known)) { sfx('tick'); BT.msg = 'SHE ALREADY UNDERSTANDS EVERYONE HERE. WHAT THEY\'LL DO IS SHOWN ABOVE.'; await wait(70); continue; }
+      const f = await pickFoe('TRANSLATE WHO?', f => !f.known); if (!f) continue; BT.fp -= cost; f.known = true; YREC.translate++; sfx('switch'); await say('"' + f.lang + '"', f.name); await say('It means: ' + f.intent.text.toLowerCase(), 'YOKO'); return; }
     if (cmd === 'SUGGEST') { const a = await pickAlly('SUGGEST TO WHO?', a => a.hp > 0); if (!a) continue; const mv = await choose(ALLY[a.key].moves.concat(BT.def.extraMoves ? BT.def.extraMoves(a) : []), { x: 150, y: 60, cancel: 1 }); if (mv < 0) continue; const m = ALLY[a.key].moves.concat(BT.def.extraMoves ? BT.def.extraMoves(a) : [])[mv]; if (m === 'ANSWER') { YREC.suggest++; await answerRiddle(a.key, a.name); return; } let t = null; if (needsTarget(m)) { t = await pickFoe(m + ' WHO?', () => true); if (!t) continue; } a.sug = { m, t }; YREC.suggest++; await note1('YOKO SUGGESTS: ' + a.name + ', ' + m + (t ? ' ' + t.name : '') + '.'); return; }
     if (cmd === 'RESTORE') { const a = await pickAlly('RESTORE WHO?', a => a.hp <= 0); if (!a) { BT.msg = 'NOBODY IS DOWN.'; await wait(30); continue; } BT.fp -= cost; a.hp = Math.ceil(a.max / 2); a.st = {}; YREC.restore++; partyState(a.key).restored++; sfx('get'); await note1('YOKO RESTORES ' + a.name + ' FROM BACKUP. HE COMES BACK A LITTLE DIFFERENT. THEY ALWAYS DO.'); return; }
     if (cmd === 'OVERRULE') { const a = await pickAlly('OVERRULE WHO?', a => a.hp > 0); if (!a) continue; const ms = ALLY[a.key].moves.concat(BT.def.extraMoves ? BT.def.extraMoves(a) : []), mv = await choose(ms, { x: 150, y: 60, cancel: 1 }); if (mv < 0) continue; let t = null; if (needsTarget(ms[mv])) { t = await pickFoe(ms[mv] + ' WHO?', () => true); if (!t) continue; } BT.fp -= cost; a.forced = { m: ms[mv] === 'ANSWER' ? 'WAIT' : ms[mv], t }; a.trust = Math.max(0, a.trust - 12); YREC.overrule++; sfx('stun'); post.flash = .25; await say(pick(['Do it.', 'Now.', 'This one. Not a suggestion.']), 'YOKO', { port: CAST.mood['EVIL YOKO'].cold }); const rf = liveFoes().find(x => x.intent && x.intent.k === 'riddle'); if (rf && rf.intent.r.a === 'YOKO') await answerRiddle('YOKO', 'YOKO'); return; }
@@ -160,7 +162,7 @@ const needsTarget = m => ['ATTACK', 'THROW BONG', 'ACCUSE', 'SIGIL', 'BOO', 'ASK
 async function answerRiddle(k, name) {
   const f = liveFoes().find(x => x.intent && x.intent.k === 'riddle'); if (!f) return note1('THERE\'S NO QUESTION RIGHT NOW.');
   await say(k === 'YOKO' ? 'Me. I help. Then I decide.' : 'It\'s ' + name + '.', 'YOKO');
-  if (f.intent.r.a === k) { dmg(null, f, 18, 1); f.intent = { k: 'watch', text: 'CORRECT. IT\'S RECALCULATING.' }; sfx('object'); YREC.riddles = (YREC.riddles || 0) + 1; await note1('CORRECT. THE TEST CRACKS.'); }
+  if (f.intent.r.a === k) { (f.solved = f.solved || {})[f.intent.r.q] = 1; dmg(null, f, 18, 1); f.intent = { k: 'watch', text: 'CORRECT. IT\'S RECALCULATING.' }; sfx('object'); YREC.riddles = (YREC.riddles || 0) + 1; await note1('CORRECT. THE TEST CRACKS.'); }
   else { sfx('tick'); await note1('WRONG. THE TEST HUMS. (TRANSLATE IT TO HEAR THE RIDDLE.)'); }
 }
 async function pickAlly(q, ok) { BT.msg = q; const L = BT.allies.filter(ok); if (!L.length) return null; const i = await choose(L.map(a => a.name), { x: 150, y: 60, cancel: 1 }); return i < 0 ? null : L[i]; }
@@ -264,6 +266,10 @@ const battleScene = {
       text(f.name.slice(0, 13), x - Math.min(13, f.name.length) * 3, y + 9, WHITE, BLACK);
       const it = f.known ? intentTag(f) : '???'; const w = it.length * 6 + 6; rectF(x - w / 2, 4 + (i & 1) * 12, w, 10, f.known ? hex('#24246d') : hex('#242424')); frameRect(x - w / 2, 4 + (i & 1) * 12, w, 10, f.known ? hex('#92ffff') : hex('#6d6d6d')); text(it, x - w / 2 + 3, 5 + (i & 1) * 12, f.known ? hex('#92ffff') : UI.dim, 0);
     });
+    // a translated riddle stays on screen, with how to answer it
+    const rf = shown.find(f => f.known && f.intent && f.intent.k === 'riddle');
+    if (rf) { rectA(8, 30, W - 16, 24, BLACK, .75); frameRect(8, 30, W - 16, 24, hex('#92ffff')); ctext('"' + rf.intent.r.q + '"', 33, hex('#92ffff'), 0);
+      ctext(rf.intent.r.a === 'YOKO' ? 'NOBODY SUGGESTS TO HER. SHE DECIDES: OVERRULE.' : 'SUGGEST > WHO IT\'S ABOUT > ANSWER', 43, UI.dim, 0); }
     // ally cards
     const n = BT.allies.length, cw = 78, x0 = (W - n * cw) / 2 | 0;
     BT.allies.forEach((a, i) => {

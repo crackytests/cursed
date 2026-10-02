@@ -45,7 +45,8 @@ SCN.testgate = { title: 'THE GATE', bg: SB.testgate, people: () => [],
     await battle({ foes: ['guard', 'guard'], party: partyNow(), bg: 'testgate', music: 'battle2' });
     await say('(THE GATE OPENS. INSIDE: SOMETHING THAT ASKS QUESTIONS.)');
     await say('ANSWER.', 'THE TEST');
-    await say('THE TEST ASKS RIDDLES, AND ONLY A RIGHT ANSWER HURTS IT. TRANSLATE IT TO HEAR THE RIDDLE, THEN SUGGEST THE RIGHT PERSON "ANSWER." ONE RIDDLE IS ABOUT SOMEONE WHO CAN\'T BE SUGGESTED TO.');
+    await say('THE TEST ASKS RIDDLES ABOUT THE PEOPLE HERE, AND ONLY A RIGHT ANSWER HURTS IT. TRANSLATE IT ONCE: FROM THEN ON ITS RIDDLE STAYS ON SCREEN.');
+    await say('TO ANSWER: SUGGEST, PICK WHO THE RIDDLE IS ABOUT, THEN "ANSWER." A RIDDLE REPEATS UNTIL IT\'S ANSWERED. ONE OF THEM IS ABOUT SOMEONE NOBODY CAN SUGGEST TO.');
     await battle({ foes: ['test'], party: partyNow(), bg: 'testgate', music: 'boss', extraMoves: () => ['ANSWER'],
       onRound: async r => { const f = BT.foes[0]; if (f && f.intent && f.intent.k === 'riddle' && f.intent.r.a === 'YOKO') { BT.yokoRiddle = 1; } else BT.yokoRiddle = 0; } });
     await say('...YOU PASSED.', 'THE TEST');
