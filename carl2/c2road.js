@@ -102,7 +102,7 @@ function renderRoad(pal2) {
 }
 function renderRoadSprites(extra) {
   for (let n = RD.draw.length - 1; n > 0; n--) {
-    const s = RD.draw[n]; if (s.p1.cz < RD.segL * 1.2) continue;
+    const s = RD.draw[n]; if (s.p1.cz < (RD.nearCut || RD.segL * 1.2)) continue;
     const sc = s.p1.sc * W / 2 * RD.roadW * (RD.sprScale || .0036);
     for (const o of s.spr) { const S = RS[o.k], P = RP[o.p || o.k]; if (!S || o.dead) continue; const ss = Array.isArray(S) ? S[0] : S, k = sc * (o.sz || 1); const sx = s.p1.sx + s.p1.sc * o.off * RD.roadW * W / 2 - ss.w * k / 2, sy = s.p1.sy - ss.h * k; drawSC(ss, sx, sy, P, k, s.clip, o.flip); }
     if (extra) extra(s, sc);
@@ -123,7 +123,7 @@ async function desertBusTurbo() {
     if (i > 80 && i % 53 === 0) s.spr.push({ k: 'tumble', off: -1, sz: 1, hit: 1, roll: .01 });
   });
   RD.segs[RD.segs.length - 30].spr.push({ k: 'billDiner', p: 'bill', off: 0, sz: 3.5 });
-  Object.assign(RD, { mode: 'bus', pos: 0, spd: 0, max: 11500, px: 0, t: 0, hor: 110, playerZ: RD.camH * RD.camD * 1.2, air: 0, done: 0, crash: 0, cars: [], bgX: 0, sprScale: .0036, res: {} });
+  Object.assign(RD, { mode: 'bus', nearCut: 0, pos: 0, spd: 0, max: 11500, px: 0, t: 0, hor: 110, playerZ: RD.camH * RD.camD * 1.2, air: 0, done: 0, crash: 0, cars: [], bgX: 0, sprScale: .0036, res: {} });
   RD.human = { z: 2600, off: .45, spd: 9800 };
   for (let i = 0; i < 16; i++) RD.cars.push({ z: 3000 + i * 18000 + rnd(6000), off: (Math.random() - .5) * 1.2, spd: 5000 + rnd(2500), k: i % 3 === 0 ? 'truck' : 'car' });
   DBG.mode = 'road'; DBG.road = RD;
@@ -189,12 +189,12 @@ async function jumpTheShark() {
   const N = RD.segs.length, jumpSeg = N - 70;
   RD.segs.forEach((s, i) => {
     if (i % 16 === 0) s.spr.push({ k: 'rock', off: (i / 16) & 1 ? -1.8 : 1.8, sz: 2.4 });
-    if (i > 30 && i < jumpSeg - 40 && i % 28 === 0) { const c = Math.sin(i * .7) * .5; s.spr.push({ k: 'buoy', off: c - .35, sz: 1.3 }, { k: 'buoy', off: c + .35, sz: 1.3 }); s.gate = { c }; }
+    if (i > 30 && i < jumpSeg - 40 && i % 28 === 0) { const c = Math.sin(i * .7) * .5; s.spr.push({ k: 'buoy', off: c - .35, sz: 3.2 }, { k: 'buoy', off: c + .35, sz: 3.2 }); s.gate = { c }; }
     if (i > 40 && i < jumpSeg - 40 && i % 70 === 49) { s.spr.push({ k: 'ramp', off: 0, sz: 1.4 }); s.ramp = 1; }
   });
-  RD.segs[jumpSeg - 30].spr.push({ k: 'fin', p: 'shark', off: 0, sz: 2.5 });
+  RD.segs[jumpSeg - 30].spr.push({ k: 'fin', p: 'shark', off: 0, sz: 4.5 });
   RD.segs[jumpSeg].spr.push({ k: 'ramp', off: 0, sz: 2.4 }); RD.segs[jumpSeg].ramp = 2;
-  Object.assign(RD, { mode: 'ski', pos: 0, spd: 5000, max: 9000, px: 0, t: 0, hor: 96, playerZ: RD.camH * RD.camD * 1.2, air: 0, vz: 0, done: 0, crash: 0, rat: 50, bgX: 0, sprScale: .0036, res: {}, trick: null, gates: 0, missed: 0, power: 0, bigJump: 0, jumpSeg });
+  Object.assign(RD, { mode: 'ski', nearCut: RD.camH * RD.camD * .95, pos: 0, spd: 5000, max: 9000, px: 0, t: 0, hor: 96, playerZ: RD.camH * RD.camD * 1.2, air: 0, vz: 0, done: 0, crash: 0, rat: 50, bgX: 0, sprScale: .0036, res: {}, trick: null, gates: 0, missed: 0, power: 0, bigJump: 0, jumpSeg });
   DBG.mode = 'road'; DBG.road = RD;
   const pv = scene, pm = curName; music('lake');
   const cross = ps => { // everything the skier passed this frame (fast skiers skip segments)
