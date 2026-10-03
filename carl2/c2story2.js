@@ -22,20 +22,23 @@ async function committeeNote(n) {
   else await C(pick(['No. I\'m good. I\'m good the way I am. I\'m... okay the way I am.', 'Put it in the pile. With the other notes. The pile is the trash.']), 'a');
 }
 
+// ================= set-piece helpers: rules card once, reason card on every fail =================
+const TUT = {};
+async function tutor(k, lines) { if (TUT[k]) return; TUT[k] = 1; await showCard(lines, 0, { inv: 1 }); }
+async function failCard(why, line) { await showCard(['TRY AGAIN', '', ...String(why || line).match(/.{1,26}(\s|$)/g).map(x => x.trim())], 0, { inv: 1 }); }
+
 // ================= EPISODE 2: DESERT BUS TURBO =================
 async function startEp2() {
   C2.ep = 2;
   await epCard(2, 'DESERT BUS TURBO', 'Add a race. Kids love races.');
-  const r = await desertBusTurbo();
-  setF2('raced'); C2.raceWin = r.win ? 1 : 0;
+  await tutor('bus', ['DESERT BUS TURBO', '', 'REACH THE DINER IN 8 HOURS,', 'AHEAD OF HU-MAN.', 'A: GAS  B: BRAKE', 'STEER: LEFT / RIGHT', 'CRASHES SLOW YOU DOWN.', 'EACH HOUR GIVES MORE TIME.']);
+  let r; for (;;) { r = await desertBusTurbo(); if (r.win) break; await failCard(r.why); await C('Again. Again. I was doing it right. The bus was wrong.', 'a'); }
+  setF2('raced'); C2.raceWin = 1;
   scene = worldScene; loadMap('desert', 23, 27, 'u'); post.fade = 1; await fadeIn(.06);
-  if (r.win) {
+  {
     await say('Great job, genius.', HU);
     await C('Was that— was that a compliment? It sounded like a compliment. It had no feelings in it.', 'w');
     giveBong(genBong(3, { size: 'FIVE-FOOT', mods: ['PIERCE'] })); await say('FIRST PLACE PRIZE: A FIVE-FOOT BONG. IT IS TALLER THAN CARL. EVERYTHING IS.');
-  } else {
-    await say('Relax. Everything went exactly as planned.', HU);
-    await C('Whose plan? Nobody told me the plan. I had one plan. It was "drive." I did that.', 'a');
   }
   await C('Hour eight. We made it. Chat, we made it. The bus still pulls to the right.', 'n');
   await committeeNote(2);
@@ -157,11 +160,12 @@ async function boatTalk() {
   if (!F2('jacket')) return C('That\'s my ship. Why is it in the water. Why is it wearing a life vest. Who put a life vest on my ship.', 'a');
   const c = await ask('JUMP THE SHARK?', null, ['LET\'S DO THIS', 'NOT YET']); if (c !== 0) return;
   await C('...Ayyy?', 'w'); laugh();
+  await tutor('ski', ['JUMP THE SHARK', '', 'STEER THROUGH THE GATES:', 'BETWEEN TWO BUOYS.', 'HITTING A BUOY HURTS.', 'RATINGS AT 0 = WIPEOUT.', 'ON THE LAST RAMP HOLD A,', 'THEN PRESS THE ARROWS SHOWN.']);
   for (;;) {
     const r = await jumpTheShark();
     C2.jump = r;
     if (r.power !== undefined) break;
-    await say('THE A.S.S. CIRCLES BACK. THE SHARK IS PATIENT. THE SHARK HAS DONE THIS BEFORE.');
+    await failCard(r.why); await say('THE A.S.S. CIRCLES BACK. THE SHARK IS PATIENT. THE SHARK HAS DONE THIS BEFORE.');
   }
   setF2('jumped'); C2META.jumped = 1; saveC2M();
   scene = { draw() { cls(BLACK); } }; post.fade = 0; music(null);
@@ -411,7 +415,7 @@ async function startEp5() {
   setObj('Fly to THE RED MOON (NAV console)', 'moon', 17, 11);
 }
 async function spaceRun() {
-  for (;;) { const r = await inSpace('waves'); if (r.win) break; await say('CARL LOST HIS COOL. IN SPACE. NOBODY HEARD IT. EVERYBODY HEARD IT.'); }
+  for (;;) { await tutor('space', ['IN SPACE', '', 'ARROWS: FLY', 'A: THROW BONGS', 'SHOOT THE ENEMIES.', 'DODGE THE RED SHOTS.', 'COOL AT 0 = TRY AGAIN.']); const r = await inSpace('waves'); if (r.win) break; await failCard(r.why); await say('CARL LOST HIS COOL. IN SPACE. NOBODY HEARD IT. EVERYBODY HEARD IT.'); }
   setF2('moonVisited'); C2.shipAt = 'moon';
   scene = worldScene; loadMap('moon', 5, 23, 'u'); post.fade = 1; await fadeIn(.06);
   if (MAPS2.moon.enter) await MAPS2.moon.enter();
@@ -449,7 +453,7 @@ async function comradeTalk() {
   await say('Carl. You\'ve been renewed for syndication. Please hold still.', HOC);
   await C('What does that mean. What does SYNDICATION mean.', 'w');
   await say('It means forever.', HOC);
-  for (;;) { const r = await inSpace('boss'); if (r.win) break; await say('THE SYNDICATOR PLAYS A RERUN OF CARL LOSING. CARL WATCHES IT. CARL TRIES AGAIN.'); }
+  for (;;) { const r = await inSpace('boss'); if (r.win) break; await failCard(r.why); await say('THE SYNDICATOR PLAYS A RERUN OF CARL LOSING. CARL WATCHES IT. CARL TRIES AGAIN.'); }
   scene = worldScene; C2.shipAt = 'lot'; loadMap('ship', 7, 6, 'd'); post.fade = 1; await fadeIn(.06);
   await C('I blew up the reruns. Chat. I blew up syndication. That\'s— is that legal? That can\'t be legal.', 'h');
   setF2('ep5done'); setObj('Check the A.S.S. radio (DISPATCH)', 'ship', 8, 4);

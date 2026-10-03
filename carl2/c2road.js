@@ -139,17 +139,17 @@ async function desertBusTurbo() {
       RD.px += ((held.right ? 1 : 0) - (held.left ? 1 : 0)) * dt * 2.4 * Math.min(1, k * 2);
       RD.px -= ps.curve * k * k * .045; RD.px += .0008 * k; // the bus still pulls to the right. it always has
       RD.px = clamp(RD.px, -2.2, 2.2);
-      if (RD.crash > 0) { RD.crash--; RD.spd *= .92; }
+      if (RD.crash > 0) { RD.crash--; RD.spd *= .975; }
       RD.pos += RD.spd * dt;
       // obstacles at the player's segment
       for (let d = 0; d < 2; d++) { const s = segAt(RD.pos + RD.playerZ + d * RD.segL); for (const o of s.spr) if (!o.dead && (o.hit || o.k === 'cactus' || o.k === 'busstop' || o.p === 'bill' || o.k === 'sign') && Math.abs(o.off - RD.px) < (o.hit ? .32 : .5) && RD.crash <= 0) { RD.crash = 40; sfx('hurt'); WD.shake = 10; RD.res.crashes = (RD.res.crashes || 0) + 1; if (o.hit) o.dead = 1; } }
       for (const c of RD.cars) { c.z += c.spd * dt; if (c.z > RD.len) c.z -= RD.len; const dz = c.z - (RD.pos + RD.playerZ); if (dz > 0 && dz < RD.segL * 1.5 && Math.abs(c.off - RD.px) < .45 && RD.crash <= 0) { RD.crash = 50; RD.spd *= .4; sfx('hurt'); WD.shake = 12; RD.res.crashes = (RD.res.crashes || 0) + 1; } }
-      const H2 = RD.human; H2.spd = 9300 + (RD.pos > H2.z ? 1400 : -400) + Math.sin(RD.t * .01) * 500; H2.z += H2.spd * dt; H2.off = Math.sin(RD.t * .006) * .5;
+      const H2 = RD.human; H2.spd = 7000 + (RD.pos > H2.z ? 700 : -400) + Math.sin(RD.t * .01) * 500; H2.z += H2.spd * dt; if (H2.z >= RD.len - RD.segL * 40) H2.fin = 1; H2.off = Math.sin(RD.t * .006) * .5;
       if (!RD.passed && RD.pos > H2.z) { RD.passed = 1; tickRoad(pick(['Great job, genius.', 'Nobody tells me what to do.']), 'HU-MAN'); }
       if (RD.passed && H2.z > RD.pos + 400 && RD.t % 400 === 0) tickRoad('Relax. Everything went exactly as planned.', 'HU-MAN');
       clockT--; const h = Math.floor(RD.pos / (per * RD.segL)); if (h > hours && h <= 8) { hours = h; clockT += 60 * 9; sfx('get'); banner('HOUR ' + h + ' OF 8' + (h === 8 ? '. THE DINER.' : ''), 100); if (h === 4) tickRoad('Hour four. Halfway. The bus still pulls right. Some things they don\'t fix.', 'CARL'); if (h === 6) tickRoad('Hour six. Chat, talk to me. Say anything. Say "bus".', 'CARL'); }
       RD.bgX += ps.curve * k * 2;
-      if (RD.pos >= RD.len - RD.segL * 40 || clockT <= 0) { RD.done = 1; RD.res.win = RD.pos > H2.z; RD.res.late = clockT <= 0; }
+      if (RD.pos >= RD.len - RD.segL * 40 || clockT <= 0) { RD.done = 1; RD.res.win = !H2.fin; RD.res.late = clockT <= 0; if (!RD.res.win) RD.res.why = RD.res.late ? 'THE CLOCK RAN OUT AT HOUR ' + Math.min(8, hours + 1) + '. KEEP THE GAS DOWN (A), AVOID CARS AND ROCKS.' : 'HU-MAN GOT TO THE DINER FIRST. PASS HIS CONVERTIBLE.'; }
       RD.hours = hours; RD.clock = clockT;
     },
     draw() {
@@ -198,7 +198,7 @@ async function jumpTheShark() {
   DBG.mode = 'road'; DBG.road = RD;
   const pv = scene, pm = curName; music('lake');
   const cross = ps => { // everything the skier passed this frame (fast skiers skip segments)
-    if (ps.gate && !ps.gateDone) { ps.gateDone = 1; if (Math.abs(RD.px - ps.gate.c) < .33) { RD.gates++; RD.rat = Math.min(100, RD.rat + 6); sfx('ok'); if (RD.gates % 3 === 1) tickRoad(pick(['Through the thing! I went through the thing!', 'Gate. Nailed it. Nailed it? I nailed it.', 'Chat. CHAT. Are you seeing this. I\'m on a lake.']), 'CARL'); } else { RD.missed++; RD.rat = Math.max(0, RD.rat - 5); sfx('tick'); tickRoad(pick(['RATINGS -5.', 'THE FOCUS GROUP SIGHS.']), 'COMMITTEE'); } }
+    if (ps.gate && !ps.gateDone) { ps.gateDone = 1; if (Math.abs(RD.px - ps.gate.c) < .33) { RD.gates++; RD.rat = Math.min(100, RD.rat + 6); sfx('ok'); if (RD.gates % 3 === 1) tickRoad(pick(['Through the thing! I went through the thing!', 'Gate. Nailed it. Nailed it? I nailed it.', 'Chat. CHAT. Are you seeing this. I\'m on a lake.']), 'CARL'); } else { RD.missed++; RD.rat = Math.max(0, RD.rat - 8); sfx('tick'); tickRoad(pick(['RATINGS -5.', 'THE FOCUS GROUP SIGHS.']), 'COMMITTEE'); } }
     for (const o of ps.spr) if (o.k === 'buoy' && !o.dead && Math.abs(o.off - RD.px) < .12 && !RD.air && RD.crash <= 0) { o.dead = 1; RD.crash = 30; RD.rat = Math.max(0, RD.rat - 8); sfx('hurt'); WD.shake = 8; }
     if (ps.ramp && !RD.air && !ps.used && (Math.abs(RD.px) < .45 || ps.ramp === 2)) { ps.used = 1; RD.air = .5;
       if (ps.ramp === 2) { RD.bigJump = 1; RD.vz = 3.6 + RD.power * .03; RD.trick = { seq: [0, 1, 2].map(() => pick(['left', 'right', 'up', 'a'])), i: 0, t: 0, ok: 0 }; sfx('power'); tickRoad('AYYYYY.', 'CARL'); }
@@ -219,11 +219,12 @@ async function jumpTheShark() {
         RD.air += RD.vz; RD.vz -= RD.bigJump ? .07 : .2;
         const tk = RD.trick; if (tk && tk.i < tk.seq.length) { tk.t++; for (const k of ['left', 'right', 'up', 'a']) if (pressed[k]) { if (k === tk.seq[tk.i]) { tk.ok++; sfx('ok'); } else sfx('tick'); tk.i++; break; } }
         if (RD.air <= 0) { RD.air = 0; const ok = tk && tk.ok === tk.seq.length;
-          if (RD.bigJump) { RD.res.trick = tk ? tk.ok : 0; RD.res.power = RD.power | 0; RD.rat = clamp(RD.rat + (tk ? tk.ok * 8 : 0), 0, 100); RD.done = 1; }
+          if (RD.bigJump) { if (!tk || !tk.ok) RD.res.why = 'NO TRICK. PRESS THE ARROWS SHOWN IN THE AIR.'; else { RD.res.trick = tk.ok; RD.res.power = RD.power | 0; } RD.rat = clamp(RD.rat + (tk ? tk.ok * 8 : 0), 0, 100); RD.done = 1; }
           else { RD.rat = clamp(RD.rat + (ok ? 12 : -4), 0, 100); tickRoad(ok ? pick(['A TRICK! RATINGS +12.', 'THE FOCUS GROUP GASPS. POLITELY.']) : 'SPLASH. RATINGS -4.', 'COMMITTEE'); }
           RD.trick = null; }
       }
       RD.bgX += ps.curve * RD.spd / RD.max * 2;
+      if (RD.rat <= 0 && !RD.bigJump) { RD.done = 1; RD.res.why = 'RATINGS HIT ZERO. STEER THROUGH THE BUOY GATES, AVOID SINGLE BUOYS.'; }
       if (si1 > jumpSeg + 60 && !RD.air) RD.done = 1;
     },
     draw() {
@@ -291,7 +292,7 @@ async function inSpace(mode) {
       SP.obj = SP.obj.filter(o => !o.dead || o.k === 'boss'); SP.shots = SP.shots.filter(s => !s.dead); SP.eshots = SP.eshots.filter(s => !s.dead);
       if (SP.boss && SP.boss.dead) { SP.done = 1; SP.res.win = 1; }
       if (wavesOnly && SP.t > 1000 && !SP.obj.some(o => !o.dead)) { SP.done = 1; SP.res.win = 1; }
-      if (SP.hp <= 0) { SP.done = 1; SP.res.win = 0; }
+      if (SP.hp <= 0) { SP.done = 1; SP.res.win = 0; SP.res.why = 'COOL HIT ZERO. SHOOT (A) THE SHOTS AND DODGE. DO NOT SIT STILL.'; }
     },
     draw() {
       skyD(0, SP.hor, '#000010', '#3a1060'); for (let i = 0; i < 60; i++) pset((i * 53 + (SP.t >> 2)) % W, (i * 29) % SP.hor, i % 7 ? hex('#6d6d92') : WHITE);
