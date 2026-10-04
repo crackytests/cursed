@@ -16,6 +16,10 @@ Lost games from a studio that never existed.
 | CARL 2: Hu-Man Boogaloo | https://crackytests.github.io/cursed/carl2/ |
 | SAVE THE WORLD: A Pretend Co. Gaiden | https://crackytests.github.io/cursed/stw/ |
 | THE END: A Pretend Co. Gaiden | https://crackytests.github.io/cursed/end/ |
+| FACE: BEFORE THE STREAM | https://crackytests.github.io/cursed/orig/ |
+
+**Generation 0 — home computer (HOME-8, 1983, 4 colors per scene)**
+- `orig/` — FACE: BEFORE THE STREAM (the prequel: an illustrated adventure in three acts. Two old versions of the same man build a machine to escape a future that loves its people too much to let them leave. Act I: the house that cares. Act II: two routes, and the Curse. Act III: a piece of each, and the first broadcast. Three endings; design in ORIGIN_DESIGN.md)
 
 **Generation 1 — handheld (160×144, 4 shades)**
 - `index.html` — CARL: Above & Below Nevada
@@ -31,8 +35,11 @@ Lost games from a studio that never existed.
 - `stw/` — SAVE THE WORLD: A Pretend Co. Gaiden (16-bit epic RPG: active-time battles, combos, save crystals, an airship on the WORLD-FX scaling chip; out of continuity)
 - `end/` — THE END: A Pretend Co. Gaiden (it plays backwards: from the ending at level 99 back through four shades and plain text to the publisher logo)
 
+FACE: BEFORE THE STREAM happens before everything else; THE END's last text prompt leads to it.
 FACE and YOKO are a pair: play FACE first. Both read the saves of every other PRETEND CO. game.
 CARL 2 is the sequel to CARL, released after the generation ended. It's where the series jumps the shark.
+
+Controls (Gen 0): arrows pick, Z/X confirm, Enter = Start. THINK in the menu gives you a hint.
 
 Controls (Gen 2): arrows move, Z = A, X/Space = B, C = C, Enter = Start. F = fullscreen.
 
