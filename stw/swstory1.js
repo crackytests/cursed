@@ -9,9 +9,17 @@ function pathTo(tx, ty, from, avoidNpc) {
 }
 async function walkTo(who, x, y, sp) { if (who === 'P') await walk('P', pathTo(x, y), sp); else await walk(who, pathTo(x, y, [who.x, who.y]), sp); }
 // the opening crawl: lines fade in along the top of the screen while the march goes on
-async function crawl(lines, hold = 150) { for (const l of lines) { G.crawl = { s: l, t: 0 }; for (let i = 0; i < hold; i++) { G.crawl.t = i; if (DBG.fast && i > 10) break; await nextFrame(); } } G.crawl = null; }
+// each line stays long enough to read (about 13 letters a second, never under the old 150 frames); A moves on early
+const readFrames = (s, min = 150) => Math.max(min, Math.round(90 + String(s).length * 4.5));
+async function crawl(lines, hold = 150) {
+  for (const l of lines) {
+    const h = readFrames(l, hold); G.crawl = { s: l, t: 0, h };
+    for (let i = 0; i < h; i++) { G.crawl.t = i; if (DBG.fast && i > 10) break; if (i > 40 && i < h - 30 && (pressed.a || pressed.b)) i = h - 30; await nextFrame(); }
+  }
+  G.crawl = null;
+}
 function drawCrawl() {
-  const c = G && G.crawl; if (!c) return; const a = Math.min(1, c.t / 30, (150 - c.t) / 30);
+  const c = G && G.crawl; if (!c) return; const a = Math.min(1, c.t / 30, ((c.h || 150) - c.t) / 30);
   if (a <= 0) return; rectA(0, 10, W, 34, BLACK, .55 * a); const L = wrapT(c.s, 48); L.forEach((l, i) => ctext(l, 16 + i * 10 + (L.length === 1 ? 5 : 0), mix(BLACK, hex('#dbdbff'), a), 0));
 }
 const oldHUD = fieldHUD; fieldHUD = function () { oldHUD(); drawCrawl(); if (G && G.titleOver) drawTitleOver(G.titleOver++); };

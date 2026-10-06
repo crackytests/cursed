@@ -137,7 +137,8 @@ function pollInput() {
   for (const p of pads) {
     if (!p) continue;
     const b = i => p.buttons[i] && p.buttons[i].pressed;
-    if (b(0)) gp.b = 1; if (b(2)) gp.a = 1; if (b(1) || b(3)) gp.c = 1; if (b(9)) gp.start = 1; if (b(8)) gp.mode = 1;
+    // XInput / standard layout: A = A, B = B, X or Y = C, Start = START, Back/View = MODE
+    if (b(0)) gp.a = 1; if (b(1)) gp.b = 1; if (b(2) || b(3)) gp.c = 1; if (b(9)) gp.start = 1; if (b(8)) gp.mode = 1;
     if (b(12) || p.axes[1] < -.5) gp.up = 1; if (b(13) || p.axes[1] > .5) gp.down = 1; if (b(14) || p.axes[0] < -.5) gp.left = 1; if (b(15) || p.axes[0] > .5) gp.right = 1;
     if (BTNS.some(k => gp[k])) { anyKey = true; if (typeof audioInit === 'function') audioInit(); }
   }
@@ -194,7 +195,7 @@ async function say1(s, who, o) {
       const i = DLG.n | 0; if (i !== last && i % 2 === 0 && all[i] && all[i] !== ' ') sfx('blip', v); last = i;
       await nextFrame();
     }
-    if (o.auto) await wait(o.auto); else { DLG.arrow = 1; await waitBtn(); sfx('tick'); }
+    if (o.auto) await readWait(o.auto, total, 30, 3); else { DLG.arrow = 1; await waitBtn(); sfx('tick'); }
   }
   if (!o.keep) DLG = null;
 }
@@ -212,7 +213,10 @@ async function choose(opts, o = {}) {
   MENUS.splice(MENUS.indexOf(m), 1); return m.i;
 }
 async function ask(q, who, opts) { await say(q, who, { keep: 1 }); const r = await choose(opts); DLG = null; return r; }
-async function showCard(lines, t, o = {}) { CARD = { lines, bg: o.bg || BLACK, fg: o.fg || WHITE, sc: o.sc || 1 }; if (t) await wait(t); else await waitBtn(); if (!o.keep) CARD = null; }
+// timed text never leaves before it can be read (~15 letters a second); a button press moves on early
+async function readWait(t, chars, base = 60, per = 4) { const n = Math.max(t, Math.round(base + chars * per)); for (let i = 0; i < n; i++) { if (i > 30 && (pressed.a || pressed.b || pressed.start)) break; await nextFrame(); } }
+const cardChars = lines => lines.reduce((n, l) => n + String(l).length, 0);
+async function showCard(lines, t, o = {}) { CARD = { lines, bg: o.bg || BLACK, fg: o.fg || WHITE, sc: o.sc || 1 }; if (t) await readWait(t, cardChars(lines)); else await waitBtn(); if (!o.keep) CARD = null; }
 function banner(s, t = 110) { BANNER = { s, t }; }
 async function chat(msgs) { CHATBOX = { msgs: [] }; for (const m of msgs) { CHATBOX.msgs.push(m); sfx('chat'); await wait(m.d || 40); } await waitBtn(); CHATBOX = null; }
 function drawOverlay() {

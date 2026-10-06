@@ -369,7 +369,7 @@ async function yokoTalk2() {
 }
 async function ghostTalk2() {
   if (dq(4) === 1 && F2('hasLetter')) { await C('Mail for you. A kid wrote it. It says "you are the scariest ghost." It\'s spelled "skariest."', 'n'); await say('...Front page. Front PAGE, bro. I\'m keeping this.', SG); await say('Here. Take this. It\'s haunted. Everything I own is haunted.', SG); dqDone(4); giveBong(genBong(C2.ep + 1, { mat: 'HAUNTED', mods: ['HOMING'] })); return; }
-  await say(nth2('sg2', ['Carl. You\'re on the front page AGAIN. There\'s a sequel. With your NAME on it.', 'I hosted the clip show. You\'re welcome. Nobody watched it. Everybody watched it.', 'They offered me a spin-off. SPOOKY GHOST 2: ALSO BOOGALOO. I said I\'d think about it. I said yes.']), SG);
+  await say(nth2('sg2', ['Carl. You\'re on the front page AGAIN. There\'s a sequel. With your NAME on it.', 'I hosted the clip show. You\'re welcome. Nobody watched it. Everybody watched it.', 'They offered me a spin-off. SPOOKY GHOST 2: ANOTHER BOOGALOO. I said I\'d think about it. I said yes.']), SG);
 }
 async function bargainBin() {
   await say('A BARGAIN BIN. $1 EACH. INSIDE: A CARTRIDGE WITH A GRAY LABEL. "TP: THROWING IN THE TOWEL."');

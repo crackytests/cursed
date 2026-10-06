@@ -194,7 +194,7 @@ async function say(s, name, o = {}) {
       last = i;
       await nextFrame();
     }
-    if (o.auto) await wait(o.auto);
+    if (o.auto) await readWait(o.auto, total, 30, 3);
     else { dlg.arrow = 1; await waitBtn(); sfx('tick'); }
   }
   if (!o.keep) dlg = null;
@@ -223,8 +223,11 @@ async function choose(opts, o = {}) {
 }
 async function ask(q, name, opts) { await say(q, name, { keep: 1 }); const r = await choose(opts); dlg = null; return r; }
 function banner(s, t = 110) { bannerTxt = s; bannerT = t; }
+// timed text never leaves before it can be read (~15 letters a second); a button press moves on early
+async function readWait(t, chars, base = 60, per = 4) { const n = Math.max(t, Math.round(base + chars * per)); for (let i = 0; i < n; i++) { if (i > 30 && (pressed.a || pressed.b || pressed.start)) break; await nextFrame(); } }
+const cardChars = lines => lines.reduce((n, l) => n + String(l).length, 0);
 async function showCard(lines, t, o = {}) {
-  card = { lines, inv: o.inv }; if (t) await wait(t); else await waitBtn();
+  card = { lines, inv: o.inv }; if (t) await readWait(t, cardChars(lines)); else await waitBtn();
   if (!o.keep) card = null;
 }
 async function chat(msgs) {
