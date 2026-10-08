@@ -193,29 +193,38 @@ XS.dys = [0, 1, 2].map(f => outline(spr(40, 54, g => {
 XP.dys = pal0('#f8f0d8', '#c8b890', '#8f7a5a', '#242424', '#6d2449', '#b6246d', '#ffdb24', '#6dffff', '#ffffff', '#db2424', '#49246d', '#9249db'); // his letters: paper, ink, red edge
 XS.letterShot = {}; for (const ch of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') XS.letterShot[ch] = outline(spr(9, 11, g => { g.r(0, 0, 9, 11, 1); const gl = FONT[ch]; for (let j = 0; j < 7; j++) for (let i = 0; i < 5; i++) if (gl[j] & (16 >> i)) g.p(2 + i, 2 + j, 4); }), 10);
 
-// ---------------- CEO LINDA, side view, 18x30, and her cage ----------------
+// ---------------- CEO LINDA, three-quarter view facing right, 24x42, and her cage ----------------
 // as in her portrait: pink hair swept up into a big ponytail, pink eyeshadow, dark lips, black high-collar uniform with pink stripes and a pink tie
 XP.linda = pal0('#ffe4d6', '#e8b4a4', '#ff6db6', '#ffb6db', '#ff49b6', '#ff24a0', '#ff92c8', '#16161f', '#36364a', '#6d1240', '#c2408a', '#ffffff');
-XS.linda = [0, 1].map(f => outline(spr(18, 30, g => {
+XS.linda = [0, 1].map(f => outline(spr(24, 42, g => {
   // ponytail: a big pink sweep from the crown down her back
-  g.e(4, 8, 3.4, 5.5, 3); g.e(3, 12, 2.4, 3, 11); g.line(4, 3, 2, 12, 4);
+  g.e(6, 9, 4, 7, 3); g.e(4, 16, 3, 4.5, 3); g.e(3, 19, 2, 2.5, 11); g.line(7, 3, 4, 14, 4); g.line(5, 6, 3, 17, 11);
   // legs, heels, pencil skirt
-  g.r(9, 26, 2, 3, 1); g.r(12, 26, 2, 3, 1); g.r(8, 29, 3, 1, 8); g.r(12, 29, 3, 1, 8); g.p(10, 28, 8); g.p(14, 28, 8);
-  g.r(8, 21, 7, 5, 9); g.r(8, 21, 7, 1, 5);
+  g.r(11, 36, 2, 5, 1); g.r(15, 36, 2, 5, 1); g.r(12, 36, 1, 5, 2);
+  g.r(10, 41, 4, 1, 8); g.r(14, 41, 4, 1, 8); g.p(11, 40, 8); g.p(15, 40, 8);
+  g.r(10, 29, 8, 5, 9); g.r(11, 34, 7, 2, 9); g.p(16, 31, 8); g.p(16, 32, 8);
   // jacket: black, pink pinstripes, high collar, pink tie; waist in, chest out
-  g.r(8, 13, 6, 8, 8); g.e(13, 16, 2.4, 2.2, 8); g.r(9, 20, 5, 1, 8);
-  for (const x of [9, 11, 13]) g.r(x, 15, 1, 5, 5);
-  g.r(9, 12, 4, 2, 8); g.r(12, 13, 2, 2, 3); g.p(12, 14, 6);
-  // arms: on her hip, or up (being carried off)
-  if (f) { g.line(9, 14, 6, 8, 8); g.line(13, 14, 16, 8, 8); g.p(6, 7, 1); g.p(16, 7, 1); }
-  else { g.e(8, 14, 1.8, 1.6, 8); g.r(7, 15, 2, 5, 8); g.p(8, 20, 1); }
-  // head: face to the right, hair swept back and up off the forehead
-  g.e(11, 7, 4, 4.4, 1); g.r(12, 10, 2, 1, 2); g.p(14, 9, 2); g.p(15, 7, 1);
-  g.e(9, 2, 5, 2.6, 3); g.e(6, 5, 2.4, 3.4, 3); g.r(7, 2, 3, 6, 3); g.line(5, 1, 11, 0, 4); g.line(8, 3, 12, 1, 4);
-  g.r(12, 4, 3, 1, 8); g.r(12, 5, 3, 1, 7); g.p(13, 6, 8); g.p(14, 6, 12); g.p(15, 5, 8);
-  g.r(13, 9, 2, 1, 10); g.p(9, 8, 6);
+  g.r(10, 17, 7, 11, 8); g.e(16, 21, 2.6, 2.6, 8); g.r(9, 18, 2, 4, 8);
+  for (const x of [11, 13, 15, 17]) g.r(x, 19, 1, 8, 5);
+  g.line(11, 17, 14, 23, 9); g.line(16, 17, 14, 23, 9);
+  g.r(10, 28, 8, 1, 6); g.p(14, 28, 12);
+  g.r(12, 14, 5, 4, 8); g.r(12, 17, 5, 1, 6); g.r(13, 17, 3, 2, 6); g.p(14, 19, 11); g.p(14, 20, 6);
+  // arms: puffed shoulder; a hand on her hip, or both up (being carried off)
+  g.e(10, 19, 2.4, 2.2, 9);
+  if (f) { g.line(9, 18, 5, 7, 9); g.line(10, 18, 6, 8, 9); g.line(17, 18, 21, 8, 9); g.line(18, 18, 22, 9, 9); g.r(4, 5, 2, 2, 1); g.r(21, 6, 2, 2, 1); }
+  else { g.line(9, 20, 7, 25, 9); g.line(8, 20, 6, 25, 9); g.line(7, 25, 10, 27, 9); g.r(10, 26, 2, 2, 1); }
+  // head: soft jaw, face to the right
+  g.e(15, 9, 4.6, 5.4, 1); g.p(12, 13, 2); g.p(13, 14, 2); g.p(19, 11, 2); g.p(20, 9, 1);
+  // hair: swept back hard off the forehead, a lock falling past the ear
+  g.e(13, 3, 5.5, 2.6, 3); g.e(9, 6, 2.5, 4, 3); g.line(8, 2, 16, 1, 4); g.line(9, 4, 17, 3, 4); g.line(9, 7, 9, 13, 11); g.p(18, 4, 3);
+  // ear + earring
+  g.r(11, 9, 2, 2, 2); g.p(12, 12, 6);
+  // eye: brow, pink shadow, lash, white, pupil
+  g.r(16, 6, 3, 1, 9); g.r(16, 7, 3, 1, 7); g.r(16, 8, 3, 1, 8); g.p(19, 7, 8); g.p(16, 9, 12); g.p(17, 9, 6); g.p(18, 9, 12); g.p(17, 10, 7);
+  // dark lips, a blush
+  g.r(17, 12, 2, 1, 10); g.p(18, 13, 11); g.p(14, 11, 7);
 }), 15));
-XS.cage = outline(spr(28, 40, g => { g.r(0, 4, 28, 3, 13); g.r(0, 37, 28, 3, 13); for (let x = 0; x < 28; x += 5) g.r(x, 4, 2, 36, 12); g.r(12, 0, 4, 4, 13); g.r(11, 20, 6, 5, 11); }), 15);
+XS.cage = outline(spr(34, 54, g => { g.r(0, 4, 34, 3, 13); g.r(0, 51, 34, 3, 13); for (let x = 0; x < 34; x += 11) g.r(x, 4, 1, 50, 12); g.r(33, 4, 1, 50, 12); g.r(15, 0, 4, 4, 13); g.r(14, 27, 6, 5, 11); }), 15);
 
 // ---------------- tiles, per theme ----------------
 // '#' solid, '=' one-way, '^' spikes, 'W' a wall of text (the lighter burns it), 'o' hook ring (drawn as a sprite)

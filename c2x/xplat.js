@@ -465,7 +465,7 @@ function drawEnts() {
     else if (e.kind === 'goal' && e.style) drawGoal2(e, sx, sy);
     else if (e.kind === 'goal') { draw(XS.goal[(frame >> 4) & 1], sx, sy, XP.items); if ((frame >> 5) & 1) text('>', sx + 12, sy - 10, hex('#ffdb24')); }
     else if (e.kind === 'sign') { rectF(sx + 13, sy + 14, 2, 10, hex('#6d4924')); panel(sx, sy, 28, 16); text(e.s, sx + 14 - e.s.length * 3, sy + 5, UI.name); }
-    else if (e.kind === 'cage') { rectF(sx + 13, 0, 2, Math.max(0, sy), hex('#6d6d6d')); draw(XS.linda[(frame >> 5) & 1], sx + 5, sy + 8, XP.linda); draw(XS.cage, sx, sy, XP.linda); }
+    else if (e.kind === 'cage') { rectF(sx + 16, 0, 2, Math.max(0, sy), hex('#6d6d6d')); draw(XS.linda[(frame >> 5) & 1], sx + 5, sy + 9, XP.linda); draw(XS.cage, sx, sy, XP.linda); }
     else if (e.foe) drawFoe(e, sx, sy);
   }
 }

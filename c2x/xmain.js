@@ -97,7 +97,7 @@ async function closet(sv) {
 // ---------------- the story (all of it) ----------------
 async function intro() {
   music('committee'); camX = camY = 0; CUT = 1;
-  const linda = { x: 150, y: 150, w: 18, h: 30 }, dys = { x: 140, y: -70, w: 40, h: 54 }; let t = 0, ph = 0, carried = 0;
+  const linda = { x: 148, y: 138, w: 24, h: 42 }, dys = { x: 140, y: -70, w: 40, h: 54 }; let t = 0, ph = 0, carried = 0;
   const T = XTHEMES.mall; TILES = themeTiles(T);
   scene = { update() { t++; for (const b of BUBBLES) b.t--; BUBBLES = BUBBLES.filter(b => b.t > 0); }, draw() {
     skyD(0, H, '#241049', '#9249a0');
@@ -119,7 +119,7 @@ async function intro() {
   quip('KPI. PIK. IPK. I SEE EVERY ARRANGEMENT.', dys, 110); await wait(100);
   quip('THE MEETING IS OURS NOW.', dys, 90); await wait(70);
   carried = 1; sfx('crash'); post.wave = 0;
-  for (let i = 0; i < 90; i++) { dys.y -= 2.4; linda.y = dys.y + 40; linda.x = dys.x + 12; await nextFrame(); }
+  for (let i = 0; i < 90; i++) { dys.y -= 2.4; linda.y = dys.y + 34; linda.x = dys.x + 8; await nextFrame(); }
   ph = 0; await fadeOut(.06); music(null);
   scene = { draw() { cls(hex('#100010')); } }; post.fade = 0; // the cards draw under the fade, so lift it
   for (const w of ['LINDA.', 'TAKEN.', 'BY DYSLEXIO.']) { sfx('crash'); await bigCard([w], 40, { bg: hex('#100010') }); }
@@ -188,8 +188,8 @@ async function ending() {
   CUT = 1; music(null);
   // the cage comes down
   const cage = ENTS.find(e => e.kind === 'cage');
-  if (cage) { while (cage.y < 12 * TS - 40) { cage.y += 3; await nextFrame(); } sfx('crash'); post.shake = 3; SHAKE = 12; ENTS = ENTS.filter(e => e !== cage); }
-  const linda = { x: (cage ? cage.x : PL.x + 60) + 5, y: 12 * TS - 30, w: 18, h: 30, dir: -1 };
+  if (cage) { while (cage.y < 12 * TS - 54) { cage.y += 3; await nextFrame(); } sfx('crash'); post.shake = 3; SHAKE = 12; ENTS = ENTS.filter(e => e !== cage); }
+  const linda = { x: (cage ? cage.x : PL.x + 60) + 5, y: 12 * TS - 42, w: 24, h: 42, dir: -1 };
   scene = { update() { worldUpdate(); }, draw() { drawBack(); drawPitShade(); drawTiles(); drawEnts(); drawCarl(); draw(XS.linda[0], linda.x - camX, linda.y - camY, XP.linda, true); drawFX(); drawBubbles(); drawHUD(); } };
   music('walkout');
   await wait(40);
