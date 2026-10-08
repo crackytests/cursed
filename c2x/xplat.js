@@ -371,12 +371,12 @@ function drawBack() {
     const sp = layer ? .5 : .22, c = layer ? mid : far, cw = layer ? 40 : 28, off = camX * sp;
     for (let i = Math.floor(off / cw) - 1; i < Math.floor(off / cw) + W / cw + 2; i++) {
       const x = i * cw - off, r = hash(i * 7 + layer * 1000), base = H - (layer ? 30 : 60) - camY * sp * .3;
-      if (T.kind === 'city') { const h = 30 + r * 70; rectF(x, base - h, cw - 4, h + 90, c); if (layer === 0) for (let wy = base - h + 6; wy < base; wy += 9) for (let wx = x + 4; wx < x + cw - 8; wx += 7) if (hash(wx * 3 + wy) > .55) rectF(wx, wy, 3, 4, hex('#ffdb92')); }
+      if (T.kind === 'city') { const h = 30 + r * 70; rectF(x, base - h, cw - 4, h + 90, c); if (layer === 0) for (let wy = base - h + 6; wy < base; wy += 9) for (let wx = x + 4; wx < x + cw - 8; wx += 7) if (hash(i * 131 + (wx - x) * 3 + (wy - base + h) * 17) > .55) rectF(wx, wy, 3, 4, hex('#ffdb92')); }
       else if (T.kind === 'mall') { const h = 50 + r * 30; rectF(x, base - h, cw - 2, h + 90, c); if (layer) { rectF(x + 6, base - h + 10, cw - 14, 16, hex(r > .5 ? '#ff49db' : '#24dbdb')); rectF(x + 8, base - h + 12, cw - 18, 12, c); } }
       else if (T.kind === 'mesa') { const h = 30 + r * 50; triF(x - 10, base + 10, x + cw * .3, base - h, x + cw + 10, base + 10, c); rectF(x + cw * .3, base - h, cw * .4, h + 90, c); }
       else if (T.kind === 'hills' && LV.water < LV.h) { if (layer) for (let k = 0; k < 3; k++) { const kx = x + k * 13, top = H - 40 - hash(i * 3 + k) * 90; for (let yy = H; yy > top; yy -= 2) rectF(kx + Math.sin(yy * .07 + frame * .03 + i + k) * 3, yy, 3, 2, hex(k & 1 ? '#246d49' : '#249249')); } else { const h = 20 + r * 30; circF(x + cw / 2, base + 30, cw * .9 + h * .3, c); } }
       else if (T.kind === 'hills') { const h = 20 + r * 30; circF(x + cw / 2, base + 20, cw * .9 + h * .3, c); if (layer) { rectF(x + 10, base - 20 - h, 4, 30, hex('#24496d')); triF(x + 2, base - 10 - h, x + 12, base - 50 - h, x + 22, base - 10 - h, hex('#245249')); } }
-      else if (T.kind === 'shelves') { rectF(x, 0, cw - 3, H, c); for (let sy = 12 - (camY * sp | 0) % 24; sy < H; sy += 24) { rectF(x, sy, cw - 3, 2, hex('#120a1c')); for (let bx = x + 2; bx < x + cw - 6; bx += 4) rectF(bx, sy - 10 + (hash(bx + sy) * 4 | 0), 3, 10 - (hash(bx + sy) * 4 | 0), hex(['#6d2449', '#244970', '#6d6d24', '#492470'][(hash(bx * 5 + sy) * 4) | 0])); } }
+      else if (T.kind === 'shelves') { rectF(x, 0, cw - 3, H, c); for (let sy = 12 - (camY * sp | 0) % 24; sy < H; sy += 24) { rectF(x, sy, cw - 3, 2, hex('#120a1c')); for (let bx = x + 2, n = 0; bx < x + cw - 6; bx += 4, n++) { const q = i * 97 + n * 7 + Math.round((sy + camY * sp) / 24) * 53; rectF(bx, sy - 10 + (hash(q) * 4 | 0), 3, 10 - (hash(q) * 4 | 0), hex(['#6d2449', '#244970', '#6d6d24', '#492470'][(hash(q * 5 + 1) * 4) | 0])); } } }
     }
   }
 }
