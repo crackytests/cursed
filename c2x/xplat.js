@@ -93,7 +93,7 @@ const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h 
 // ---------------- player physics ----------------
 function respawnState() {
   Object.assign(PL, { vx: 0, vy: 0, hp: LIMIT.maxHP, hurt: 60, hang: null, rope: null, fuel: 100, hot: 0, air: 100, choke: 0, scr: 0, dead: 0,
-    ball: 0, roll: 0, rev: 0, crouch: 0, loop: null, loopCD: 0, dino: 0, tongue: 0, shield: null, star: 0, glide: 0, climb: 0, sprung: 0, puff: 0 });
+    ball: 0, roll: 0, rev: 0, crouch: 0, loop: null, loopCD: 0, dino: 0, tongue: 0, shield: null, star: 0, glide: 0, climb: 0, sprung: 0, puff: 0, tldr: 0, tldrCD: 0, tldrFlash: 0 });
   BONG = null; camX = clamp(PL.x - 140, 0, LV.w * TS - W); camY = clamp(PL.y - 120, 0, LV.h * TS - H);
 }
 function moveX(dx) {
@@ -118,7 +118,7 @@ function moveY(dy) {
   }
 }
 function ouch(n = 1, why, src) { // src: x of whatever hit him; he's knocked away from it
-  if (PL.hurt > 0 || PL.dead || PL.star > 0) return;
+  if (PL.hurt > 0 || PL.dead || PL.star > 0 || PL.tldr > 0) return;
   if (PL.shield || PL.dino || (RULES.rings && RUN.bux > 0)) { // the bonus carts: something else takes the hit
     if (PL.shield) PL.shield = null; else if (PL.dino) dinoLost(); else scatterBux();
     PL.hurt = 90; PL.vy = -3.6; PL.vx = (src === undefined ? -PL.face : Math.sign(PL.x + PL.w / 2 - src) || -PL.face) * 2.2; PL.climb = PL.glide = PL.roll = PL.ball = 0;
@@ -256,13 +256,37 @@ function tools(dir) {
   }
 }
 function burnTile(tx, ty) { LV.g[ty][tx] = 'w'; LV.burn[tx + ',' + ty] = 22; sfx('crash'); }
+// TL;DR: riding the chain up to a ring, Carl refuses to read so hard that nothing can touch him. Whatever's around him
+// gets hit, shots and walls of text go. It fires by itself, then needs a rest (TLDR_CD); when it's back, he flashes.
+// Main game only. Ticked from bongUpdate so the planners see it too.
+const TLDR_CD = 360, TLDR_R = 26;
+let TLDR_HIT = new Set();
+function tldrStart() {
+  if (RUN.camp || PL.tldrCD > 0) return;
+  PL.tldr = 999; PL.tldrCD = TLDR_CD; TLDR_HIT = new Set(); sfx('alert'); post.shake = 2; SHAKE = 6;
+  if (!RUN.saidTldr) { RUN.saidTldr = 1; quip('TL;DR.'); }
+}
+function tldrUpdate() {
+  if (PL.tldrCD > 0 && --PL.tldrCD === 0) { PL.tldrFlash = 30; sfx('get'); for (let i = 0; i < 10; i++) FX.push({ k: 'spark', x: PL.x + 5, y: PL.y + 10, vx: Math.cos(i * .63) * 2.5, vy: Math.sin(i * .63) * 2.5 - 1, t: 24 }); }
+  if (PL.tldrFlash > 0) PL.tldrFlash--;
+  if (!(PL.tldr > 0)) return;
+  if (!(BONG && BONG.pull) && PL.tldr > 20) PL.tldr = 20; // off the chain: a moment longer, then done
+  PL.tldr--;
+  const cx = PL.x + PL.w / 2, cy = PL.y + PL.h / 2, zone = { x: cx - TLDR_R, y: cy - TLDR_R, w: TLDR_R * 2, h: TLDR_R * 2 };
+  for (const e of ENTS) if (e.foe && !e.dead && !TLDR_HIT.has(e) && overlap(zone, e)) { TLDR_HIT.add(e); hitFoe(e, 9, 'tldr'); }
+  for (const s of SHOTS) if (overlap(zone, s)) { s.dead = 1; FX.push({ k: 'puff', x: s.x, y: s.y, t: 16 }); }
+  if (BOSS && BOSS.hitbox && !TLDR_HIT.has(BOSS) && overlap(zone, BOSS.hitbox())) { TLDR_HIT.add(BOSS); BOSS.hit({ tldr: 1 }); }
+  for (let ty = Math.floor(zone.y / TS); ty <= Math.floor((zone.y + zone.h) / TS); ty++) for (let tx = Math.floor(zone.x / TS); tx <= Math.floor((zone.x + zone.w) / TS); tx++) if (tileAt(tx, ty) === 'W') burnTile(tx, ty);
+  if (frame % 3 === 0) FX.push({ k: 'txt', s: pick('READMETOSWX'), x: cx - 3, y: cy - 4, vx: (Math.random() - .5) * 4, vy: -1 - Math.random() * 2, t: 24 }); // letters flung off him
+}
 function bongUpdate() {
+  tldrUpdate();
   const B = BONG; if (!B) return; B.t++;
   const h = hand();
   if (B.mode === 'hook') {
     if (B.ring && !B.pull) {
       const dx = B.ring.x - B.x, dy = B.ring.y - B.y, d = Math.hypot(dx, dy);
-      if (d < 8) { B.pull = 1; sfx('stun'); if (!PL.saidHook) { PL.saidHook = 1; carlSays('hook', 1); } }
+      if (d < 8) { B.pull = 1; sfx('stun'); if (!PL.saidHook) { PL.saidHook = 1; carlSays('hook', 1); } tldrStart(); }
       else { B.x += dx / d * 8; B.y += dy / d * 8; }
     } else if (B.pull) {
       PL.hang = null; const tx = B.ring.x - PL.w / 2, ty = B.ring.y + 4, dx = tx - PL.x, dy = ty - PL.y, d = Math.hypot(dx, dy);
@@ -475,12 +499,16 @@ function drawCarl() {
   if (PL.hurt > 0 && !PL.dead && (PL.hurt & 4)) return;
   const S = carlSet(OUTFITS.find(o => o.id === RUN.outfit) || OUTFITS[0]), [p, f] = carlPose();
   const sx = PL.x - 5 - camX, sy = PL.y + PL.h - 25 - camY - (PL.dino ? 9 : 0);
-  const tn = PL.star > 0 && (frame & 4) ? hex(['#ffdb24', '#ff49db', '#6dffff', '#ffffff'][(frame >> 3) & 3]) : 0;
+  let tn = PL.tldr > 0 && (frame & 2) ? hex('#ffdb24') : PL.tldrFlash > 0 && (PL.tldrFlash & 4) ? WHITE : PL.star > 0 && (frame & 4) ? hex(['#ffdb24', '#ff49db', '#6dffff', '#ffffff'][(frame >> 3) & 3]) : 0;
   if (PL.dino) drawDino(sx - 4, PL.y + PL.h - camY - 18, PL.face < 0, (PL.anim | 0) & 1);
   if (PL.puff) draw(S.puff, sx - 1, sy + 4, S.P, PL.face < 0, tn);
   else if (PL.ball || PL.roll || PL.loop || PL.crouch) draw(S.ball[PL.crouch && !PL.rev ? 0 : (frame >> 1) & 3], sx + 1, sy + 8, S.P, PL.face < 0, tn);
   else draw(S[p][f], sx, sy, S.P, PL.face < 0, tn);
   if (PL.shield) drawShield(sx + 10, sy + 15);
+  if (PL.tldr > 0) for (let i = 0; i < 8; i++) { // a ring of READ, crossed out, spinning
+    const a = frame * .25 + i * .785, r = 22 + Math.sin(frame * .3) * 2, x = sx + 10 + Math.cos(a) * r, y = sy + 14 + Math.sin(a) * r;
+    text('READ'[i & 3], x - 3, y - 4, hex('#ffdb24'), BLACK); rectF(x - 4, y - 1, 9, 2, hex('#ff2449')); }
+  if (PL.tldrFlash > 0) { const r = (30 - PL.tldrFlash) * 1.2 + 6; for (let a = 0; a < 6.28; a += .35) rectF(sx + 10 + Math.cos(a) * r, sy + 14 + Math.sin(a) * r, 2, 2, (PL.tldrFlash & 2) ? WHITE : hex('#ffdb24')); } // it's back
   // the snorkel: underwater with the bong in hand, it's in his mouth
   if (swimming() && !BONG) draw(XS.bongUp, sx + (PL.face > 0 ? 13 : -6), sy + 2, XP.bong, PL.face < 0);
 }
