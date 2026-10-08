@@ -39,7 +39,8 @@ async function boot() {
 async function titleScreen() {
   music('title'); let t = 0; CUT = 1;
   const sv = fetchStore('c2x_save');
-  const S = carlSet(OUTFITS.find(o => o.id === ((sv && sv.outfit) || 'classic')) || OUTFITS[0]);
+  RUN.outfit = (sv && sv.outfit) || RUN.outfit;
+  let S = carlSet(OUTFITS.find(o => o.id === RUN.outfit) || OUTFITS[0]);
   scene = { update() { t++; }, draw() {
     skyD(0, H, '#100020', '#6d1a49');
     for (let i = 0; i < 40; i++) { const x = (i * 53 + t * (1 + i % 3)) % W, y = (i * 37) % 120; pset(x, y, hex('#ffdbff')); }
@@ -59,9 +60,9 @@ async function titleScreen() {
     const i = await choose(opts, { x: 120, y: 140, cancel: 1 }); if (i < 0) continue;
     const o = opts[i];
     if (o === 'OPTIONS') { await bigCard(['OPTIONS', '', 'REMOVED.', 'TOO MANY WORDS.'], 90); continue; }
-    if (o === 'CLOSET') { await closet(sv); continue; }
-    if (o === 'CONTINUE') { Object.assign(RUN, { lives: 5, lv: sv.lv || 0, outfit: sv.outfit || 'classic', words: sv.words || 0, bux: sv.bux || 0 }); await fadeOut(); return game(); }
-    Object.assign(RUN, { lives: 5, lv: 0, bux: 0, words: 0, deaths: 0, outfit: (sv && sv.outfit) || 'classic' }); saveX();
+    if (o === 'CLOSET') { await closet(sv); S = carlSet(OUTFITS.find(o => o.id === RUN.outfit) || OUTFITS[0]); continue; }
+    if (o === 'CONTINUE') { Object.assign(RUN, { lives: 5, lv: sv.lv || 0, outfit: RUN.outfit, words: sv.words || 0, bux: sv.bux || 0 }); await fadeOut(); return game(); }
+    Object.assign(RUN, { lives: 5, lv: 0, bux: 0, words: 0, deaths: 0 }); saveX();
     await fadeOut(); await intro(); return game();
   }
 }
@@ -116,6 +117,7 @@ async function intro() {
   carried = 1; sfx('crash'); post.wave = 0;
   for (let i = 0; i < 90; i++) { dys.y -= 2.4; linda.y = dys.y + 40; linda.x = dys.x + 12; await nextFrame(); }
   ph = 0; await fadeOut(.06); music(null);
+  scene = { draw() { cls(hex('#100010')); } }; post.fade = 0; // the cards draw under the fade, so lift it
   for (const w of ['LINDA.', 'TAKEN.', 'BY DYSLEXIO.']) { sfx('crash'); await bigCard([w], 40, { bg: hex('#100010') }); }
   // Carl's whole reaction, as approved by marketing
   scene = { draw() { cls(hex('#000024')); draw(CS.carlPorts.n, 136, 70, CP.carlPort); frameRect(135, 69, 50, 50, UI.edge); drawBubbles(); } };

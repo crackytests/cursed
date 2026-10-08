@@ -334,7 +334,7 @@ function worldUpdate() {
     if (!e.w || !overlap(PL, e) || PL.dead) continue;
     if (e.kind === 'bux') { e.dead = 1; RUN.bux++; sfx('chat'); if (RUN.bux % 50 === 0) { RUN.lives++; sfx('get'); carlSays('oneup', 1); FX.push({ k: 'txt', s: '1UP', x: PL.x - 4, y: PL.y - 10, t: 60 }); } }
     if (e.kind === 'pretzel') { e.dead = 1; PL.hp = Math.min(LIMIT.maxHP, PL.hp + 1); sfx('get'); carlSays('heal', 1); }
-    if (e.kind === 'box') { e.dead = 1; RUN.got[LV.def.outfit] = 1; saveX(); sfx('get'); carlSays('box', 1); const o = OUTFITS.find(o => o.id === LV.def.outfit); banner(o.name + ' OUTFIT', 120); }
+    if (e.kind === 'box') { e.dead = 1; RUN.got[LV.def.outfit] = 1; RUN.outfit = LV.def.outfit; saveX(); sfx('get'); carlSays('box', 1); const o = OUTFITS.find(o => o.id === LV.def.outfit); banner(o.name + ' OUTFIT', 120); }
     if (e.kind === 'goal' && !LV.done) { LV.done = 1; LV.finish('clear'); }
   }
   ENTS = ENTS.filter(e => !e.dead || e.kind === 'rope');
