@@ -17,6 +17,7 @@ const OUTFITS = [
 function outfitPal(o) {
   const P = CP.carl.slice(); P[15] = hex('#101010');
   for (const k in o.c) P[k] = hex(o.c[k]);
+  if (o.flat) { P[3] = P[2]; P[4] = P[2]; P[6] = P[5]; P[11] = P[10]; } // 8-BIT: no shading, three colors and a dream
   return o.legacy ? legacyPal(P, 'dmg') : P;
 }
 
@@ -33,6 +34,8 @@ function carlSide(pose, f = 0, acc) {
     else if (pose === 'hang') { leg(6, 3, 0); leg(9, 4, 0); }
     else if (pose === 'swim') { const k = f & 1; g.r(ox + 2 - k, oy + 19, 6, 2, 10); g.r(ox - k, oy + 19, 2, 2, 13); g.r(ox + 8, oy + 20 + k, 4, 2, 10); }
     else { leg(6, 3, 0); leg(9, 3, 0); }
+    if (acc === 'cape') { const fl = pose === 'run' ? f & 1 : pose === 'jump' || pose === 'fall' ? 2 : 0; g.line(ox + 6, oy + 14, ox - 1 - fl, oy + 22 - fl * 2, 15); g.r(ox + 1 - fl, oy + 15, 5, 7 - fl, 15); g.r(ox - fl, oy + 21 - fl * 2, 4, 2, 15); }
+    if (acc === 'tails') { const k = (f + (pose === 'run' ? 0 : 1)) & 1; g.e(ox + 2, oy + 17 - k, 3, 2, 15); g.e(ox, oy + 19 + k, 3, 2, 15); g.p(ox - 2, oy + 17 - k, 9); g.p(ox - 3, oy + 20 + k, 9); }
     // body: hoodie, bow tie, gold trim
     g.r(ox + 6, oy + 14, 5, 6, 10); g.r(ox + 7, oy + 15, 1, 5, 11); g.r(ox + 8, oy + 14, 3, 2, 12); g.p(ox + 9, oy + 14, 11);
     // arm
@@ -45,12 +48,16 @@ function carlSide(pose, f = 0, acc) {
     g.e(ox + 8.5, oy + 8.5, 6.6, 6.6, 2); g.each((x, y) => g.get(x, y) === 2 && (x < ox + 5 || y > oy + 12) ? 3 : 0); g.p(ox + 12, oy + 5, 4); g.p(ox + 13, oy + 6, 4);
     if (acc === 'tophat') { g.r(ox + 3, oy + 3, 11, 2, 15); g.r(ox + 5, oy - 2, 7, 5, 15); g.r(ox + 5, oy + 1, 7, 1, 12); }
     else { g.e(ox + 7.5, oy + 4.6, 6, 3.6, 5); g.r(ox + 1.5, oy + 4, 12, 2, 5); g.r(ox, oy + 5, 4, 2, 5); g.r(ox, oy + 5, 3, 1, 6); g.r(ox + 6, oy + 2, 3, 1, 6); }
+    if (acc === 'dinohat') { g.e(ox + 7.5, oy + 4, 7, 4.5, 15); g.r(ox + 13, oy + 2, 4, 3, 15); g.p(ox + 15, oy + 2, 9); for (let i = 0; i < 3; i++) g.p(ox + 3 + i * 3, oy - 1, 9); }
+    if (acc === 'dreads') for (let i = 0; i < 4; i++) { g.line(ox + 3, oy + 5 + i * 3, ox - 2, oy + 9 + i * 3, 15); g.line(ox + 3, oy + 6 + i * 3, ox - 1, oy + 10 + i * 3, 15); }
+    if (acc === 'spikes') for (let i = 0; i < 4; i++) g.line(ox + 2 + i * 3, oy + 2, ox + 1 + i * 4, oy - 3 + (i & 1), 5);
     if (acc === 'quills') for (let i = 0; i < 3; i++) { g.line(ox + 2, oy + 6 + i * 3, ox - 2, oy + 7 + i * 3, 15); g.line(ox + 2, oy + 7 + i * 3, ox - 1, oy + 8 + i * 3, 15); }
     const hurtEye = pose === 'hurt';
     if (acc === 'shades') { g.r(ox + 9, oy + 8, 6, 3, 15); g.r(ox + 6, oy + 8, 3, 1, 15); g.p(ox + 10, oy + 8, 9); }
     else { g.e(ox + 12, oy + 9.5, 2.3, 2.7, 7); if (hurtEye) { g.p(ox + 11, oy + 9, 8); g.p(ox + 13, oy + 10, 8); g.p(ox + 12, oy + 10, 8); } else { g.p(ox + 13, oy + 10, 8); g.p(ox + 12, oy + 10, 8); g.p(ox + 11, oy + 8, 9); } }
     if (acc === 'goggles') { g.r(ox + 9, oy + 7, 6, 5, 15); g.r(ox + 10, oy + 8, 4, 3, 7); g.p(ox + 11, oy + 8, 9); g.r(ox + 4, oy + 8, 5, 1, 15); }
     if (pose === 'hook' || pose === 'hang') { g.r(ox + 15, oy + 1, 2, 14, 10); g.r(ox + 15, oy - 1, 2, 2, 2); g.r(ox - 1, oy + 2, 2, 13, 10); g.r(ox - 1, oy, 2, 2, 2); }
+    if (acc === 'gloves') { if (pose === 'throw' || pose === 'flame') g.r(ox + 14, oy + 13, 3, 4, 9); else if (pose === 'hook' || pose === 'hang') { g.r(ox + 15, oy - 2, 3, 3, 9); g.r(ox - 2, oy - 1, 3, 3, 9); } else if (pose !== 'jump' && pose !== 'hurt') { const sw = pose === 'run' ? [0, 1, 0, -1][f & 3] : 0; g.r(ox + 8 + sw, oy + 17, 3, 3, 9); } }
     if (acc === 'stache') { g.r(ox + 11, oy + 12, 4, 1, 15); g.p(ox + 15, oy + 13, 15); }
     else g.p(ox + 14, oy + 13, 14);
   }), 1);
@@ -61,6 +68,8 @@ function carlSet(o) { // sprites per outfit, built on first use
   if (CARLSET[o.id]) return CARLSET[o.id];
   const S = { P: outfitPal(o) };
   for (const p of POSES) S[p] = [0, 1, 2, 3].map(f => carlSide(p, f, o.acc));
+  // the spin ball (the bonus carts): hoodie and cap, rolled up
+  S.ball = [0, 1, 2, 3].map(f => outline(spr(18, 18, g => { g.e(8.5, 8.5, 7.5, 7.5, 10); for (let k = 0; k < 3; k++) { const a = f * .52 + k * 2.09; g.line(8.5 + Math.cos(a) * 2, 8.5 + Math.sin(a) * 2, 8.5 + Math.cos(a) * 7, 8.5 + Math.sin(a) * 7, k ? 5 : 11); } g.e(8.5, 8.5, 2, 2, 2); }), 1));
   return CARLSET[o.id] = S;
 }
 
@@ -201,7 +210,13 @@ const XTHEMES = {
 // theme palette: 1 black 2 dark 3 mid 4 light 5 trim 6 grass dark 7 grass 8 red 9 paper 10 paper shade 11 ink 12 glow
 function themeTiles(T) {
   const bevel = g => { g.r(0, 0, 16, 16, 3); g.r(0, 0, 16, 1, 4); g.r(0, 0, 1, 16, 4); g.r(0, 15, 16, 1, 2); g.r(15, 0, 1, 16, 2); };
-  const grass = T.kind === 'city' || T.kind === 'hills';
+  const grass = T.grass !== undefined ? T.grass : T.kind === 'city' || T.kind === 'hills';
+  const top = g => { if (grass) { g.r(0, 0, 16, 4, 7); g.r(0, 4, 16, 1, 6); for (let x = 1; x < 16; x += 4) g.p(x, 5, 6); } else { g.r(0, 0, 16, 3, 5); g.r(0, 3, 16, 1, 2); } };
+  // the bonus carts' ground: Sonic's checkerboard, the plumber's cracked bricks, castle stone
+  const style = { checker: g => { g.each((x, y) => ((x >> 3) + (y >> 3)) & 1 ? 2 : 3); g.r(0, 15, 16, 1, 1); },
+    brick: g => { g.r(0, 0, 16, 16, 3); g.r(0, 0, 16, 1, 4); g.r(0, 0, 1, 16, 4); g.r(15, 0, 1, 16, 1); g.r(0, 15, 16, 1, 1); g.line(4, 1, 7, 6, 2); g.line(7, 6, 6, 10, 2); g.r(9, 8, 6, 1, 2); g.line(10, 9, 12, 14, 2); },
+    stone: g => { g.r(0, 0, 16, 16, 3); g.r(0, 7, 16, 1, 2); g.r(7, 0, 1, 7, 2); g.r(12, 8, 1, 8, 2); g.r(0, 15, 16, 1, 1); g.r(0, 0, 16, 1, 4); g.r(1, 8, 10, 1, 4); } }[T.tile];
+  if (style) return Object.assign(themeTiles(Object.assign({}, T, { tile: null })), { '#': spr(16, 16, style), '#top': spr(16, 16, g => { style(g); if (T.tile !== 'brick' || grass) top(g); }) });
   return {
     '#': spr(16, 16, g => { bevel(g); g.r(4, 4, 3, 2, 4); g.r(10, 9, 3, 2, 2); g.p(12, 4, 4); g.p(3, 11, 2); }),
     '#top': spr(16, 16, g => { bevel(g); g.r(10, 9, 3, 2, 2); if (grass) { g.r(0, 0, 16, 4, 7); g.r(0, 4, 16, 1, 6); for (let x = 1; x < 16; x += 4) g.p(x, 5, 6); } else { g.r(0, 0, 16, 3, 5); g.r(0, 3, 16, 1, 2); } }),

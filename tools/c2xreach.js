@@ -41,6 +41,8 @@ const out = G.R(ctx, `(() => {
       for (const run of [0, 14]) for (const hold of [4, 12, 40]) for (const ad of [d, 0, -d]) macros.push({ seq: [[run, k], [hold, Object.assign({ b: 1 }, run ? k : {})]], air: ad ? { [D(ad)]: 1 } : {} });
       for (const at of [0, 10, 18]) macros.push({ seq: [[14, k], [at, Object.assign({ b: 1 }, k)], [1, { up: 1, a: 1 }]], air: {} });
       macros.push({ seq: [[1, { up: 1, a: 1, [D(d)]: 0 }]], air: {} });
+      if (RULES.spindash) macros.push({ seq: [[1, k], [3, { down: 1 }], [1, { down: 1, b: 1 }], [2, { down: 1 }], [1, { down: 1, b: 1 }], [2, { down: 1 }], [1, { down: 1, b: 1 }], [16, {}]], air: {} });
+      if (RULES.knux) for (const run of [0, 14]) for (const w of [4, 12]) macros.push({ seq: [[run, k], [6, Object.assign({ b: 1 }, k)], [w, k], [1, Object.assign({ b: 1 }, k)]], air: Object.assign({ b: 1, up: 1 }, k) });
       if (L.water !== undefined) for (const n of [2, 4, 7, 10]) for (const up of [0, 1]) { const seq = []; for (let i = 0; i < n; i++) seq.push([1, Object.assign({ b: 1 }, k, up ? { up: 1 } : {})], [11, Object.assign({}, k, up ? { up: 1 } : {})]); macros.push({ seq, air: k }); }
   
     }

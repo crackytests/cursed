@@ -2,6 +2,7 @@
 // Routes come from a planner vm (tools/c2xbfs.js) fed the live level; the bot fights on top of the route,
 // burns walls of text, replans when knocked off course, and has a small AI per boss.
 // node tools/c2xplay.js [startLevel] [maxFrames]   env SHOTS=1 (every 900 frames), FROM=level (skip intro via SETUP)
+// CART=smb|smw|son1|son2|son3 plays one bonus cart from its title to its outro instead of the main game.
 const { load, G } = require('./c2xvm'), path = require('path'), BFS = require('./c2xbfs');
 const [startLv = '0', MAXF = '400000'] = process.argv.slice(2);
 const live = load(), planner = load();
@@ -11,6 +12,7 @@ const R = s => G.R(live, s);
 R(`anyKey = true; DBG.log = []; DBG.log.push = (...a) => { console.log('  ' + a.join(' ')); return Array.prototype.push.apply(DBG.log, a); }; const _die = die; die = why => { if (!PL.dead) DBG.log.push('DIED ' + LV.def.id + ' x=' + (PL.x / 16 | 0) + ' y=' + (PL.y / 16 | 0) + ' why=' + why + ' hp=' + PL.hp + ' lives=' + RUN.lives + (BOSS ? ' boss=' + BOSS.name + ':' + BOSS.hp : '')); _die(why); };
   const _ouch = ouch; ouch = (n, why) => { if (PL.hurt <= 0 && !PL.dead) DBG.log.push('hurt ' + LV.def.id + ' x=' + (PL.x / 16 | 0) + ' ' + (why || '') + ' near=' + (ENTS.filter(e => e.foe && !e.dead && Math.abs(e.x - PL.x) < 40).map(e => e.kind).join('/') || (SHOTS.length ? 'shot' : BOSS ? 'boss' : '?'))); _ouch(n, why); };
   run(boot);`);
+if (process.env.CART) R(`RUN.cartFrom = ${+process.env.CARTLV || 0}; titleScreen = async () => { await playCart(CARTS.find(c => c.id === '${process.env.CART}')); DBG.done = 1; };`);
 if (+startLv) R(`const _game = game; game = () => { RUN.lv = ${+startLv}; return _game(); }; intro = async () => {};`);
 // underwater: a tile path through open water (2 tiles of headroom), steered with strokes
 R(`function swimNext(goalX) {
@@ -34,7 +36,7 @@ function makePlan() {
   const st = R(`(() => {
     const rings = ENTS.filter(e => e.kind === 'ring'), ropes = ENTS.filter(e => e.kind === 'rope');
     const pl = Object.assign({}, PL, { hang: PL.hang ? rings.indexOf(PL.hang) : -1, rope: PL.rope ? ropes.indexOf(PL.rope) : -1, lastRope: PL.lastRope ? ropes.indexOf(PL.lastRope) : -1 });
-    const g = ENTS.find(e => e.kind === 'goal'), far = PL.x + 30 * 16; // plan in chunks: ~30 tiles at a time
+    const g = ENTS.filter(e => e.kind === 'goal').sort((a, b) => a.x - b.x)[0], far = PL.x + 30 * 16; // plan in chunks: ~30 tiles at a time
     let goal = LV.def.boss && !ARENA ? { x: LV.def.boss.at * 16 + 56 } : 'goal';
     if (goal === 'goal' ? g && g.x > far : goal.x > far) goal = { x: far };
     return JSON.stringify({ lv: LEVELS.indexOf(LV.def), g: LV.g, pl, ropes: ropes.map(r => [r.th, r.w]), goal, got: RUN.got });
@@ -74,7 +76,7 @@ function bossKeys() {
   const b = JSON.parse(R(`JSON.stringify((() => { if (!BOSS) return null; const B = BOSS, hb = B.hitbox(); const rings = ENTS.filter(e => e.kind === 'ring');
     return { id: LV.def.boss.id, x: hb.x + hb.w / 2, y: hb.y + hb.h / 2, w: hb.w, st: B.st, t: B.t, dir: B.dir, open: B.open, daze: B.daze, shield: B.shield ? B.shield.filter(s => s.alive).length : 0, dying: B.dying,
       px: PL.x + 5, py: PL.y + 10, on: PL.on, hang: !!PL.hang, face: PL.face, bong: !!BONG, air: PL.air, hot: PL.hot, wet: swimming(), x0: ARENA.x0,
-      waves: SHOTS.filter(s => s.wave).map(s => [s.x, s.vx]), letters: SHOTS.filter(s => s.ch).map(s => [s.x, s.y]), rings: rings.map(r => [r.x, r.y]), vents: ENTS.filter(e => e.kind === 'vent').map(v => v.x) }; })())`));
+      waves: SHOTS.filter(s => s.wave).map(s => [s.x, s.vx]), shots: SHOTS.map(s => [s.x + s.w / 2, s.y + s.h / 2, s.vx]), ball: B.ball ? [B.ball().cx, B.ball().cy] : null, sv: B.sv || 0, ph: B.ph, gl: B.gl, letters: SHOTS.filter(s => s.ch).map(s => [s.x, s.y]), rings: rings.map(r => [r.x, r.y]), vents: ENTS.filter(e => e.kind === 'vent').map(v => v.x) }; })())`));
   if (!b || b.dying) return {};
   const k = {}, dx = b.x - b.px, toward = dx > 0 ? 'right' : 'left', away = dx > 0 ? 'left' : 'right', adx = Math.abs(dx);
   const tap = n => (F % n) === 0;
@@ -99,6 +101,23 @@ function bossKeys() {
     else if ((dx > 0) !== (b.face > 0)) k[toward] = 1;
     if (b.py > ty + 8 && tap(12)) k.b = 1; else if (b.py < ty - 8) k.down = 1;
     if (b.open > 0 && !b.bong && (dx > 0) === (b.face > 0) && Math.abs(b.py - ty) < 26) k.a = 1;
+    return k;
+  }
+  if (['bosser', 'intern', 'robux', 'mecha', 'knux'].includes(b.id)) { // the bonus carts: keep a distance, face it, bong it
+    const facing = (dx > 0) === (b.face > 0);
+    const danger = b.shots.some(([x, y, vx]) => Math.abs(x - b.px) < 46 && (x - b.px) * vx <= 0 && y > b.py - 14 && y < b.py + 14)
+      || (b.ball && Math.abs(b.ball[0] - b.px) < 48 && b.ball[1] > b.py - 22)
+      || (((b.st === 'dash' && Math.sign(b.dir) === Math.sign(-dx)) || (b.st === 'shell' && b.sv * dx < 0) || (b.st === 'punch' && b.t > 14)) && adx < 70);
+    if (danger && b.on) { k.b = 1; if (b.id !== 'robux') k[toward] = 1; return k; }
+    if (!b.on) { if (adx < 50 && b.y > b.py - 20) k[away] = 1; return k; }
+    if (b.y < b.py - 28) { // overhead: hookshot goes up and forward at 45 degrees
+      const want = Math.min(80, b.py - b.y);
+      if (adx < want - 12 && Math.abs(b.px - b.x0 - 160) < 120) k[away] = 1; else if (adx < want - 12) { k[b.px < b.x0 + 160 ? 'right' : 'left'] = 1; } else if (adx > want + 12) k[toward] = 1; else if (!facing) k[toward] = 1; else if (!b.bong && tap(6)) { k.up = 1; k.a = 1; }
+      return k; }
+    if (adx < 64) k[away] = 1; else if (adx > 120) k[toward] = 1; else if (!facing) k[toward] = 1;
+    if (!b.bong && facing && tap(6)) k.a = 1;
+    if (adx < 50 && !b.hot && b.id !== 'mecha') k.c = 1;
+    const cx = b.x0 + 160; if (k[away] && Math.abs(b.px - cx) > 120 && (b.px < cx) === (away === 'left')) { delete k[away]; k[b.px < cx ? 'right' : 'left'] = 1; k.b = F % 20 < 10 ? 1 : 0; } // cornered: jump past it
     return k;
   }
   if (b.id === 'dys') {

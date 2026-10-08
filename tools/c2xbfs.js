@@ -9,7 +9,8 @@ function planRoute(spec) {
   let prev = {}, rec = null, hit = false, touchedBox = false;
   const snap = () => ({ pl: JSON.stringify(Object.assign({}, PL, { hang: PL.hang ? rings.indexOf(PL.hang) : -1, rope: PL.rope ? ropes.indexOf(PL.rope) : -1, lastRope: PL.lastRope ? ropes.indexOf(PL.lastRope) : -1 })), r: ropes.map(r => [r.th, r.w]), prev: JSON.stringify(prev) });
   const restore = s => { const o = JSON.parse(s.pl); Object.assign(PL, o); PL.hang = o.hang >= 0 ? rings[o.hang] : null; PL.rope = o.rope >= 0 ? ropes[o.rope] : null; PL.lastRope = o.lastRope >= 0 ? ropes[o.lastRope] : null; s.r.forEach((v, i) => { ropes[i].th = v[0]; ropes[i].w = v[1]; }); BONG = null; prev = JSON.parse(s.prev); };
-  const isGoal = () => spec.goal === 'goal' ? goal && overlap(PL, goal) : spec.goal === 'box' ? box && overlap(PL, box) : PL.x > spec.goal.x;
+  const goals = ENTS.filter(e => e.kind === 'goal');
+  const isGoal = () => spec.goal === 'goal' ? goals.some(g => overlap(PL, g)) : spec.goal === 'box' ? box && overlap(PL, box) : PL.x > spec.goal.x;
   const step = keys => {
     if (rec) rec.push(keys);
     for (const k of KEYS) { const h = !!keys[k]; pressed[k] = h && !prev[k]; held[k] = h; prev[k] = h; }
@@ -35,6 +36,8 @@ function planRoute(spec) {
     for (const at of [0, 10, 18]) macros.push({ seq: [[14, k], [at, Object.assign({ b: 1 }, k)], [1, { up: 1, a: 1 }]], air: {} });
     macros.push({ seq: [[1, k], [1, { up: 1, a: 1 }]], air: {} });
     if (ropes.length) for (const w of [15, 30, 45, 60, 75, 90]) for (const run of [0, 14]) macros.push({ seq: [[w, {}], [run, k], [40, Object.assign({ b: 1 }, k)]], air: k });
+    if (RULES.spindash) macros.push({ seq: [[1, k], [3, { down: 1 }], [1, { down: 1, b: 1 }], [2, { down: 1 }], [1, { down: 1, b: 1 }], [2, { down: 1 }], [1, { down: 1, b: 1 }], [16, {}]], air: {} });
+    if (RULES.knux) for (const run of [0, 14]) for (const w of [4, 12]) macros.push({ seq: [[run, k], [6, Object.assign({ b: 1 }, k)], [w, k], [1, Object.assign({ b: 1 }, k)]], air: Object.assign({ b: 1, up: 1 }, k) });
     if (water) for (const n of [2, 4, 7, 10]) for (const up of [0, 1]) { const seq = []; for (let i = 0; i < n; i++) seq.push([1, Object.assign({ b: 1 }, k, up ? { up: 1 } : {})], [11, Object.assign({}, k, up ? { up: 1 } : {})]); macros.push({ seq, air: k }); }
   }
   const hangMacros = [];

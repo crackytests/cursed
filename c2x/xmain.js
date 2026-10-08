@@ -3,8 +3,8 @@
 // The console port. Somebody at PRETEND CO. read the CARL 2 script, counted the words, and made a face.
 const XMETA = fetchStore('c2x_meta') || { boots: 0, clears: 0, best: null };
 const saveXM = () => store('c2x_meta', XMETA);
-XMETA.got = XMETA.got || {}; RUN.got = XMETA.got; // outfits stay unlocked across saves and clears
-function saveX() { saveXM(); store('c2x_save', { lv: RUN.lv, outfit: RUN.outfit, words: RUN.words, bux: RUN.bux }); }
+XMETA.got = XMETA.got || {}; RUN.got = XMETA.got; XMETA.carts = XMETA.carts || {}; // outfits stay unlocked across saves and clears
+function saveX() { saveXM(); if (RUN.camp) return; store('c2x_save', { lv: RUN.lv, outfit: RUN.outfit, words: RUN.words, bux: RUN.bux }); }
 const OTHER2 = fetchStore('yoko_meta'), PUB = OTHER2 && OTHER2.perma ? 'YOKO LTD.' : 'PRETEND CO.';
 // EXTREME tempos and mix are composed in xmusic.js.
 
@@ -56,10 +56,11 @@ async function titleScreen() {
   for (;;) {
     while (!(pressed.start || pressed.a)) await nextFrame();
     sfx('ok');
-    const opts = sv ? ['CONTINUE', 'NEW GAME', 'CLOSET', 'OPTIONS'] : ['START', 'CLOSET', 'OPTIONS'];
+    const opts = (sv ? ['CONTINUE', 'NEW GAME', 'CLOSET', 'OPTIONS'] : ['START', 'CLOSET', 'OPTIONS']).concat(XMETA.clears ? ['BONUS CARTS'] : []);
     const i = await choose(opts, { x: 120, y: 140, cancel: 1 }); if (i < 0) continue;
     const o = opts[i];
     if (o === 'OPTIONS') { await bigCard(['OPTIONS', '', 'REMOVED.', 'TOO MANY WORDS.'], 90); continue; }
+    if (o === 'BONUS CARTS') { await bonusMenu(); continue; }
     if (o === 'CLOSET') { await closet(sv); S = carlSet(OUTFITS.find(o => o.id === RUN.outfit) || OUTFITS[0]); continue; }
     if (o === 'CONTINUE') { Object.assign(RUN, { lives: 5, lv: sv.lv || 0, outfit: RUN.outfit, words: sv.words || 0, bux: sv.bux || 0 }); await fadeOut(); return game(); }
     Object.assign(RUN, { lives: 5, lv: 0, bux: 0, words: 0, deaths: 0 }); saveX();
@@ -78,9 +79,10 @@ async function closet(sv) {
     if (ok) drawScaled(S[['stand', 'run', 'jump', 'throw'][(t >> 6) & 3]][(t >> 3) & 3], 130, 62, S.P, 3);
     else { const s = S.stand[0]; for (let y = 0; y < s.h * 3; y++) for (let x = 0; x < s.w * 3; x++) if (s.d[((y / 3) | 0) * s.w + ((x / 3) | 0)]) pset(130 + x, 62 + y, hex('#241036')); ctext('?', 92, WHITE, BLACK, 3); }
     ctext(ok ? o.name : '???', 160, WHITE, BLACK, 2);
-    ctext(ok ? o.blurb : o.id === 'tux' ? 'SAVE LINDA' : 'HIDDEN IN LEVEL ' + (LEVELS.findIndex(l => l.outfit === o.id) + 1), 182, UI.dim);
+    const cart = o.camp && CARTS.find(c => c.id === o.camp);
+    ctext(ok ? o.blurb : o.id === 'tux' ? 'SAVE LINDA' : cart ? (XMETA.clears ? (o.clear ? 'BEAT ' : 'HIDDEN IN ') + cart.name : 'BEAT THE GAME FIRST') : 'HIDDEN IN LEVEL ' + (LEVELS.findIndex(l => l.outfit === o.id) + 1), 182, UI.dim);
     const bob = (t >> 4) & 1; triF(96 - bob, 102, 104 - bob, 94, 104 - bob, 110, UI.name); triF(224 + bob, 102, 216 + bob, 94, 216 + bob, 110, UI.name);
-    OUTFITS.forEach((q, k) => rectF(130 + k * 10, 200, 6, 6, k === i ? hex('#ffdb24') : unlocked(q) ? UI.dim : hex('#49246d')));
+    OUTFITS.forEach((q, k) => rectF(160 - OUTFITS.length * 5 + k * 10, 200, 6, 6, k === i ? hex('#ffdb24') : unlocked(q) ? UI.dim : hex('#49246d')));
   } };
   for (;;) {
     await nextFrame();
@@ -128,6 +130,7 @@ async function intro() {
 
 // ---------------- levels ----------------
 async function levelCard(L) {
+  if (L.card) return CARDS[L.card](L);
   music(null); let t = 0;
   const S = carlSet(OUTFITS.find(o => o.id === RUN.outfit) || OUTFITS[0]);
   scene = { update() { t++; }, draw() { cls(BLACK); ctext(L.tag, 50, hex('#ffdb24'), BLACK, 5); ctext(L.name, 110, WHITE, BLACK, 2); drawScaled(S.run[(t >> 3) & 3], 140, 140, S.P, 2); text('x' + RUN.lives, 186, 160, WHITE, BLACK, 2); } };
@@ -158,7 +161,7 @@ async function tally(L) {
   await wait(150); await waitBtn(); await fadeOut(.08);
 }
 async function game() {
-  while (RUN.lv < LEVELS.length) {
+  while (RUN.lv < LEVELS.length && !LEVELS[RUN.lv].camp) {
     const res = await playLevel(RUN.lv);
     if (res === 'quit') return titleScreen();
     if (res === 'over') { await gameOverScreen(); continue; }
