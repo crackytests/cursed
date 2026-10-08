@@ -39,11 +39,11 @@ function makePlan() {
     const g = ENTS.filter(e => e.kind === 'goal').sort((a, b) => a.x - b.x)[0], far = PL.x + 30 * 16; // plan in chunks: ~30 tiles at a time
     let goal = LV.def.boss && !ARENA ? { x: LV.def.boss.at * 16 + 56 } : 'goal';
     if (goal === 'goal' ? g && g.x > far : goal.x > far) goal = { x: far };
-    return JSON.stringify({ lv: LEVELS.indexOf(LV.def), g: LV.g, pl, ropes: ropes.map(r => [r.th, r.w]), goal, got: RUN.got });
+    return JSON.stringify({ lv: LEVELS.indexOf(LV.def), g: LV.g, pl, ropes: ropes.map(r => [r.th, r.w]), goal, got: RUN.got, fr: frame }); // fr: the appearing blocks run on the frame clock
   })()`);
   const t0 = Date.now();
   const res = G.R(planner, `(() => { const S = ${st};
-    RUN.got = S.got; loadLevel(LEVELS[S.lv]); LV.finish = () => {};
+    RUN.got = S.got; loadLevel(LEVELS[S.lv]); LV.finish = () => {}; frame = S.fr;
     LV.g = S.g.map(r => r.map(c => c === 'W' || c === 'w' ? '.' : c));
     ENTS = ENTS.filter(e => !e.foe && e.kind !== 'post');
     const rings = ENTS.filter(e => e.kind === 'ring'), ropes = ENTS.filter(e => e.kind === 'rope');
@@ -65,10 +65,10 @@ function overlay(k, upcoming) {
     const near = ahead.some(e => Math.abs(e.x + e.w / 2 - PL.x - 5) < 46);
     const shot = SHOTS.some(q => q.burn && Math.abs(q.x - PL.x) < 50 && Math.abs(q.y - PL.y - 8) < 18);
     const tx = Math.floor((PL.x + 5 + PL.face * 18) / 16); let wall = false; for (const y of [PL.y + 2, PL.y + 12, PL.y + 19]) if (tileAt(tx, Math.floor(y / 16)) === 'W') wall = true;
-    return { ahead: ahead.length, near, shot, wall, bong: !!BONG, wet: swimming(), hot: PL.hot };
+    return { ahead: ahead.length, near, shot, wall, bong: !!BONG, wet: swimming(), hot: PL.hot, puff: PL.puff };
   })())`));
   const needA = upcoming.some(u => u.a || u.up);
-  if (s.ahead && !s.bong && !needA && (T & 7) === 0) k = Object.assign({}, k, { a: 1 });
+  if (s.ahead && !s.bong && !needA && !s.puff && (T & 7) === 0) k = Object.assign({}, k, { a: 1 });
   if ((s.near || s.shot || s.wall) && !s.wet && !s.hot) k = Object.assign({}, k, { c: 1 });
   return k;
 }
@@ -103,7 +103,7 @@ function bossKeys() {
     if (b.open > 0 && !b.bong && (dx > 0) === (b.face > 0) && Math.abs(b.py - ty) < 26) k.a = 1;
     return k;
   }
-  if (['bosser', 'intern', 'robux', 'mecha', 'knux'].includes(b.id)) { // the bonus carts: keep a distance, face it, bong it
+  if (['bosser', 'intern', 'robux', 'mecha', 'knux', 'staple', 'dracu', 'dedede'].includes(b.id)) { // the bonus carts: keep a distance, face it, bong it
     const facing = (dx > 0) === (b.face > 0);
     const danger = b.shots.some(([x, y, vx]) => Math.abs(x - b.px) < 46 && (x - b.px) * vx <= 0 && y > b.py - 14 && y < b.py + 14)
       || (b.ball && Math.abs(b.ball[0] - b.px) < 48 && b.ball[1] > b.py - 22)
@@ -158,6 +158,10 @@ function bossKeys() {
           if (w.y < p[1] - 4 && (F % 12) === 0) k.b = 1; else if (w.y > p[1] + 6) k.down = 1;
           if (w.vent && Math.abs(w.x - p[0]) < 8) k = { down: 1 };
           k = overlay(k, []); }
+      }
+      else if (R('!!(RULES.puff && !PL.on && (PL.hurt > 80 || PL.puff && !' + !!plan + '))')) { // CARLBY: knocked about in the air, no plan: flap for the exit
+        plan = null; const gx = R('LV.def.boss && !ARENA ? LV.def.boss.at * 16 + 60 : ENTS.find(e => e.kind === "goal").x');
+        k = { [gx > R('PL.x') ? 'right' : 'left']: 1 }; if (F % 10 === 0 && R('PL.y > 48')) k.b = 1;
       }
       else {
         if (!plan) { const lk = liveKey(); if (lk) { plan = makePlan(); seg = 0; fi = 0; if (!plan) { console.log('no route shot', shot(lv + '_noroute')); break; } } }

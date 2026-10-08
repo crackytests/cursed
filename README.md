@@ -33,7 +33,7 @@ Lost games from a studio that never existed.
 - `face/` — FACE: What Could Happen (shoot-'em-up, FACE-FX chip)
 - `yoko/` — YOKO: What Happened (adventure + support battles, YKO-1 chip; it closes the generation)
 - `carl2/` — CARL 2: Hu-Man Boogaloo (action RPG + arguments + pseudo-3D + a dance-off, BONG-FX chip; it came out anyway)
-- `c2x/` — CARL 2 EXTREME: The No-Reading Edition (the console port: a side-scrolling platformer "simplified for console players and Nintendo fans". The bong is a boomerang, a hookshot and an underwater snorkel; a Bic lighter burns walls of text; rope swings, a water level, seven outfits; rescue CEO Linda from DYSLEXIO, every word they cut from CARL 2. Beat it for five BONUS CARTS: SUPER CARL BROS., SUPER CARL WORLD, CARL THE HEDGECARL, HEDGECARL 2 and CARL 3 & KNUCKLEHEAD, each with its own rules, boss and outfits)
+- `c2x/` — CARL 2 EXTREME: The No-Reading Edition (the console port: a side-scrolling platformer "simplified for console players and Nintendo fans". The bong is a boomerang, a hookshot and an underwater snorkel; a Bic lighter burns walls of text; rope swings, a water level, seven outfits; rescue CEO Linda from DYSLEXIO, every word they cut from CARL 2. Beat it for eight BONUS CARTS: SUPER CARL BROS., SUPER CARL WORLD, CARL THE HEDGECARL, HEDGECARL 2, CARL 3 & KNUCKLEHEAD, MEGA CARL, CARLVANIA and CARLBY'S DREAM DESK, each with its own rules, boss and outfits)
 - `stw/` — SAVE THE WORLD: A Pretend Co. Gaiden (16-bit epic RPG: active-time battles, combos, save crystals, an airship on the WORLD-FX scaling chip; out of continuity)
 - `end/` — THE END: A Pretend Co. Gaiden (it plays backwards: from the ending at level 99 back through four shades and plain text to the publisher logo)
 

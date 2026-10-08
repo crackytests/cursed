@@ -49,6 +49,8 @@ function carlSide(pose, f = 0, acc) {
     if (acc === 'tophat') { g.r(ox + 3, oy + 3, 11, 2, 15); g.r(ox + 5, oy - 2, 7, 5, 15); g.r(ox + 5, oy + 1, 7, 1, 12); }
     else { g.e(ox + 7.5, oy + 4.6, 6, 3.6, 5); g.r(ox + 1.5, oy + 4, 12, 2, 5); g.r(ox, oy + 5, 4, 2, 5); g.r(ox, oy + 5, 3, 1, 6); g.r(ox + 6, oy + 2, 3, 1, 6); }
     if (acc === 'dinohat') { g.e(ox + 7.5, oy + 4, 7, 4.5, 15); g.r(ox + 13, oy + 2, 4, 3, 15); g.p(ox + 15, oy + 2, 9); for (let i = 0; i < 3; i++) g.p(ox + 3 + i * 3, oy - 1, 9); }
+    if (acc === 'helmet') { g.e(ox + 8, oy + 5, 7.2, 5.2, 15); g.r(ox + 1, oy + 5, 3, 5, 15); g.r(ox + 6, oy + 2, 4, 1, 9); }
+    if (acc === 'crown') { g.r(ox + 3, oy - 1, 11, 3, 15); for (const x of [3, 7, 11]) g.r(ox + x, oy - 2, 2, 1, 15); g.p(ox + 8, oy, 9); }
     if (acc === 'dreads') for (let i = 0; i < 4; i++) { g.line(ox + 3, oy + 5 + i * 3, ox - 2, oy + 9 + i * 3, 15); g.line(ox + 3, oy + 6 + i * 3, ox - 1, oy + 10 + i * 3, 15); }
     if (acc === 'spikes') for (let i = 0; i < 4; i++) g.line(ox + 2 + i * 3, oy + 2, ox + 1 + i * 4, oy - 3 + (i & 1), 5);
     if (acc === 'quills') for (let i = 0; i < 3; i++) { g.line(ox + 2, oy + 6 + i * 3, ox - 2, oy + 7 + i * 3, 15); g.line(ox + 2, oy + 7 + i * 3, ox - 1, oy + 8 + i * 3, 15); }
@@ -70,6 +72,8 @@ function carlSet(o) { // sprites per outfit, built on first use
   for (const p of POSES) S[p] = [0, 1, 2, 3].map(f => carlSide(p, f, o.acc));
   // the spin ball (the bonus carts): hoodie and cap, rolled up
   S.ball = [0, 1, 2, 3].map(f => outline(spr(18, 18, g => { g.e(8.5, 8.5, 7.5, 7.5, 10); for (let k = 0; k < 3; k++) { const a = f * .52 + k * 2.09; g.line(8.5 + Math.cos(a) * 2, 8.5 + Math.sin(a) * 2, 8.5 + Math.cos(a) * 7, 8.5 + Math.sin(a) * 7, k ? 5 : 11); } g.e(8.5, 8.5, 2, 2, 2); }), 1));
+  // puffed up (CARLBY): a balloon in a hoodie
+  S.puff = outline(spr(22, 20, g => { g.e(11, 11, 10, 8.5, 10); g.e(8, 14, 6, 3.5, 11); g.e(14, 10, 5, 5, 2); g.e(16, 9, 1.6, 2.2, 7); g.p(16, 10, 8); g.p(12, 12, 14); g.e(9, 3.5, 7, 3, 5); g.r(2, 3, 14, 2, 5); g.r(4, 18, 5, 2, 13); g.r(13, 18, 5, 2, 13); g.e(2, 10, 2, 2, 10); }), 1);
   return CARLSET[o.id] = S;
 }
 

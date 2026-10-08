@@ -1,7 +1,7 @@
 'use strict';
 // ================= CARL 2 EXTREME: BONUS CARTS =================
-// Beat the game and five more cartridges show up: SUPER CARL BROS., SUPER CARL WORLD, CARL THE HEDGECARL,
-// HEDGECARL 2 and CARL 3 & KNUCKLEHEAD. Each is three levels with its own house rules (RULES, set per level),
+// Beat the game and eight more cartridges show up: SUPER CARL BROS., SUPER CARL WORLD, CARL THE HEDGECARL,
+// HEDGECARL 2, CARL 3 & KNUCKLEHEAD, MEGA CARL, CARLVANIA and CARLBY'S DREAM DESK. Each is five levels with its own house rules (RULES, set per level),
 // its own boss, one outfit hidden inside and one for beating it. Carl keeps the bong and the lighter in all of them.
 
 // ---------------- small helpers ----------------
@@ -97,6 +97,7 @@ function speedRun(dir) {
   else PL.vx *= PL.on ? .975 : .995;
 }
 function bonusAir() { // jump again in the air
+  if (RULES.puff) { PL.puff = 1; PL.vy = -3.4; sfx('jump'); if (!RUN.saidPuff) { RUN.saidPuff = 1; quip('I\'M NOT INHALING.'); } return; }
   if (RULES.knux && PL.jumped && !PL.glide && !PL.sprung) { PL.glide = 1; PL.ball = 0; PL.vy = Math.max(PL.vy, 0); PL.vx = PL.face * Math.max(1.5, Math.abs(PL.vx)); sfx('switch'); if (!RUN.saidGlide) { RUN.saidGlide = 1; quip('I CAN GLIDE NOW.'); } }
 }
 function bonusPre(dir) {
@@ -122,6 +123,8 @@ function bonusPre(dir) {
   return false;
 }
 function bonusPost(dir) {
+  if (RULES.puff) { if (PL.y < 0) { PL.y = 0; PL.vy = Math.max(PL.vy, 0); } if (PL.puff && pressed.a) { PL.puff = 0; FX.push({ k: 'puff', x: PL.x + 5 + PL.face * 10, y: PL.y + 8, t: 16 }); } }
+  if (RULES.vania && PL.jumped && !RUN.saidStiff) { RUN.saidStiff = 1; quip('I CAN\'T STEER IN THE AIR.'); }
   if (PL.loopCD > 0) PL.loopCD--; if (PL.star > 0) PL.star--; if (PL.tongue > 0) PL.tongue--;
   if (PL.on) { const t = tileAt(Math.floor((PL.x + PL.w / 2) / TS), Math.floor((PL.y + PL.h + 1) / TS)); if (t === '}' || t === '{') { PL.vx = t === '}' ? 7.5 : -7.5; PL.face = Math.sign(PL.vx); if (frame % 6 === 0) sfx('tick'); } }
   for (const e of ENTS) {
@@ -160,6 +163,13 @@ function goalSeq(e) {
       if (Math.abs(PL.y + 10 - tapeY(e)) < 18) { addBux(5); FX.push({ k: 'txt', s: 'TAPE +5', x: PL.x, y: PL.y - 8, t: 70 }); }
       e.cut = 1; music(null); sfx('get');
       for (let i = 0; i < 60; i++) { PL.x += 1.2; PL.vx = 1.2; PL.anim += .25; PL.on = true; await nextFrame(); } PL.vx = 0; await wait(20);
+    } else if (e.style === 'door') { // the shutter. It goes up, you go in, it comes down
+      music(null); sfx('switch'); PL.vx = 0; for (let i = 0; i < 24; i++) { e.op = i * 2; await nextFrame(); }
+      for (let i = 0; i < 40; i++) { PL.x += 1.2; PL.vx = 1.2; PL.anim += .25; PL.on = true; await nextFrame(); } PL.vx = 0;
+      for (let i = 24; i >= 0; i--) { e.op = i * 2; await nextFrame(); } sfx('land'); await wait(20);
+    } else if (e.style === 'star') { // the warp star. It takes you to the next level, and that's all it does
+      music(null); sfx('get'); e.ride = 1; PL.puff = 0; PL.face = 1;
+      for (let i = 0; i < 90; i++) { PL.x += 2.6; PL.y -= 1.6 + i * .02; PL.on = false; PL.vy = -1; await nextFrame(); }
     } else { e.spin = 70; PL.vx = 0; music(null); sfx('get'); while (e.spin > 0) { e.spin--; await nextFrame(); } e.done = 1; await wait(40); }
     LV.finish('clear');
   });
@@ -176,6 +186,12 @@ function drawGoal2(e, sx, sy) {
   } else if (e.style === 'tape') {
     for (const px of [sx - 28, sx + 14]) { rectF(px, sy, 6, e.h, hex('#ffdb92')); rectF(px + 4, sy, 2, e.h, hex('#b6926d')); rectF(px - 1, sy, 8, 3, hex('#6d4924')); }
     if (!e.cut) { const ty = tapeY(e) - camY; rectF(sx - 22, ty, 36, 4, hex('#ff9224')); rectF(sx - 22, ty, 36, 1, hex('#ffdb24')); }
+  } else if (e.style === 'door') {
+    const dy = sy + e.h - 48, h = 48 - (e.op || 0); rectF(sx - 10, dy - 4, 28, 4, hex('#49496d'));
+    for (let y = 0; y < h; y += 6) { rectF(sx - 8, dy + y, 24, 5, hex('#9292b6')); rectF(sx - 8, dy + y + 5, 24, 1, hex('#49496d')); }
+  } else if (e.style === 'star') {
+    const x = e.ride ? PL.x - 8 - camX : sx - 9, y = e.ride ? PL.y + PL.h - 8 - camY : sy + e.h - 26 + Math.sin(frame * .1) * 2, c = hex(frame & 4 ? '#ffdb24' : '#ffff92');
+    triF(x + 13, y, x + 2, y + 24, x + 24, y + 24, c); triF(x, y + 9, x + 26, y + 9, x + 13, y + 20, c); rectF(x + 10, y + 11, 2, 3, BLACK); rectF(x + 15, y + 11, 2, 3, BLACK);
   } else {
     const py = sy + e.h - 44, w = e.spin > 0 ? Math.abs(Math.cos(e.spin * .35)) * 26 : 26, face = e.done || (e.spin > 0 && Math.cos(e.spin * .175) < 0);
     rectF(sx + 3, py + 20, 2, 24, hex('#6d6d6d'));
@@ -664,14 +680,15 @@ function drawCart(c, x, y, sel) {
 async function bonusMenu() {
   const prev = scene; let i = 0, t = 0;
   const menu = scene = { update() { t++; }, draw() {
-    skyD(0, H, '#100020', '#241049'); ctext('BONUS CARTS', 14, hex('#ffdb24'), BLACK, 2); ctext('OTHER GAMES. SIMPLIFIED MORE.', 38, UI.dim);
-    CARTS.forEach((c, k) => drawCart(c, 18 + k * 58, 70 - (k === i ? 6 + ((t >> 3) & 1) : 0), k === i));
-    ctext(CARTS[i].name, 150, WHITE, BLACK, 1); ctext(CARTS[i].line, 164, UI.dim);
+    skyD(0, H, '#100020', '#241049'); ctext('BONUS CARTS', 8, hex('#ffdb24'), BLACK, 2); ctext('OTHER GAMES. SIMPLIFIED MORE.', 30, UI.dim);
+    CARTS.forEach((c, k) => drawCart(c, 34 + (k % 4) * 66, 50 + (k >> 2) * 70 - (k === i ? 4 + ((t >> 3) & 1) : 0), k === i)); // two rows of four
+    ctext(CARTS[i].name, 186, WHITE, BLACK, 1); ctext(CARTS[i].line, 200, UI.dim);
   } };
   for (;;) {
     await nextFrame();
     if (pressed.left) { i = (i + CARTS.length - 1) % CARTS.length; sfx('move'); }
     if (pressed.right) { i = (i + 1) % CARTS.length; sfx('move'); }
+    if (pressed.up || pressed.down) { i = (i + 4) % 8 < CARTS.length ? (i + 4) % 8 : i; sfx('move'); }
     if (pressed.b || pressed.c) { sfx('tick'); break; }
     if (pressed.a || pressed.start) { sfx('ok'); await fadeOut(); await playCart(CARTS[i]); music('title'); scene = menu; await fadeIn(); }
   }
@@ -727,3 +744,285 @@ async function cartOutro(c) {
   if (first && CARTS.every(k => XMETA.carts[k.id])) { music('walkout'); await bigCard(['ALL CARTS CLEARED.', '', 'LINDA:', 'MEETING ADJOURNED.'], 150, { bg: hex('#ff4900') }); }
   await fadeOut(.06);
 }
+
+// ================= second shipment: MEGA CARL, CARLVANIA, CARLBY'S DREAM DESK =================
+// MEGA CARL (rules.mega): spikes kill outright; D blocks appear in turn. CARLVANIA (rules.vania): no steering in the air,
+// candles. CARLBY (rules.puff): jump again in the air to puff up and float, as often as you like.
+// appearing blocks: each chain is numbered left to right, low to high; block k is there for 120 frames starting at 60k
+function yokuOn(tx, ty) {
+  if (!LV.yk) {
+    const all = []; for (let y = 0; y < LV.h; y++) for (let x = 0; x < LV.w; x++) if (LV.g[y][x] === 'D') all.push([x, y, x + 2 * (LV.h - y)]);
+    all.sort((a, b) => a[2] - b[2]); LV.yk = {};
+    let grp = [];
+    const flush = () => { const keys = [...new Set(grp.map(b => b[2]))]; for (const b of grp) LV.yk[b[0] + ',' + b[1]] = [keys.indexOf(b[2]), 60 * (keys.length + 1)]; grp = []; };
+    for (const b of all) { if (grp.length && b[2] - grp[grp.length - 1][2] > 8) flush(); grp.push(b); } flush();
+  }
+  const [k, per] = LV.yk[tx + ',' + ty] || [0, 180];
+  return ((frame - 60 * k) % per + per) % per < 120;
+}
+Object.assign(FOES, {
+  m: { kind: 'mett', w: 14, h: 12, hp: 1, guard: e => !e.peek,
+    ai(e) { e.dir = Math.sign(PL.x - e.x) || 1; const ph = e.t % 150; e.peek = ph > 100;
+      if (ph === 115 && Math.abs(PL.x - e.x) < 200) { for (const vy of [-.7, 0, .7]) SHOTS.push({ x: e.x + 4, y: e.y + 3, w: 6, h: 6, vx: e.dir * 1.8, vy, t: 150, bongable: 1, burn: 1, spr: XS.pellet, P: XP.bf }); sfx('tick'); } },
+    draw: (e, sx, sy, f, fl, tn) => draw(XS.mett[e.peek ? 1 : 0], sx - 1, sy - 2, XP.bn, fl, tn) },
+  l: { kind: 'teller', w: 12, h: 12, hp: 1,
+    ai(e) { if (Math.abs(PL.x - e.x) > 220) return; const dx = PL.x - e.x, dy = PL.y + 4 - e.y, d = Math.hypot(dx, dy) || 1; e.x += dx / d * .5; e.y += dy / d * .5; e.dir = Math.sign(dx) || 1; },
+    draw: (e, sx, sy, f, fl, tn) => draw(XS.teller[(e.t >> 2) & 1], sx - 1, sy - 1, XP.bn, fl, tn) },
+  a: { kind: 'bat', w: 14, h: 8, hp: 1,
+    ai(e) { if (!e.go) { if (Math.abs(PL.x - e.x) < 110 && PL.y > e.y) { e.go = 1; e.dir = Math.sign(PL.x - e.x) || -1; } return; }
+      e.go++; e.x += e.dir * 1.3; e.y = e.by + Math.min(e.go, 40) * .9 + Math.sin(e.go * .08) * 12; if (e.go > 400) e.dead = 1; },
+    draw: (e, sx, sy, f, fl, tn) => draw(XS.bat[e.go ? (e.t >> 3) & 1 : 0], sx - 1, sy - 1, XP.bn, fl, tn) },
+  d: { kind: 'medusa', w: 12, h: 12, hp: 1, // they keep coming. That's the rule
+    ai(e) { e.dir = -1; e.x -= 1.1; e.y = e.by + Math.sin(e.t * .05) * 28; if (e.x < camX - 40 && PL.x < LV.w * TS - W) e.x = camX + W + 20 + rnd(60); },
+    draw: (e, sx, sy, f, fl, tn) => draw(XS.medusa[(e.t >> 3) & 1], sx - 1, sy - 1, XP.bf, fl, tn) },
+  p: { kind: 'skel', w: 12, h: 24, hp: 2,
+    ai(e) { walkStep(e, .35); if (e.t % 140 === 70 && Math.abs(PL.x - e.x) < 180) { const d = Math.sign(PL.x - e.x) || 1; SHOTS.push({ x: e.x + 3, y: e.y, w: 8, h: 8, vx: d * 1.5, vy: -4.2, ay: .15, t: 160, bongable: 1, spr: XS.bone, P: XP.bn }); sfx('tick'); } },
+    draw: simpleDraw(XS.skel, XP.bn) },
+  i: { kind: 'candle', w: 8, h: 16, hp: 1, ai() {}, touch: () => true,
+    onDie(e) { sfx('crash'); FX.push({ k: 'puff', x: e.x + 4, y: e.y + 4, t: 16 }); ENTS.push(Math.random() < .25 ? { kind: 'pretzel', x: e.x - 3, y: e.y, w: 14, h: 12, vy: -2, drop: 1 } : { kind: 'bux', x: e.x - 1, y: e.y + 4, w: 10, h: 10, vy: -2, drop: 1 }); return true; },
+    draw: (e, sx, sy, f, fl, tn) => draw(XS.candle[(frame >> 3) & 1], sx, sy, XP.bn, false, tn) },
+  r: { kind: 'waddle', w: 14, h: 13, hp: 1, sp: .5, walk: 1, draw: simpleDraw(XS.waddle, XP.bn) },
+  K: { kind: 'bronto', w: 14, h: 10, hp: 1,
+    ai(e) { e.x = e.bx + Math.sin(e.t * .012) * 70; e.dir = Math.cos(e.t * .012) > 0 ? 1 : -1; e.y = e.by + Math.sin(e.t * .06) * 18; },
+    draw: (e, sx, sy, f, fl, tn) => draw(XS.bronto[(e.t >> 3) & 1], sx - 1, sy - 1, XP.bn, fl, tn) },
+  G: { kind: 'gordo', w: 14, h: 14, hp: 1, bob: 1, spiky: 1, guard: () => true, draw: (e, sx, sy) => draw(XS.gordo, sx - 1, sy - 1, XP.bn) },
+});
+
+Object.assign(BOSSES, {
+  // ---------------- MEGA CARL: STAPLE MAN. Hops, fires three staples at the top of the hop, slides ----------------
+  staple() {
+    const x0 = ARENA.x0, floor = 12 * TS;
+    const B = { name: 'STAPLE MAN', hp: 14, max: 14, x: x0 + 14 * TS, y: floor - 26, w: 20, h: 26, dir: -1, t: 0, flash: 0, vy: 0, vx: 0, st: 'stand',
+      hitbox() { return this.dying ? none : { x: this.x + 2, y: this.y + 2, w: 16, h: 24 }; },
+      hit() { this.hp--; bossHitFlash(this); if (this.hp === 7) quip('I HOLD THINGS TOGETHER.', this); if (this.hp <= 0) bossDown(this, async () => { quip('UNSTAPLED.'); openArena(); }); },
+      fire(z) { if (!this.dying && frame % 10 === 0 && overlap(z, this.hitbox())) this.hit(); },
+      update() {
+        if (this.dying) return; this.t++; if (this.flash > 0) this.flash--;
+        const L = x0 + 16, R = x0 + 18 * TS - this.w, s = this.st;
+        if (s === 'stand') { this.dir = PL.x < this.x + 10 ? -1 : 1;
+          if (this.t > (this.hp > 7 ? 50 : 30)) { this.t = 0; this.st = Math.random() < .35 ? 'slide' : 'hop'; if (this.st === 'hop') { this.vy = -7; this.vx = clamp((PL.x - this.x) / 50, -2.4, 2.4); this.shot = 0; } else this.vx = this.dir * 5; } }
+        else if (s === 'hop') { this.vy += .3; this.y += this.vy; this.x = clamp(this.x + this.vx, L, R);
+          if (!this.shot && this.vy > -1) { this.shot = 1; const base = Math.atan2(PL.y + 10 - this.y - 10, PL.x + 5 - this.x - 10);
+            for (const a of [-.35, 0, .35]) SHOTS.push({ x: this.x + 7, y: this.y + 8, w: 6, h: 6, vx: Math.cos(base + a) * 2.6, vy: Math.sin(base + a) * 2.6, t: 200, bongable: 1, spr: XS.staple, P: XP.bn }); sfx('tick'); }
+          if (this.y >= floor - this.h) { this.y = floor - this.h; this.vy = 0; this.st = 'stand'; this.t = 0; sfx('land'); } }
+        else if (s === 'slide') { this.x += this.vx; if (this.t % 4 === 0) FX.push({ k: 'puff', x: this.x + 10, y: floor - 4, t: 12 }); if (this.x <= L || this.x >= R || this.t > 50) { this.x = clamp(this.x, L, R); this.st = 'stand'; this.t = 0; } }
+        bossTouch(this, this.hitbox(), false);
+      },
+      draw() { draw(XS.stapler[this.st === 'hop' ? 1 : 0], this.x - 4 - camX, this.y - camY, XP.bn, this.dir < 0, this.flash & 2 ? WHITE : 0); },
+    };
+    return B;
+  },
+  // ---------------- CARLVANIA: COUNT DRACUBOSS. Teleports in, opens the cape, three fireballs, leaves ----------------
+  dracu() {
+    const x0 = ARENA.x0, floor = 12 * TS;
+    const B = { name: 'COUNT DRACUBOSS', hp: 12, max: 12, x: x0 + 13 * TS, y: floor - 40, w: 24, h: 40, dir: -1, t: 0, flash: 0, st: 'in', a: 0,
+      open() { return this.st === 'in' && this.t > 36 && this.t < 100; },
+      hitbox() { return this.dying || this.a < .9 ? none : { x: this.x + 4, y: this.y + 2, w: 16, h: 38 }; },
+      hit(b) { if (!this.open()) return clink(b); this.hp--; bossHitFlash(this);
+        if (this.hp === 8) quip('WHAT IS A MAN?', this); if (this.hp === 4) quip('A MISERABLE PILE OF EMAILS.', this);
+        if (this.hp <= 0) bossDown(this, async () => { quip('HAVE AT YOU. LATER.'); openArena(); }); },
+      fire(z) { if (!this.dying && this.open() && frame % 10 === 0 && overlap(z, this.hitbox())) this.hit(); },
+      update() {
+        if (this.dying) return; this.t++; if (this.flash > 0) this.flash--;
+        const L = x0 + 24, R = x0 + 17 * TS - this.w;
+        if (this.st === 'in') { this.a = Math.min(1, this.a + .04); this.dir = PL.x < this.x + 12 ? -1 : 1;
+          if (this.t === 50) { for (const vy of [-.5, 0, .5]) SHOTS.push({ x: this.x + 6, y: this.y + 18, w: 14, h: 8, vx: this.dir * 2, vy, t: 240, fire: 1, solid: 0, spr: XS.fireball, P: XP.bong }); sfx('crash'); }
+          if (this.t > (this.hp > 6 ? 120 : 100)) { this.st = 'out'; this.t = 0; } }
+        else { this.a = Math.max(0, this.a - .05); if (this.a <= 0) { let nx, n = 0; do nx = L + Math.random() * (R - L); while (Math.abs(nx - PL.x) < 56 && ++n < 20); this.x = nx; this.st = 'in'; this.t = 0; } }
+        if (this.a > .5) bossTouch(this, { x: this.x + 4, y: this.y + 2, w: 16, h: 38 }, false);
+      },
+      draw() { if (this.a < 1 && (frame & 1) && this.a < .7) return; if (this.a <= .1) return; draw(XS.dracu[this.open() ? 1 : 0], this.x - 2 - camX, this.y - camY, XP.bn, this.dir < 0, this.flash & 2 ? WHITE : 0); },
+    };
+    return B;
+  },
+  // ---------------- CARLBY: KING DEDEDUE. Jumps (stars on landing), inhales, swings an invoice-shaped hammer ----------------
+  dedede() {
+    const x0 = ARENA.x0, floor = 12 * TS;
+    const B = { name: 'KING DEDEDUE', hp: 12, max: 12, x: x0 + 14 * TS, y: floor - 40, w: 32, h: 40, dir: -1, st: 'walk', t: 0, flash: 0, vy: 0,
+      hitbox() { return this.dying ? none : { x: this.x + 4, y: this.y + 4, w: 24, h: 36 }; },
+      hit() { this.hp--; bossHitFlash(this); if (this.hp === 8) quip('PAY ME BY FRIDAY.', this); if (this.hp === 4) quip('THURSDAY.', this); if (this.hp <= 0) bossDown(this, async () => { quip('NET 90.'); openArena(); }); },
+      fire(z) { if (!this.dying && frame % 10 === 0 && overlap(z, this.hitbox())) this.hit(); },
+      update() {
+        if (this.dying) return; this.t++; if (this.flash > 0) this.flash--;
+        const L = x0 + 16, R = x0 + 18 * TS - this.w, s = this.st;
+        if (s === 'walk') { this.dir = PL.x < this.x + 16 ? -1 : 1; this.x = clamp(this.x + this.dir * .7, L, R); if (this.t > 70) { this.t = 0; this.st = ['jump', 'inhale', 'hammer'][(Math.random() * 3) | 0]; } }
+        else if (s === 'jump') { if (this.t === 1) { this.vy = -8; this.tx = PL.x - 10; } this.vy += .3; this.y += this.vy; this.x = clamp(this.x + clamp(this.tx - this.x, -2.2, 2.2), L, R);
+          if (this.y >= floor - this.h) { this.y = floor - this.h; this.vy = 0; this.st = 'walk'; this.t = 0; sfx('crash'); post.shake = 3; SHAKE = 8;
+            for (const d of [-1, 1]) SHOTS.push({ x: this.x + 11 + d * 20, y: floor - 12, w: 10, h: 10, vx: d * 2.2, vy: 0, t: 120, solid: 0, bongable: 1, spr: XS.starshot, P: XP.bn }); } }
+        else if (s === 'inhale') { // pulls you in. Don't get pulled in
+          if (this.t < 90) { const d = this.x + 16 - (PL.x + 5); if (!PL.dead && Math.abs(d) < 150 && Math.abs(PL.y - this.y) < 60 && Math.sign(d) === -this.dir) moveX(Math.sign(d) * .9);
+            if (this.t % 6 === 0) FX.push({ k: 'puff', x: this.x + 16 + this.dir * (30 + Math.random() * 60), y: this.y + 14 + Math.random() * 16, t: 12 }); }
+          else { this.st = 'walk'; this.t = 0; } }
+        else if (s === 'hammer') { if (this.t === 30) { sfx('crash'); post.shake = 2; SHAKE = 6; const z = { x: this.dir > 0 ? this.x + this.w : this.x - 36, y: this.y, w: 36, h: this.h }; if (!PL.dead && overlap(PL, z)) ouch(1, 'boss', this.x + 16); }
+          if (this.t > 60) { this.st = 'walk'; this.t = 0; } }
+        bossTouch(this, this.hitbox(), s !== 'inhale');
+      },
+      draw() { const f = this.st === 'inhale' ? 2 : this.st === 'hammer' && this.t >= 30 && this.t < 45 ? 3 : (this.t >> 4) & 1; draw(XS.dedede[f], this.x - 4 - camX, this.y - camY, XP.bn, this.dir < 0, this.flash & 2 ? WHITE : 0); },
+    };
+    return B;
+  },
+});
+
+// ---------------- the levels ----------------
+// D appearing block, m mettaudit, l teller, a bat, d medusa head, p skeleton, i candle, r waddle, K bronto, G gordon (can't be hurt)
+const MEGA = { mega: 1 }, VANIA = { vania: 1 }, PUFF = { puff: 1 };
+LEVELS.push(
+  // ======== MEGA CARL ========
+  { id: 'mega1', camp: 'mega', tag: '1', name: 'MEMO MAN', theme: 'mega1', outfit: 'megasuit', card: 'ready', rules: MEGA, goal: 'door',
+    build() {
+      const b = LB(180);
+      b.ground(0, 30).put(2, 11, '@').put(12, 11, 'm').put(20, 7, 'l').put(26, 11, 'm');
+      b.ground(34, 60).fill(38, 39, 9, 11, '#').put(44, 11, 'm').fill(48, 49, 11, 11, '^').put(54, 6, 'l').put(58, 11, 'C');
+      b.put(63, 10, 'D').put(66, 9, 'D').put(69, 10, 'D').put(72, 9, 'D').put(66, 6, 'X');
+      b.ground(75, 110).put(80, 11, 'm').fill(84, 85, 9, 11, '#').row(84, 7, '$$').put(90, 6, 'l').fill(94, 95, 11, 11, '^').put(100, 11, 'm').put(106, 11, 'C');
+      b.put(113, 9, 'D').put(116, 8, 'D').put(119, 7, 'D').put(122, 8, 'D').put(125, 9, 'D').row(118, 5, '$$$');
+      b.ground(128, 179).put(132, 11, 'm').put(138, 6, 'l').fill(142, 143, 11, 11, '^').put(150, 11, 'm').put(154, 11, 'C').fill(158, 159, 9, 11, '#').put(170, 11, 'E');
+      return b;
+    } },
+  { id: 'mega2', camp: 'mega', tag: '2', name: 'FAX MAN', theme: 'megaf', card: 'ready', rules: MEGA, goal: 'door',
+    build() { // a floor of spikes, and blocks that take turns
+      const b = LB(190);
+      b.ground(0, 40).put(2, 11, '@').put(10, 11, 'm').fill(16, 17, 9, 11, '#').put(22, 6, 'l').put(28, 11, 'm').fill(32, 33, 11, 11, '^').put(38, 11, 'C');
+      b.ground(41, 70).fill(41, 70, 12, 12, '^'); for (const [x, y] of [[43, 10], [46, 9], [49, 8], [52, 9], [55, 10], [58, 9], [61, 8], [64, 9], [67, 10]]) b.put(x, y, 'D');
+      b.ground(71, 110).put(76, 11, 'm').put(80, 6, 'l').fill(84, 85, 10, 11, '#').row(84, 9, '$$').put(90, 11, 'm').fill(94, 95, 11, 11, '^').put(100, 11, 'C').put(104, 11, 'm');
+      b.ground(111, 150).fill(111, 150, 12, 12, '^').plat(113, 115, 9).plat(119, 121, 8).plat(125, 127, 9).plat(131, 133, 8).plat(137, 139, 9).plat(143, 145, 9).put(128, 4, 'l');
+      b.ground(151, 189).put(156, 11, 'm').put(164, 11, 'C').put(178, 11, 'E');
+      return b;
+    } },
+  { id: 'mega3', camp: 'mega', tag: '3', name: 'PAPER MAN', theme: 'megap', card: 'ready', rules: MEGA, goal: 'door',
+    build() { // up the blocks, along the top
+      const b = LB(150);
+      b.ground(0, 36).put(2, 11, '@').put(10, 11, 'm').put(16, 6, 'x').put(22, 11, 'm').fill(26, 27, 10, 11, '#').fill(28, 29, 8, 11, '#').fill(30, 31, 6, 11, '#').row(30, 5, '$$').put(34, 11, 'C');
+      b.ground(37, 62).put(40, 11, 'm').put(46, 6, 'l').fill(50, 51, 11, 11, '^').put(56, 11, 'm');
+      b.put(63, 10, 'D').put(65, 8, 'D').put(63, 6, 'D').put(65, 4, 'D');
+      b.ground(67, 100, 5).put(72, 4, 'm').put(80, 1, 'l').put(86, 4, 'C').put(92, 4, 'm');
+      b.ground(101, 149).put(106, 11, 'm').fill(112, 113, 11, 11, '^').put(120, 6, 'x').put(126, 11, 'm').put(132, 11, 'C').put(145, 11, 'E');
+      return b;
+    } },
+  { id: 'mega4', camp: 'mega', tag: '4', name: 'WILEE 1', theme: 'wilee', card: 'ready', rules: MEGA, goal: 'door',
+    build() { // the castle. It has his face on it. Very humble
+      const b = LB(180);
+      b.ground(0, 30).put(2, 11, '@').put(10, 11, 'm').put(16, 6, 'l').fill(20, 21, 11, 11, '^').put(26, 11, 'm');
+      b.ground(31, 60).fill(31, 60, 12, 12, '^').plat(33, 35, 10).put(38, 9, 'D').put(41, 8, 'D').put(44, 9, 'D').plat(47, 49, 10).put(52, 9, 'D').put(55, 10, 'D').plat(57, 59, 10);
+      b.ground(61, 100).put(64, 11, 'C').put(68, 11, 'm').fill(72, 73, 9, 11, '#').put(78, 6, 'l').put(84, 11, 'm').fill(88, 89, 11, 11, '^').put(94, 6, 'l').put(98, 11, 'm');
+      b.ground(101, 140).fill(101, 140, 12, 12, '^').plat(103, 105, 10).plat(109, 111, 9).plat(115, 117, 10).put(120, 9, 'D').put(123, 8, 'D').put(126, 9, 'D').plat(129, 131, 10).plat(135, 137, 10);
+      b.ground(141, 179).put(144, 11, 'C').put(150, 11, 'm').put(156, 6, 'l').put(170, 11, 'E');
+      return b;
+    } },
+  { id: 'mega5', camp: 'mega', tag: '5', name: 'WILEE 2', theme: 'wilee', card: 'ready', rules: MEGA, goal: 'door', boss: { id: 'staple', at: 30 },
+    build() {
+      const b = LB(60);
+      b.ground(0, 59).put(3, 11, '@').put(12, 11, '+').row(16, 10, '$$$$').put(55, 11, 'E');
+      return b;
+    } },
+  // ======== CARLVANIA ========
+  { id: 'vania1', camp: 'vania', tag: '1', name: 'ENTRANCE', theme: 'vania', outfit: 'whip', card: 'vania', rules: VANIA, goal: 'door',
+    build() {
+      const b = LB(170);
+      b.ground(0, 60).put(2, 11, '@').put(6, 9, 'i').put(14, 9, 'i').put(18, 11, 'p').put(22, 9, 'i').put(30, 5, 'a').put(36, 11, 'p').fill(42, 43, 10, 11, '#').put(46, 9, 'i').put(50, 5, 'a').put(56, 11, 'C');
+      b.plat(63, 65, 10).plat(68, 70, 8).plat(73, 75, 10).row(68, 7, '$$$');
+      b.ground(78, 120).put(80, 9, 'i').put(86, 11, 'p').put(92, 6, 'd').put(96, 9, 'i').fill(100, 101, 10, 11, '#').put(106, 5, 'a').put(112, 9, 'i').put(116, 11, 'C');
+      b.plat(122, 124, 10).plat(127, 129, 10).put(128, 6, 'X');
+      b.ground(132, 169).put(136, 11, 'p').put(140, 9, 'i').put(146, 6, 'd').put(152, 11, 'p').put(158, 9, 'i').put(164, 11, 'E');
+      return b;
+    } },
+  { id: 'vania2', camp: 'vania', tag: '2', name: 'HALLWAY', theme: 'vhall', card: 'vania', rules: VANIA, goal: 'door',
+    build() { // the medusa heads. You knew
+      const b = LB(160);
+      b.ground(0, 40).put(2, 11, '@').put(8, 9, 'i').put(14, 11, 'p').put(20, 9, 'i').put(26, 6, 'd').put(32, 9, 'i').put(36, 11, 'C');
+      b.plat(43, 45, 10).plat(48, 50, 9).plat(53, 55, 10).plat(58, 60, 9).put(52, 6, 'd');
+      b.ground(63, 100).put(66, 9, 'i').put(72, 11, 'p').fill(76, 77, 10, 11, '#').put(82, 5, 'a').put(86, 5, 'a').put(90, 9, 'i').put(96, 11, 'C');
+      b.ground(101, 104).plat(107, 109, 10).plat(112, 114, 10).plat(117, 119, 10).put(114, 6, 'd');
+      b.ground(122, 159).put(126, 9, 'i').put(130, 11, 'p').put(136, 11, 'p').put(142, 6, 'd').put(148, 9, 'i').put(154, 11, 'E');
+      return b;
+    } },
+  { id: 'vania3', camp: 'vania', tag: '3', name: 'CLOCK TOWER', theme: 'vclock', card: 'vania', rules: VANIA, goal: 'door',
+    build() { // up, then down. The clock is wrong. It's always 9 AM
+      const b = LB(160);
+      b.ground(0, 20).put(2, 11, '@').put(10, 9, 'i').put(16, 11, 'p');
+      b.ground(21, 30, 10).put(26, 7, 'i').ground(31, 40, 8).put(36, 7, 'p').ground(41, 50, 6).put(46, 3, 'i').put(48, 1, 'a').row(42, 5, '$$$');
+      b.ground(54, 70, 7).put(58, 6, 'C').put(62, 4, 'i').put(66, 6, 'p').put(68, 2, 'a');
+      b.ground(71, 90, 9).put(76, 6, 'i').put(82, 8, 'p').put(86, 3, 'd').ground(91, 110, 11).put(96, 8, 'i').put(102, 10, 'p').put(106, 10, 'C');
+      b.plat(113, 115, 9).plat(118, 120, 7).plat(123, 125, 9).put(120, 3, 'a');
+      b.ground(128, 159).put(132, 9, 'i').put(138, 11, 'p').put(144, 6, 'd').put(154, 11, 'E');
+      return b;
+    } },
+  { id: 'vania4', camp: 'vania', tag: '4', name: 'COURTYARD', theme: 'vania', card: 'vania', rules: VANIA, goal: 'door',
+    build() {
+      const b = LB(170);
+      b.ground(0, 34).put(2, 11, '@').put(8, 9, 'i').put(14, 11, 'p').put(20, 5, 'a').put(24, 9, 'i').put(30, 11, 'p');
+      b.plat(37, 39, 10).plat(42, 44, 9).plat(47, 49, 10).put(44, 5, 'd').ground(52, 90).put(56, 11, 'C').put(60, 9, 'i').put(66, 11, 'p').put(72, 11, 'p').fill(78, 79, 10, 11, '#').put(84, 9, 'i').put(88, 4, 'a');
+      b.plat(93, 95, 10).plat(98, 100, 8).plat(103, 105, 10).plat(108, 110, 9).put(100, 4, 'd').put(108, 5, 'd');
+      b.ground(113, 169).put(116, 11, 'C').put(120, 9, 'i').put(126, 11, 'p').put(132, 5, 'a').put(136, 5, 'a').put(140, 9, 'i').put(146, 11, 'p').put(150, 6, 'd').put(164, 11, 'E');
+      return b;
+    } },
+  { id: 'vania5', camp: 'vania', tag: '5', name: 'THE KEEP', theme: 'vkeep', card: 'vania', rules: VANIA, goal: 'door', boss: { id: 'dracu', at: 30 },
+    build() {
+      const b = LB(60);
+      b.ground(0, 59).put(3, 11, '@').put(10, 9, 'i').put(16, 9, 'i').put(22, 9, 'i').put(55, 11, 'E');
+      return b;
+    } },
+  // ======== CARLBY'S DREAM DESK ========
+  { id: 'kirby1', camp: 'kirby', tag: '1', name: 'GREEN GREENS', theme: 'kgreen', outfit: 'pink', card: 'dream', rules: PUFF, goal: 'star',
+    build() {
+      const b = LB(190);
+      b.ground(0, 40).put(2, 11, '@').put(10, 11, 'r').put(16, 6, 'K').put(22, 11, 'r').plat(26, 30, 8).row(26, 7, '$$$$$').put(34, 11, 'r');
+      b.ground(48, 90).put(52, 11, 'r').put(58, 7, 'G').put(64, 11, 'r').put(70, 6, 'K').fill(74, 75, 9, 11, '#').put(80, 11, 'r').put(86, 11, 'C');
+      b.row(92, 6, '$$$$$').ground(98, 140).put(102, 11, 'r').put(108, 8, 'G').put(114, 5, 'K').put(120, 11, 'r').fill(124, 128, 8, 11, '#').put(126, 3, 'X').put(132, 11, 'r');
+      b.ground(150, 189).put(154, 11, 'r').put(160, 6, 'K').put(176, 11, 'E');
+      return b;
+    } },
+  { id: 'kirby2', camp: 'kirby', tag: '2', name: 'CASTLE LOLOLOL', theme: 'kcastle', card: 'dream', rules: PUFF, goal: 'star',
+    build() { // walls too tall to jump. Good thing you're a balloon
+      const b = LB(170);
+      b.ground(0, 30).put(2, 11, '@').put(8, 11, 'r').fill(14, 15, 6, 11, '#').put(20, 11, 'r').put(26, 6, 'K');
+      b.ground(31, 70).fill(36, 37, 4, 11, '#').put(42, 11, 'r').put(48, 7, 'G').put(54, 11, 'r').fill(60, 61, 5, 11, '#').put(66, 11, 'C');
+      b.put(74, 6, 'G').put(78, 9, 'G');
+      b.ground(81, 120).fill(81, 120, 0, 2, '#').put(86, 11, 'r').put(92, 11, 'r').fill(98, 99, 7, 11, '#').put(104, 6, 'K').put(110, 11, 'r').put(114, 11, 'C');
+      b.ground(129, 169).put(134, 11, 'r').fill(140, 141, 5, 11, '#').put(150, 11, 'r').put(162, 11, 'E');
+      return b;
+    } },
+  { id: 'kirby3', camp: 'kirby', tag: '3', name: 'FLOAT ISLANDS', theme: 'kfloat', card: 'dream', rules: PUFF, goal: 'star',
+    build() { // islands. The sea is below them. You can't swim in it. It's a bottomless sea
+      const b = LB(190);
+      b.ground(0, 20).put(2, 11, '@').put(10, 11, 'r').put(16, 6, 'K');
+      b.put(25, 4, 'K').ground(30, 42, 10).put(36, 9, 'r').row(44, 5, '$$$$$').ground(51, 62, 8).put(56, 7, 'r');
+      b.put(66, 5, 'K').ground(71, 84, 11).put(76, 10, 'r').put(82, 10, 'C').put(88, 4, 'K');
+      b.ground(93, 104, 9).put(97, 8, 'r').put(101, 8, 'r').put(108, 4, 'K').ground(113, 126, 10).put(119, 9, 'r');
+      b.ground(135, 189).put(142, 11, 'r').put(150, 6, 'K').put(178, 11, 'E');
+      return b;
+    } },
+  { id: 'kirby4', camp: 'kirby', tag: '4', name: 'BUBBLY CLOUDS', theme: 'kcloud', card: 'dream', rules: PUFF, goal: 'star',
+    build() {
+      const b = LB(190);
+      b.ground(0, 16).put(2, 11, '@').put(10, 11, 'r');
+      b.plat(24, 30, 9).put(27, 8, 'r').plat(38, 44, 7).put(41, 6, 'r').put(34, 4, 'K').plat(52, 58, 9).put(48, 6, 'G').plat(66, 72, 6).row(66, 5, '$$$$$$$').put(62, 9, 'K');
+      b.ground(80, 96).put(84, 11, 'r').put(90, 11, 'C').plat(104, 110, 8).put(100, 5, 'G').plat(118, 124, 6).put(121, 5, 'r').put(114, 9, 'K').plat(132, 138, 9).put(128, 4, 'K').plat(146, 152, 7).put(142, 8, 'G');
+      b.ground(160, 189).put(166, 11, 'r').put(176, 11, 'E');
+      return b;
+    } },
+  { id: 'kirby5', camp: 'kirby', tag: '5', name: 'MT. DEDEDUE', theme: 'kmt', card: 'dream', rules: PUFF, goal: 'star', boss: { id: 'dedede', at: 30 },
+    build() {
+      const b = LB(60);
+      b.ground(0, 59).put(3, 11, '@').put(12, 11, '+').row(16, 10, '$$$$').put(55, 11, 'E');
+      return b;
+    } },
+);
+CARTS.push(
+  { id: 'mega', name: 'MEGA CARL', short: 'MC', col: '#2449db', bg: '#000024', line: 'PICK ANY ORDER. WE DID.', year: '1987ISH', end: ['DR. WILEE ESCAPED.', 'HE SAID SORRY.', 'HE WILL DO IT AGAIN.'] },
+  { id: 'vania', name: 'CARLVANIA', short: 'CV', col: '#6d1212', bg: '#100008', line: 'WHAT IS A MAN?', year: '1986ISH', end: ['THE CASTLE FELL DOWN.', 'LINDA WAS NOT IN IT.', 'SHE NEVER IS.'] },
+  { id: 'kirby', name: 'CARLBY\'S DREAM DESK', short: 'CDD', col: '#ff92b6', bg: '#db4992', line: 'NOW IN PINK', year: '1992ISH', end: ['THE DEADLINE', 'WAS MOVED.', 'TO YESTERDAY.'] },
+);
+Object.assign(CARDS, {
+  ready: async L => { music(null); let t = 0; // READY. It blinks. That's the whole card
+    scene = { update() { t++; }, draw() { cls(BLACK); ctext(L.name + ' STAGE', 70, hex('#6db6ff'), BLACK, 1); if ((t >> 3) & 1) ctext('READY', 104, WHITE, BLACK, 2); } };
+    RUN.words += words(L.name) + 2; await fadeIn(.2); await readWait(90, 0, 90, 0); await fadeOut(.2); },
+  vania: async L => { music(null); let t = 0; // the map: a path to the castle, you are the blinking dot
+    scene = { update() { t++; }, draw() { cls(BLACK); ctext('STAGE 0' + L.tag, 40, WHITE, BLACK, 2); ctext(L.name, 64, hex('#db2424'), BLACK, 1);
+      const cx = 60; rectF(cx + 180, 100, 24, 60, hex('#36242a')); triF(cx + 176, 100, cx + 192, 80, cx + 208, 100, hex('#36242a')); rectF(cx + 210, 120, 20, 40, hex('#36242a'));
+      for (let k = 0; k < 5; k++) { const x = cx + k * 40, y = 150 - k * 6; rectF(x, y, 6, 6, k + 1 < +L.tag ? hex('#6d4949') : k + 1 === +L.tag ? ((t >> 3) & 1 ? hex('#ffdb24') : BLACK) : hex('#b69292')); if (k < 4) rectF(x + 6, y + 2, 34, 2, hex('#6d4949')); } } };
+    RUN.words += words(L.name) + 2; await fadeIn(.15); await readWait(100, 0, 100, 0); await fadeOut(.15); },
+  dream: async L => { music(null); let t = 0; const S = carlSet(OUTFITS.find(o => o.id === RUN.outfit) || OUTFITS[0]);
+    scene = { update() { t++; }, draw() { cls(hex('#ffdbe0')); ctext(L.name, 60, hex('#db2449'), WHITE, 2); drawScaled(S.puff, 138, 100 + Math.sin(t * .08) * 6, S.P, 2); } };
+    RUN.words += words(L.name); await fadeIn(.15); await readWait(90, 0, 90, 0); await fadeOut(.15); },
+});

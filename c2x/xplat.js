@@ -3,7 +3,7 @@
 // B jump (hold for higher). A throws the bong (it comes back). UP+A: the bong is a hookshot. Hold C: the lighter.
 // In water the bong is a snorkel: keep it in your hand and you keep breathing.
 const TS = 16;
-let RULES = {}; // the bonus carts' house rules (blocks, speed, ball, rings, spindash, tales, knux): see xbonus.js
+let RULES = {}; // the bonus carts' house rules (blocks, speed, ball, rings, spindash, tales, knux, mega, vania, puff): see xbonus.js
 let CUT = 0, LV = null, ENTS = [], SHOTS = [], FX = [], BONG = null, BOSS = null, ARENA = null;
 const PL = { x: 0, y: 0, w: 10, h: 20, vx: 0, vy: 0, on: false, face: 1, hp: 3, hurt: 0, anim: 0, coyote: 0, jbuf: 0, hang: null, rope: null, ropeD: 0, ropeCD: 0,
   fuel: 100, hot: 0, flaming: 0, air: 100, choke: 0, throwT: 0, scr: 0, cx: 0, cy: 0, dead: 0 };
@@ -54,7 +54,7 @@ function LB(w, h = 14) {
   };
   return b;
 }
-const FOE_CHARS = 'gkeytfjnqhzxc';
+const FOE_CHARS = 'gkeytfjnqhzxcmladpirKG';
 const SOLID = '#W^?ubPs}{ZB'; // ? block, used block, brick, pipe, spring, dash pads, cracked rock, bridge
 function loadLevel(def) {
   const L = def.build();
@@ -69,7 +69,7 @@ function loadLevel(def) {
     else if (c === '+') ENTS.push({ kind: 'pretzel', x: wx + 1, y: wy + 2, w: 14, h: 12 });
     else if (c === 'X') { if (!RUN.got[def.outfit]) ENTS.push({ kind: 'box', x: wx, y: wy, w: 16, h: 16 }); }
     else if (c === 'C') ENTS.push({ kind: 'post', x: wx, y: wy - 16, w: 16, h: 32, lit: 0 });
-    else if (c === 'E') ENTS.push(def.goal === 'flag' || def.goal === 'tape' || def.goal === 'sign' ? { kind: 'goal', style: def.goal, x: wx + 4, y: wy - 8 * TS, w: 8, h: 9 * TS, warp: y < 4 } : { kind: 'goal', x: wx - 8, y: wy - 24, w: 32, h: 40, warp: y < 4 });
+    else if (c === 'E') ENTS.push(def.goal ? { kind: 'goal', style: def.goal, x: wx + 4, y: wy - 8 * TS, w: 8, h: 9 * TS, warp: y < 4 } : { kind: 'goal', x: wx - 8, y: wy - 24, w: 32, h: 40, warp: y < 4 });
     else if (BONUS_ENTS[c]) ENTS.push(BONUS_ENTS[c](wx, wy, x, y, def));
     else if (c === 'o') ENTS.push({ kind: 'ring', x: wx + 8, y: wy + 8 });
     else if (c === 'v') ENTS.push({ kind: 'vent', x: wx + 8, y: wy + 16, t: 0 });
@@ -85,7 +85,7 @@ function loadLevel(def) {
 let TILES = null;
 const inMap = (tx, ty) => tx >= 0 && ty >= 0 && tx < LV.w && ty < LV.h;
 const tileAt = (tx, ty) => tx < 0 || tx >= LV.w ? '#' : ty < 0 || ty >= LV.h ? '.' : LV.g[ty][tx];
-const solidAt = (tx, ty) => SOLID.includes(tileAt(tx, ty));
+const solidAt = (tx, ty) => { const c = tileAt(tx, ty); return SOLID.includes(c) || (c === 'D' && yokuOn(tx, ty)); }; // D: appearing blocks (MEGA CARL)
 const waterAt = py => py >= LV.water * TS;
 function boxHit(x, y, w, h, fn) { for (let ty = Math.floor(y / TS); ty <= Math.floor((y + h - 1) / TS); ty++) for (let tx = Math.floor(x / TS); tx <= Math.floor((x + w - 1) / TS); tx++) if (fn(tx, ty)) return { tx, ty }; return null; }
 const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
@@ -93,7 +93,7 @@ const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h 
 // ---------------- player physics ----------------
 function respawnState() {
   Object.assign(PL, { vx: 0, vy: 0, hp: LIMIT.maxHP, hurt: 60, hang: null, rope: null, fuel: 100, hot: 0, air: 100, choke: 0, scr: 0, dead: 0,
-    ball: 0, roll: 0, rev: 0, crouch: 0, loop: null, loopCD: 0, dino: 0, tongue: 0, shield: null, star: 0, glide: 0, climb: 0, sprung: 0 });
+    ball: 0, roll: 0, rev: 0, crouch: 0, loop: null, loopCD: 0, dino: 0, tongue: 0, shield: null, star: 0, glide: 0, climb: 0, sprung: 0, puff: 0 });
   BONG = null; camX = clamp(PL.x - 140, 0, LV.w * TS - W); camY = clamp(PL.y - 120, 0, LV.h * TS - H);
 }
 function moveX(dx) {
@@ -124,7 +124,7 @@ function ouch(n = 1, why, src) { // src: x of whatever hit him; he's knocked awa
     PL.hurt = 90; PL.vy = -3.6; PL.vx = (src === undefined ? -PL.face : Math.sign(PL.x + PL.w / 2 - src) || -PL.face) * 2.2; PL.climb = PL.glide = PL.roll = PL.ball = 0;
     sfx('hurt'); post.shake = 2; SHAKE = 8; return;
   }
-  if (RULES.rings) n = PL.hp; // no bux, no mercy. That's the rule. We didn't make it
+  if (RULES.rings || (RULES.mega && why === 'spike')) n = PL.hp; // no bux, no mercy. Spikes, no mercy either. We didn't make the rules
   PL.hp -= n; PL.hurt = 90; PL.vy = -3.6; PL.vx = (src === undefined ? -PL.face : Math.sign(PL.x + PL.w / 2 - src) || -PL.face) * 2.2; PL.hang = null; PL.rope = null;
   sfx('hurt'); post.shake = 3; SHAKE = 10;
   if (PL.hp <= 0) return die(why);
@@ -174,6 +174,7 @@ function playerUpdate() {
   // ---- walking / swimming ----
   const maxV = wet ? 1.35 : LIMIT.run;
   if (RULES.speed && !wet) speedRun(dir);
+  else if (RULES.vania && !PL.on && !wet) {} // committed to the jump. That's the rule
   else if (dir) { PL.vx = clamp(PL.vx + dir * (wet ? .12 : .35), -maxV, maxV); PL.face = dir; } else PL.vx *= PL.on ? .68 : wet ? .93 : .95;
   if (wet) {
     PL.vy = Math.min(PL.vy + .07, 1.3);
@@ -183,14 +184,15 @@ function playerUpdate() {
   } else {
     if (pressed.b && !PL.crouch) PL.jbuf = 8; else if (PL.jbuf > 0) PL.jbuf--;
     if (PL.on) PL.coyote = 6; else if (PL.coyote > 0) PL.coyote--;
-    if (PL.jbuf > 0 && PL.coyote > 0) { PL.vy = -LIMIT.jump - (PL.dino ? .7 : 0); PL.jbuf = 0; PL.coyote = 0; PL.ball = RULES.ball ? 1 : 0; PL.jumped = 1; sfx('jump'); }
+    if (PL.jbuf > 0 && PL.coyote > 0) { PL.vy = -LIMIT.jump - (PL.dino ? .7 : 0); PL.jbuf = 0; PL.coyote = 0; PL.ball = RULES.ball ? 1 : 0; PL.jumped = 1; if (RULES.vania) PL.vx = dir * LIMIT.run; sfx('jump'); }
     else if (pressed.b && !PL.on && PL.coyote <= 0) bonusAir();
     if (!held.b && PL.vy < -2 && !PL.sprung) PL.vy += .45; // let go early, jump lower
     PL.vy = Math.min(PL.vy + LIMIT.grav, 6.5);
   }
+  if (PL.puff) { PL.vy = Math.min(PL.vy, .9); PL.vx = clamp(PL.vx, -1.6, 1.6); }
   if (PL.glide) { PL.vy = Math.min(PL.vy, .7); if (!held.b) PL.glide = 0; else { if (dir) PL.face = dir; PL.vx = clamp(PL.vx + PL.face * .1, -3.6, 3.6); } }
   moveX(PL.vx); const wasOn = PL.on; moveY(PL.vy); if (PL.on && !wasOn && !wet) sfx('land');
-  if (PL.on) { PL.ball = 0; PL.sprung = 0; PL.glide = 0; PL.jumped = 0; }
+  if (PL.on) { PL.ball = 0; PL.sprung = 0; PL.glide = 0; PL.jumped = 0; PL.puff = 0; }
   bonusPost(dir);
   if (PL.y > LV.h * TS + 8) return die('pit');
   // grab a rope in the air
@@ -301,6 +303,7 @@ function makeFoe(c, wx, wy) {
   return e;
 }
 function hitFoe(e, n, how) {
+  if (e.guard && e.guard(e)) return clink(e); // hard hats, spiky balls
   if (e.flash > 0 && how === 'fire') return;
   e.hp -= n; e.flash = 10; sfx('stun');
   if (e.hp <= 0) {
@@ -420,7 +423,7 @@ function drawTiles() {
     if (c === '#') draw(TILES[solidAt(tx, ty - 1) || ty === 0 ? '#' : '#top'], sx, sy, P);
     else if (c === '=' || c === '^' || c === 'W') draw(TILES[c], sx, sy, P);
     else if (c === 'w') draw(TILES.w[(frame >> 3) & 1], sx, sy, P);
-    else if (TILES2[c] || c === 'P') drawTile2(c, tx, ty, sx, sy);
+    else if (TILES2[c] || c === 'P' || c === 'D') drawTile2(c, tx, ty, sx, sy);
   }
 }
 function drawEnts() {
@@ -474,7 +477,8 @@ function drawCarl() {
   const sx = PL.x - 5 - camX, sy = PL.y + PL.h - 25 - camY - (PL.dino ? 9 : 0);
   const tn = PL.star > 0 && (frame & 4) ? hex(['#ffdb24', '#ff49db', '#6dffff', '#ffffff'][(frame >> 3) & 3]) : 0;
   if (PL.dino) drawDino(sx - 4, PL.y + PL.h - camY - 18, PL.face < 0, (PL.anim | 0) & 1);
-  if (PL.ball || PL.roll || PL.loop || PL.crouch) draw(S.ball[PL.crouch && !PL.rev ? 0 : (frame >> 1) & 3], sx + 1, sy + 8, S.P, PL.face < 0, tn);
+  if (PL.puff) draw(S.puff, sx - 1, sy + 4, S.P, PL.face < 0, tn);
+  else if (PL.ball || PL.roll || PL.loop || PL.crouch) draw(S.ball[PL.crouch && !PL.rev ? 0 : (frame >> 1) & 3], sx + 1, sy + 8, S.P, PL.face < 0, tn);
   else draw(S[p][f], sx, sy, S.P, PL.face < 0, tn);
   if (PL.shield) drawShield(sx + 10, sy + 15);
   // the snorkel: underwater with the bong in hand, it's in his mouth

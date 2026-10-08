@@ -39,6 +39,7 @@ function drawTile2(c, tx, ty, sx, sy) {
   if (c === '?') draw(TILES2['?'][(frame >> 4) % 3 === 2 ? 1 : 0], sx, sy - (b > 4 ? 8 - b : b > 0 ? b : 0), XP.blk);
   else if (c === 'P') { const left = tileAt(tx - 1, ty) !== 'P', top = tileAt(tx, ty - 1) !== 'P'; draw(TILES2[(top ? 'Pt' : 'P') + (left ? 'L' : 'R')], sx, sy, XP.blk); }
   else if (c === 's') draw(TILES2.s[b > 0 ? 1 : 0], sx, sy, XP.blk);
+  else if (c === 'D') { if (yokuOn(tx, ty)) draw(TILES2.D, sx, sy, XP.blk); else for (const [x, y] of [[1, 1], [14, 1], [1, 14], [14, 14]]) rectF(sx + x, sy + y, 1, 1, hex('#6d6d6d')); } // off: just the corners
   else if (c === 'u' || c === 'b') draw(TILES2[c], sx, sy - (b > 0 ? Math.min(b, 8 - b) : 0), XP.blk);
   else draw(TILES2[c], sx, sy, XP.blk);
 }
@@ -203,4 +204,107 @@ Object.assign(TRACKS, {
     { ins: 'guitar', vol: .5, n: '. . A3 . . . . . . . D4 . . . C4 . . . A3 . . . . . E4 . D4 . C4 . . .' },
     { ins: 'brass', vol: .6, n: 'E5 - - - D5 - C5 - A4 - - - - - - - E5 - - - G5 - E5 - D5 - - - - - - -' },
     { drum: 1, n: 'k . . k s . . k . k . . s . . h' }] },
+});
+
+// ================= BONUS CARTS, second shipment: MEGA CARL, CARLVANIA, CARLBY'S DREAM DESK =================
+OUTFITS.push(
+  { id: 'megasuit', name: 'MEGA SUIT', blurb: 'BLUE. JUST BLUE.', c: { 5: '#4970ff', 6: '#92b6ff', 10: '#2449db', 11: '#12248f', 13: '#4970ff', 15: '#4970ff' }, acc: 'helmet', camp: 'mega' },
+  { id: 'proto', name: 'PROTO CARL', blurb: 'WHISTLES ON ENTRY', c: { 5: '#db2424', 6: '#ff6d6d', 10: '#db2424', 13: '#6d6d6d', 15: '#db2424' }, acc: 'helmet', camp: 'mega', clear: 1 },
+  { id: 'whip', name: 'VAMPIRE KILLER', blurb: 'IT IS STILL A BONG', c: { 5: '#6d4924', 6: '#b6926d', 10: '#6d4924', 13: '#492400' }, acc: 'gloves', camp: 'vania' },
+  { id: 'alucarl', name: 'ALUCARL', blurb: 'HALF VAMPIRE. ALL CARL.', c: { 2: '#ffdbdb', 5: '#dbdbdb', 6: '#ffffff', 10: '#242436', 13: '#242436', 15: '#db2424' }, acc: 'cape', camp: 'vania', clear: 1 },
+  { id: 'pink', name: 'PINK', blurb: 'VERY ROUND', c: { 5: '#ff92b6', 6: '#ffdbe0', 10: '#ff92b6', 11: '#db6d92', 13: '#db2449' }, camp: 'kirby' },
+  { id: 'kingcarl', name: 'KING CARL', blurb: 'HE OWES YOU MONEY', c: { 5: '#2449db', 10: '#db2424', 13: '#ffdb24', 15: '#ffdb24' }, acc: 'crown', camp: 'kirby', clear: 1 },
+);
+// appearing blocks: there, then not, then there
+TILES2.D = spr(16, 16, g => { g.r(0, 0, 16, 16, 12); g.r(1, 1, 14, 14, 14); g.r(1, 1, 14, 2, 5); g.r(0, 15, 16, 1, 15); g.r(15, 0, 1, 16, 15); g.r(4, 5, 8, 6, 12); g.r(5, 6, 6, 4, 5); });
+XP.bn = pal0('#242436', '#49496d', '#ffffff', '#db2424', '#ffdbb6', '#ff92b6', '#db2449', '#2449db', '#6db6ff', '#ffdb24', '#b6b6b6', '#6d6d6d', '#6d4924', '#ff9224');
+// METTAUDIT: a hard hat that audits you. Hides under it. Can't be hurt while hiding
+XS.mett = [
+  outline(spr(16, 14, g => { g.e(8, 9, 7.5, 5, 10); g.r(0, 9, 16, 3, 10); g.r(0, 11, 16, 1, 13); g.r(7, 5, 2, 2, 3); }), 15),
+  outline(spr(16, 14, g => { g.e(8, 5, 7.5, 5, 10); g.r(0, 5, 16, 2, 10); g.r(3, 7, 10, 5, 5); g.r(5, 8, 2, 2, 3); g.r(10, 8, 2, 2, 3); g.p(6, 9, 15); g.p(11, 9, 15); g.r(2, 12, 5, 2, 13); g.r(9, 12, 5, 2, 13); }), 15)];
+// TELLER: a flying TV that wants to talk about your account
+XS.teller = [0, 1].map(f => outline(spr(14, 14, g => { g.r(2, 3, 10, 9, 11); g.r(2, 3, 10, 2, 12); g.e(7, 8, 3, 3, 3); g.e(7, 8, 1.5, 1.5, 8); g.r(6, 1, 2, 2, 12); g.r(f ? 1 : 3, 0, f ? 12 : 8, 1, 12); }), 15));
+// STAPLE MAN: a robot master. The robot is a stapler. The master is also a stapler
+XS.stapler = [0, 1].map(f => outline(spr(28, 26, g => {
+  g.r(8, 12, 12, 9, 8); g.r(9, 13, 10, 3, 9); g.r(4, 2, 20, 6, 12); g.r(4, 8, 20, 3, 11); g.r(20, 4, 3, 2, 4); g.r(13, 4, 3, 2, 3); g.p(14, 5, 15);
+  if (f) { g.r(3, 6, 4, 7, 8); g.r(21, 6, 4, 7, 8); g.r(9, 19, 4, 4, 8); g.r(15, 18, 4, 4, 8); g.r(8, 22, 6, 2, 9); g.r(15, 21, 6, 2, 9); }
+  else { g.r(4, 13, 4, 6, 8); g.r(20, 13, 4, 6, 8); g.r(9, 21, 4, 3, 8); g.r(15, 21, 4, 3, 8); g.r(8, 24, 6, 2, 9); g.r(15, 24, 6, 2, 9); }
+}), 15));
+XS.staple = outline(spr(6, 6, g => { g.r(0, 0, 6, 2, 11); g.r(0, 0, 2, 6, 11); g.r(4, 0, 2, 6, 11); }), 15);
+// BAT. MEDUSA HR (she has notes on your performance). SKELETON STAFF (bones, a tie). CANDLES (break them, things fall out)
+XS.bat = [0, 1].map(f => outline(spr(16, 10, g => { g.e(8, 5, 3, 3, 2); g.p(6, 2, 2); g.p(10, 2, 2); g.p(7, 4, 4); g.p(9, 4, 4);
+  if (f) { g.r(0, 6, 5, 2, 2); g.r(11, 6, 5, 2, 2); g.r(1, 8, 3, 1, 2); g.r(12, 8, 3, 1, 2); } else { g.r(0, 2, 5, 2, 2); g.r(11, 2, 5, 2, 2); g.r(1, 1, 3, 1, 2); g.r(12, 1, 3, 1, 2); } }), 15));
+XS.medusa = [0, 1].map(f => outline(spr(14, 14, g => { g.e(7, 8, 5.5, 5.5, 5); g.e(7, 9, 4, 3.5, 2); g.p(5, 8, 8); g.p(9, 8, 8); g.r(6, 11, 3, 1, 8); for (let i = 0; i < 4; i++) g.line(2 + i * 3, 4, 1 + i * 3 + (f ? 1 : -1), 0, 6); }), 15));
+XS.skel = [0, 1].map(f => outline(spr(14, 24, g => { g.e(7, 4, 4, 4, 3); g.p(5, 4, 15); g.p(8, 4, 15); g.r(6, 7, 3, 1, 12); g.r(6, 9, 3, 8, 3); for (const y of [10, 12, 14]) g.r(4, y, 7, 1, 3); g.r(7, 9, 1, 4, 4);
+  g.line(4, 10, 1, 15, 3); g.line(10, 10, 13, 14, 3); g.line(6, 17, f ? 3 : 5, 23, 3); g.line(8, 17, f ? 11 : 9, 23, 3); }), 15));
+XS.bone = outline(spr(8, 8, g => { g.line(1, 1, 6, 6, 3); g.r(0, 0, 2, 2, 3); g.r(6, 6, 2, 2, 3); g.r(0, 2, 1, 1, 3); g.r(7, 5, 1, 1, 3); }), 15);
+XS.candle = [0, 1].map(f => outline(spr(8, 16, g => { g.r(2, 6, 4, 8, 3); g.r(0, 13, 8, 3, 10); g.r(3, 14, 2, 2, 13); g.e(4, 3, 2, 3, f ? 14 : 10); g.p(4, 3 + f, 3); }), 15));
+// COUNT DRACUBOSS: only hittable while the cape is open. That's the rule
+XS.dracu = [0, 1].map(f => outline(spr(28, 40, g => {
+  if (f) { g.r(0, 12, 28, 22, 1); g.r(3, 14, 22, 18, 4); g.r(10, 12, 8, 28, 2); g.r(12, 12, 4, 10, 3); g.e(3, 33, 3, 2, 5); g.e(25, 33, 3, 2, 5); }
+  else { g.r(5, 12, 18, 28, 1); g.r(5, 12, 18, 1, 2); g.e(14, 16, 2, 2, 10); }
+  g.r(6, 8, 4, 10, 4); g.r(18, 8, 4, 10, 4); g.e(14, 6, 5, 6, 5); g.r(9, 0, 10, 3, 15); g.p(14, 3, 15); g.p(12, 6, 4); g.p(16, 6, 4); g.r(12, 10, 5, 1, 15); g.p(12, 11, 3); g.p(16, 11, 3);
+}), 15));
+// WADDLE DUE (he has a deadline), BRONTO BURP, GORDON (a spiky ball. Invincible. Middle management)
+XS.waddle = [0, 1].map(f => outline(spr(16, 14, g => { g.e(8, 7, 7, 6.5, 14); g.e(9, 8, 5, 4, 5); g.r(7, 6, 1, 3, 15); g.r(11, 6, 1, 3, 15); g.p(6, 10, 6); g.p(13, 10, 6); g.r(f ? 2 : 4, 12, 5, 2, 13); g.r(f ? 10 : 8, 12, 5, 2, 13); }), 15));
+XS.bronto = [0, 1].map(f => outline(spr(16, 12, g => { g.e(8, 7, 6, 4.5, 6); g.e(11, 7, 2, 2, 3); g.p(12, 7, 15); g.r(3, f ? 1 : 6, 6, 3, 3); g.r(1, 8, 3, 2, 7); g.r(14, 8, 2, 1, 10); }), 15));
+XS.gordo = outline(spr(16, 16, g => { for (let a = 0; a < 8; a++) g.line(8, 8, 8 + Math.cos(a * .785) * 7.5, 8 + Math.sin(a * .785) * 7.5, 3); g.e(8, 8, 5.5, 5.5, 12); g.r(5, 6, 2, 3, 3); g.r(9, 6, 2, 3, 3); g.p(6, 7, 15); g.p(10, 7, 15); }), 15);
+// KING DEDEDUE: a penguin with a crown and an invoice. Frames: walk, walk, inhale, hammer
+XS.dedede = [0, 1, 2, 3].map(f => outline(spr(40, 40, g => {
+  if (f === 3) { g.r(33, 18, 3, 14, 13); g.r(30, 30, 10, 9, 13); g.r(30, 30, 10, 2, 14); } else { g.r(1, 8, 3, 22, 13); g.r(0, 2, 6, 8, 13); }
+  g.e(20, 25, 15, 13, 8); g.e(21, 28, 9, 9, 3); g.r(6, 30, 28, 3, 4); g.r(6, 30, 28, 1, 10);
+  g.e(20, 12, 10, 9, 8); g.e(23, 10, 2, 3, 3); g.p(24, 11, 15); g.r(11, 2, 18, 5, 4); for (const x of [11, 17, 23]) g.r(x, 0, 4, 2, 10); g.r(11, 6, 18, 1, 10);
+  if (f === 2) { g.e(27, 15, 6, 5, 15); g.e(27, 16, 4, 3, 4); } else { g.e(26, 15, 6, 2.5, 10); g.r(21, 15, 11, 1, 14); }
+  g.e(f === 1 ? 11 : 13, 38, 5, 2, 14); g.e(f === 1 ? 29 : 27, 38, 5, 2, 14);
+}), 15));
+XS.starshot = outline(spr(10, 10, g => { g.line(5, 0, 5, 9, 10); g.line(0, 5, 9, 5, 10); g.line(1, 1, 8, 8, 10); g.line(8, 1, 1, 8, 10); g.e(5, 5, 2.5, 2.5, 3); }), 15);
+
+Object.assign(BACKS, {
+  mega(T) { // panels, pipes, a light that blinks for no reason
+    const off = camX * .3; for (let i = Math.floor(off / 40) - 1; i < Math.floor(off / 40) + 10; i++) { const x = i * 40 - off; rectF(x, 0, 2, H, hex(T.mid));
+      for (let y = 20; y < H; y += 40) { rectF(x, y, 40, 2, hex(T.mid)); if (hash(i * 7 + y) < .3) rectF(x + 18, y + 18, 4, 4, hex(((frame >> 4) + i + y) & 1 ? T.lite || '#6dffff' : T.mid)); } }
+  },
+  vania(T) { // a moon, a castle, columns. The moon is the only thing in the game that isn't evil
+    circF(250 - camX * .02, 50, 26, hex('#dbdbb6')); circF(242 - camX * .02, 44, 5, hex('#b6b692')); circF(258 - camX * .02, 58, 4, hex('#b6b692'));
+    const off = camX * .2; for (let i = Math.floor(off / 100) - 1; i < Math.floor(off / 100) + 5; i++) { const x = i * 100 - off, h = 70 + hash(i) * 60;
+      rectF(x + 10, H - h, 30, h, hex(T.far)); triF(x + 8, H - h, x + 25, H - h - 24, x + 42, H - h, hex(T.far)); rectF(x + 50, H - h * .6, 40, h, hex(T.far)); for (let k = 0; k < 3; k++) rectF(x + 52 + k * 14, H - h * .6 - 6, 8, 6, hex(T.far));
+      rectF(x + 22, H - h + 16, 6, 10, hex(((frame >> 5) + i) & 1 ? '#ffdb24' : '#b69224')); }
+    const o2 = camX * .45; for (let i = Math.floor(o2 / 70) - 1; i < Math.floor(o2 / 70) + 7; i++) { const x = i * 70 - o2; rectF(x + 20, 90, 14, H, hex(T.mid)); rectF(x + 16, 86, 22, 6, hex(T.mid)); }
+  },
+  dream(T) { // round hills, twinkles. Everything is soft. Even the deadlines
+    for (let i = 0; i < 20; i++) { const x = ((hash(i) * 500 - camX * .05) % 360 + 360) % 360 - 20, y = hash(i * 3 + 1) * 90; if (((frame >> 4) + i) & 1) rectF(x, y, 2, 2, WHITE); }
+    const off = camX * .25; for (let i = Math.floor(off / 80) - 1; i < Math.floor(off / 80) + 6; i++) { const x = i * 80 - off + hash(i) * 20, r = 30 + hash(i * 5) * 30; circF(x + 40, H - 30 - camY * .1, r + 20, hex(T.far)); }
+    const o2 = camX * .5; for (let i = Math.floor(o2 / 60) - 1; i < Math.floor(o2 / 60) + 8; i++) { const x = i * 60 - o2, r = 20 + hash(i * 9) * 16; circF(x + 30, H - 10 - camY * .2, r + 10, hex(T.mid)); }
+  },
+});
+Object.assign(XTHEMES, {
+  mega1: { P: tpal('#24246d', '#4949b6', '#9292db', '#dbdbff', '#246d6d', '#49b6b6', '#6dffff'), sky: ['#000024', '#00006d'], kind: 'mega', tile: 'stone', grass: false, far: '#000024', mid: '#12124f', lite: '#6dffff', music: 'cmega' },
+  megaf: { P: tpal('#6d2400', '#b64900', '#ff9249', '#ffdb92', '#6d2400', '#b64900', '#ff6d24'), sky: ['#240000', '#6d1200'], kind: 'mega', tile: 'brick', grass: false, far: '#240000', mid: '#4f1200', lite: '#ff9224', music: 'cmega' },
+  megap: { P: tpal('#6d6d49', '#b6b692', '#f8f8db', '#ffffff', '#6d6d49', '#b6b692', '#ff2449'), sky: ['#244970', '#6d92b6'], kind: 'mega', tile: 'stone', grass: false, far: '#244970', mid: '#36598a', lite: '#ffffff', music: 'cmega' },
+  wilee: { P: tpal('#242436', '#49496d', '#9292b6', '#dbdbff', '#36242a', '#6d4949', '#ff2449'), sky: ['#000000', '#240012'], kind: 'mega', tile: 'stone', grass: false, far: '#000000', mid: '#240012', lite: '#ff2449', music: 'cmega' },
+  vania: { P: tpal('#36242a', '#6d4949', '#b69292', '#dbb6b6', '#243624', '#496d49', '#ff6d24'), sky: ['#100010', '#4f1236'], kind: 'vania', tile: 'stone', grass: false, far: '#1c0818', mid: '#2a1424', music: 'cvania' },
+  vhall: { P: tpal('#4f1212', '#924924', '#db9249', '#ffdb92', '#4f1212', '#924924', '#ffdb24'), sky: ['#120000', '#360012'], kind: 'castle', tile: 'brick', grass: false, far: '#120000', mid: '#240000', music: 'cvania' },
+  vclock: { P: tpal('#243649', '#496d92', '#92b6db', '#dbffff', '#243649', '#496d92', '#ffdb24'), sky: ['#000012', '#122436'], kind: 'vania', tile: 'stone', grass: false, far: '#0a1220', mid: '#122436', music: 'cvania' },
+  vkeep: { P: tpal('#241224', '#492449', '#924992', '#db92db', '#241224', '#492449', '#ff2449'), sky: ['#000000', '#36001c'], kind: 'vania', tile: 'brick', grass: false, far: '#12000a', mid: '#240012', music: 'ccastle' },
+  kgreen: { P: tpal('#924924', '#db9249', '#ffdb92', '#ffffff', '#249249', '#6ddb6d', '#ff92b6'), sky: ['#92dbff', '#ffffff'], kind: 'dream', grass: true, far: '#b6ffb6', mid: '#6ddb92', music: 'ckirby' },
+  kcastle: { P: tpal('#6d3649', '#b66d92', '#ffb6db', '#ffffff', '#6d3649', '#b66d92', '#ffdb24'), sky: ['#ffb6db', '#ffdbff'], kind: 'castle', tile: 'brick', grass: false, far: '#db92b6', mid: '#b66d92', music: 'ckirby' },
+  kfloat: { P: tpal('#924924', '#db9249', '#ffdb92', '#ffffff', '#249249', '#6ddb6d', '#ffdb24'), sky: ['#49b6ff', '#dbffff'], kind: 'dream', grass: true, far: '#92dbff', mid: '#49b6db', music: 'ckirby' },
+  kcloud: { P: tpal('#9292b6', '#dbdbff', '#ffffff', '#ffdb24', '#9292b6', '#dbdbff', '#ff92b6'), sky: ['#ffb6db', '#dbdbff'], kind: 'sky', grass: false, far: '#ffffff', mid: '#dbdbff', music: 'ckirby' },
+  kmt: { P: tpal('#6d3624', '#b66d49', '#ffb692', '#ffffff', '#6d3624', '#b66d49', '#ffdb24'), sky: ['#ff9249', '#ffdb92'], kind: 'dream', grass: false, far: '#db6d49', mid: '#b64924', music: 'ckirby' },
+});
+Object.assign(TRACKS, {
+  cmega: { bpm: 150, ch: [
+    { ins: 'lead', n: 'E5 . D5 . B4 . A4 . B4 - - . G4 . A4 . B4 . D5 . E5 . F#5 . E5 - D5 . B4 - - - E5 . D5 . B4 . A4 . B4 - - . D5 . E5 . G5 - F#5 . E5 . D5 . E5 - - - - - . .' },
+    { ins: 'bass', n: 'E2 E3 E2 E3 E2 E3 E2 E3 C2 C3 C2 C3 C2 C3 C2 C3 D2 D3 D2 D3 D2 D3 D2 D3 B1 B2 B1 B2 B1 B2 B1 B2' },
+    { drum: 1, vol: .5, n: 'k . h . s . h . k k h . s . h h' }] },
+  cvania: { bpm: 160, ch: [
+    { ins: 'lead', n: 'D5 . A4 . D5 . F5 - E5 . D5 . C5 . A4 - A#4 . A4 . G4 . A4 - - . D5 . A4 . D5 . G5 - F5 . E5 . D5 . C#5 - D5 - - - - - . .' },
+    { ins: 'bass', n: 'D2 D2 D3 D2 D2 D3 D2 D3 A#1 A#1 A#2 A#1 C2 C2 C3 C2 D2 D2 D3 D2 D2 D3 D2 D3 A1 A1 A2 A1 D2 . D2 .' },
+    { ins: 'organ', vol: .3, n: 'D4 - - - - - - - A#3 - - - C4 - - - D4 - - - - - - - A3 - - - D4 - - -' },
+    { drum: 1, vol: .55, n: 'k . h k s . h . k . h k s . s h' }] },
+  ckirby: { bpm: 140, ch: [
+    { ins: 'pluck', n: 'C5 . E5 . G5 . E5 . F5 . A5 . G5 - - . E5 . G5 . C6 . B5 . A5 . G5 . F5 . E5 . D5 - - . G4 . C5 . E5 . D5 . C5 . B4 . C5 - - - - - . .' },
+    { ins: 'bass', n: 'C3 . G2 . C3 . G2 . F2 . C3 . G2 . D3 . C3 . G2 . A2 . E2 . F2 . G2 . C3 . . .' },
+    { ins: 'bell', vol: .4, n: '. . E5 . . . G5 . . . E5 . . . C5 .' },
+    { drum: 1, vol: .4, n: 'k . h . s . h . k . h k s . h .' }] },
 });

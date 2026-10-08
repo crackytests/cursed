@@ -7,8 +7,8 @@ function planRoute(spec) {
   const goal = ENTS.find(e => e.kind === 'goal'), box = ENTS.find(e => e.kind === 'box'), ropes = ENTS.filter(e => e.kind === 'rope'), rings = ENTS.filter(e => e.kind === 'ring');
   const KEYS = ['up', 'down', 'left', 'right', 'a', 'b', 'c'];
   let prev = {}, rec = null, hit = false, touchedBox = false;
-  const snap = () => ({ pl: JSON.stringify(Object.assign({}, PL, { hang: PL.hang ? rings.indexOf(PL.hang) : -1, rope: PL.rope ? ropes.indexOf(PL.rope) : -1, lastRope: PL.lastRope ? ropes.indexOf(PL.lastRope) : -1 })), r: ropes.map(r => [r.th, r.w]), prev: JSON.stringify(prev) });
-  const restore = s => { const o = JSON.parse(s.pl); Object.assign(PL, o); PL.hang = o.hang >= 0 ? rings[o.hang] : null; PL.rope = o.rope >= 0 ? ropes[o.rope] : null; PL.lastRope = o.lastRope >= 0 ? ropes[o.lastRope] : null; s.r.forEach((v, i) => { ropes[i].th = v[0]; ropes[i].w = v[1]; }); BONG = null; prev = JSON.parse(s.prev); };
+  const snap = () => ({ pl: JSON.stringify(Object.assign({}, PL, { hang: PL.hang ? rings.indexOf(PL.hang) : -1, rope: PL.rope ? ropes.indexOf(PL.rope) : -1, lastRope: PL.lastRope ? ropes.indexOf(PL.lastRope) : -1 })), r: ropes.map(r => [r.th, r.w]), prev: JSON.stringify(prev), fr: frame }); // frame: the appearing blocks run on it
+  const restore = s => { const o = JSON.parse(s.pl); Object.assign(PL, o); PL.hang = o.hang >= 0 ? rings[o.hang] : null; PL.rope = o.rope >= 0 ? ropes[o.rope] : null; PL.lastRope = o.lastRope >= 0 ? ropes[o.lastRope] : null; s.r.forEach((v, i) => { ropes[i].th = v[0]; ropes[i].w = v[1]; }); BONG = null; prev = JSON.parse(s.prev); frame = s.fr; };
   const goals = ENTS.filter(e => e.kind === 'goal');
   const isGoal = () => spec.goal === 'goal' ? goals.some(g => overlap(PL, g)) : spec.goal === 'box' ? box && overlap(PL, box) : PL.x > spec.goal.x;
   const step = keys => {
@@ -37,9 +37,12 @@ function planRoute(spec) {
     macros.push({ seq: [[1, k], [1, { up: 1, a: 1 }]], air: {} });
     if (ropes.length) for (const w of [15, 30, 45, 60, 75, 90]) for (const run of [0, 14]) macros.push({ seq: [[w, {}], [run, k], [40, Object.assign({ b: 1 }, k)]], air: k });
     if (RULES.spindash) macros.push({ seq: [[1, k], [3, { down: 1 }], [1, { down: 1, b: 1 }], [2, { down: 1 }], [1, { down: 1, b: 1 }], [2, { down: 1 }], [1, { down: 1, b: 1 }], [16, {}]], air: {} });
+    if (RULES.puff) for (const n of [3, 6, 10, 16]) { const seq = [[10, k], [1, Object.assign({ b: 1 }, k)], [8, k]]; for (let i = 0; i < n; i++) seq.push([1, Object.assign({ b: 1 }, k)], [9, k]); macros.push({ seq, air: k }); }
     if (RULES.knux) for (const run of [0, 14]) for (const w of [4, 12]) macros.push({ seq: [[run, k], [6, Object.assign({ b: 1 }, k)], [w, k], [1, Object.assign({ b: 1 }, k)]], air: Object.assign({ b: 1, up: 1 }, k) });
     if (water) for (const n of [2, 4, 7, 10]) for (const up of [0, 1]) { const seq = []; for (let i = 0; i < n; i++) seq.push([1, Object.assign({ b: 1 }, k, up ? { up: 1 } : {})], [11, Object.assign({}, k, up ? { up: 1 } : {})]); macros.push({ seq, air: k }); }
   }
+  if (RULES.mega) macros.push(...macros.flatMap(m => [30, 60, 90, 120, 150, 180, 210, 240].map(w => ({ seq: [[w, {}]].concat(m.seq), air: m.air, wait: 1 })))); // appearing blocks: wait for the next one (only tried near one)
+  const nearD = () => { const tx = Math.floor((PL.x + 5) / 16); for (let y = 0; y < LV.h; y++) for (let x = tx - 6; x <= tx + 6; x++) if (tileAt(x, y) === "D") return true; return false; };
   const hangMacros = [];
   for (const e of [-1, 0, 1]) for (const ad of [-1, 0, 1]) hangMacros.push({ seq: [[3, {}], [1, Object.assign({ b: 1 }, e ? { [D(e)]: 1 } : {})], [30, Object.assign({ b: 1 }, ad ? { [D(ad)]: 1 } : {})]], air: ad ? { [D(ad)]: 1 } : {} });
   for (const d of [-1, 1]) hangMacros.push({ seq: [[3, { [D(d)]: 1 }], [1, { up: 1, a: 1, [D(d)]: 1 }]], air: {} });
@@ -54,7 +57,7 @@ function planRoute(spec) {
   while (Q.length && sims < (spec.maxSims || 40000) && !found) {
     const k = Q.shift(), node = seen.get(k);
     for (const m of k[0] === 'h' ? hangMacros : k[0] === 'r' ? ropeMacros : macros) {
-      restore(node.s); sims++; hit = false; rec = [];
+      restore(node.s); if (m.wait && !nearD()) continue; sims++; hit = false; rec = [];
       let r;
       if (m.rope) {
         let ok = true, i = 0;
