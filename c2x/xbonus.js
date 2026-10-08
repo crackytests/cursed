@@ -444,6 +444,28 @@ LEVELS.push(
       b.fill(160, 161, 9, 11, 'P').put(172, 11, 'E');
       return b;
     } },
+  { id: 'smb4', camp: 'smb', tag: '1-3', name: 'WORLD 1-3', theme: 'smb', card: 'nes', rules: SMB, goal: 'flag', items: { '10,9': '+', '96,9': '1' },
+    build() { // treetops. Nobody has ever seen the trunks
+      const b = LB(170);
+      b.ground(0, 14).put(2, 11, '@').put(10, 9, '?');
+      b.plat(17, 21, 10).plat(24, 28, 8).row(24, 7, '$$$$$').plat(31, 35, 10).put(33, 9, 'n');
+      b.ground(38, 46).put(42, 11, 'q').put(45, 11, 'C');
+      b.plat(49, 52, 9).plat(55, 58, 7).put(56, 6, 'n').plat(61, 64, 9).row(61, 8, '$$$$');
+      b.plat(67, 72, 10).put(70, 9, 'q').plat(75, 78, 8).plat(81, 84, 6).row(81, 5, '$$$$').plat(87, 90, 8);
+      b.ground(93, 104).put(96, 9, '?').put(100, 11, 'n').put(102, 11, 'n').put(104, 11, 'C');
+      b.plat(107, 110, 10).plat(113, 116, 8).plat(119, 122, 10).plat(125, 128, 8).put(127, 7, 'n');
+      b.ground(131, 169); stairs(b, 136, 6); b.put(152, 11, 'E');
+      return b;
+    } },
+  { id: 'smb5', camp: 'smb', tag: '2-2', name: 'WORLD 2-2', theme: 'smbw', card: 'nes', rules: SMB, goal: 'flag', water: 1, items: { '30,8': '+' },
+    build() { // the water level. Everyone's favorite. Breathe through the bong
+      const b = LB(170);
+      b.ground(0, 169).put(2, 11, '@').row(8, 9, '$$$$').put(16, 8, 'f').fill(22, 23, 9, 11, '#').put(30, 8, '?').put(36, 10, 'j').put(40, 11, 'v');
+      b.fill(46, 52, 5, 6, '#').row(46, 4, '$$$$$$$').put(50, 9, 'f').put(58, 7, 'j').fill(64, 65, 8, 11, '#').put(70, 11, 'v').put(74, 6, 'f').put(78, 11, 'C');
+      b.fill(84, 100, 2, 4, '#').put(88, 9, 'j').put(94, 8, 'f').put(98, 11, 'v').row(86, 10, '$$$$$$$$').fill(104, 105, 9, 11, '#').put(110, 7, 'j').put(116, 9, 'f');
+      b.put(122, 11, 'v').fill(128, 140, 2, 6, '#').put(132, 10, 'f').put(136, 8, 'j').put(144, 11, 'C').fill(150, 151, 8, 11, 'P').put(160, 11, 'E');
+      return b;
+    } },
   { id: 'smb3', camp: 'smb', tag: '1-4', name: 'WORLD 1-4', theme: 'smbc', card: 'nes', rules: SMB, boss: { id: 'bosser', at: 120 },
     build() {
       const b = LB(150);
@@ -473,7 +495,26 @@ LEVELS.push(
       b.put(108, 7, 'h').put(112, 9, 'h').put(118, 5, 'h').plat(124, 128, 9).row(124, 8, '$$$$$').fill(132, 133, 11, 11, '^').put(140, 6, 'h').put(146, 8, 'h').put(160, 11, 'E');
       return b;
     } },
-  { id: 'smw3', camp: 'smw', tag: '3', name: 'CASTLE #1', theme: 'smwc', rules: SMB, boss: { id: 'intern', at: 100 },
+  { id: 'smw4', camp: 'smw', tag: '3', name: 'DONUT PLAINS', theme: 'smw', rules: SMB, goal: 'tape', items: { '20,9': '+', '72,9': '*', '120,9': '1' },
+    build() { // the donut was eaten in a meeting
+      const b = LB(190);
+      b.ground(0, 34).put(3, 11, '@').put(8, 11, 'Y').row(18, 9, '?b?').put(20, 9, '?').put(26, 11, 'q').put(30, 11, 'n');
+      b.plat(37, 40, 10).plat(43, 46, 8).row(43, 7, '$$$$').plat(49, 52, 10).ground(55, 96).put(58, 11, 'n').put(60, 11, 'n').put(62, 11, 'n').put(64, 11, 'n').put(68, 11, 'C');
+      b.fill(72, 72, 9, 9, '?').put(76, 11, 'q').fill(82, 83, 10, 11, 'P').put(88, 11, 'q').put(92, 11, 'n');
+      b.ground(100, 140).plat(104, 112, 8).row(104, 7, '$$$$$$$$$').put(108, 11, 'q').put(114, 11, 'n').put(120, 9, '?').put(126, 11, 'C').put(132, 11, 'q').put(136, 11, 'q');
+      b.plat(143, 146, 10).plat(149, 152, 10).ground(155, 189).put(160, 11, 'n').put(164, 11, 'n').row(166, 10, '$$$$$').put(178, 11, 'E');
+      return b;
+    } },
+  { id: 'smw5', camp: 'smw', tag: '4', name: 'VANILLA DOME', theme: 'smwv', rules: SMB, goal: 'tape', items: { '24,9': '+', '96,9': '*' },
+    build() { // a cave. It is not made of vanilla. We checked
+      const b = LB(180);
+      b.ground(0, 179).fill(0, 179, 0, 1, '#').put(2, 11, '@').row(14, 9, 'bbbbb').put(24, 9, '?').put(18, 11, 'n').put(30, 11, 'q').fill(36, 37, 11, 11, '^');
+      b.fill(44, 46, 9, 11, '#').put(50, 11, 'n').put(52, 11, 'n').fill(58, 64, 7, 7, 'b').row(58, 6, '$$$$$$$').put(66, 11, 'C').fill(72, 73, 11, 11, '^').put(78, 11, 'q').put(84, 5, 'h');
+      b.fill(90, 91, 10, 11, 'P').put(96, 9, '?').put(100, 11, 'n').put(104, 11, 'q').fill(110, 111, 11, 11, '^').put(116, 11, 'C').fill(122, 126, 9, 11, '#').row(122, 8, '$$$$$').put(130, 11, 'n');
+      b.put(134, 11, 'n').fill(140, 141, 11, 11, '^').put(146, 11, 'q').put(152, 6, 'h').put(166, 11, 'E');
+      return b;
+    } },
+  { id: 'smw3', camp: 'smw', tag: '5', name: 'CASTLE #1', theme: 'smwc', rules: SMB, boss: { id: 'intern', at: 100 },
     build() {
       const b = LB(126);
       b.ground(0, 30).put(2, 11, '@').put(10, 8, '%').fill(16, 17, 9, 11, '#').put(22, 7, '%');
@@ -500,7 +541,24 @@ LEVELS.push(
       b.ground(205, 259).put(210, 11, 'z').row(214, 10, '$$$$$$').put(220, 11, 'c').put(245, 11, 'E');
       return b;
     } },
-  { id: 'son1c', camp: 'son1', tag: '3', name: 'GREEN HELL', theme: 'ghz', card: 'zone', rules: SON1, goal: 'sign', boss: { id: 'robux', at: 40 },
+  { id: 'son1d', camp: 'son1', tag: '1', name: 'MARBLE HELL', theme: 'marble', card: 'zone', rules: SON1, goal: 'sign',
+    build() { // the slow one. There is lava. There are columns. Nobody likes this zone
+      const b = LB(220);
+      b.ground(0, 40).put(3, 11, '@').row(6, 10, '$$$$$$').put(12, 11, 'M').fill(18, 19, 9, 11, '#').put(24, 11, 'c').fill(30, 32, 11, 11, '^').put(36, 11, 'z');
+      b.plat(43, 46, 10).plat(49, 52, 8).row(49, 7, '$$$$').plat(55, 58, 10).ground(61, 120).put(64, 11, 'M').fill(70, 71, 9, 11, '#').put(76, 11, 'C').put(80, 6, 'x').fill(86, 88, 11, 11, '^').put(94, 11, 'c').fill(100, 101, 12, 12, '}').put(108, 11, 'z');
+      b.ground(124, 219).put(128, 11, 's').plat(130, 138, 4).row(130, 3, '$$$$$$$$$').fill(134, 136, 11, 11, '^').put(144, 11, 'M').put(150, 11, 'C').fill(156, 157, 9, 11, '#').put(162, 11, 'c').put(168, 6, 'x').fill(174, 176, 11, 11, '^').put(182, 11, 'z').row(186, 10, '$$$$$').put(205, 11, 'E');
+      return b;
+    } },
+  { id: 'son1e', camp: 'son1', tag: '1', name: 'LABYRINTH', theme: 'laby', card: 'zone', rules: SON1, goal: 'sign', water: 5,
+    build() { // underwater. In the real one you drown. Here the bong is a snorkel
+      const b = LB(200);
+      b.ground(0, 199, 12).fill(0, 14, 5, 5, '#').put(2, 4, '@').put(10, 4, 'M').row(4, 3, '$$$$$');
+      b.put(18, 9, 'f').put(24, 11, 'v').fill(30, 34, 9, 11, '#').row(30, 8, '$$$$$').put(38, 8, 'j').put(46, 11, 'v').put(52, 10, 'f').put(58, 11, 'M').put(64, 11, 'C');
+      b.fill(70, 100, 5, 6, '#').put(76, 9, 'j').put(82, 11, 'v').put(88, 10, 'f').row(80, 10, '$$$$$$').put(96, 8, 'j').put(104, 11, 'v').put(110, 11, 'C');
+      b.put(116, 9, 'f').fill(122, 126, 9, 11, '#').put(130, 8, 'j').put(136, 11, 'v').put(142, 10, 'f').put(150, 11, 'M').put(158, 11, 'v').put(166, 8, 'j').put(174, 11, 'v').put(186, 11, 'E');
+      return b;
+    } },
+  { id: 'son1c', camp: 'son1', tag: '1', name: 'FINAL', theme: 'death', card: 'zone', rules: SON1, goal: 'sign', boss: { id: 'robux', at: 40 },
     build() {
       const b = LB(70);
       b.ground(0, 69).put(3, 11, '@').row(6, 10, '$$$$$$$$$$').put(18, 11, 'M').put(24, 11, 'M').put(30, 11, 'C').row(32, 10, '$$$$$').put(64, 11, 'E');
@@ -522,6 +580,22 @@ LEVELS.push(
       b.plat(44, 47, 9).put(45, 6, '*').plat(51, 54, 9).ground(58, 110).put(62, 11, 's').plat(64, 72, 4).put(66, 2, '*').put(70, 2, '*').row(64, 3, '$$$$$$$$$').put(78, 11, 'c').put(84, 11, 'C').put(90, 8, '*').put(94, 8, '*').put(98, 8, '*').put(104, 11, 'M').fill(106, 107, 12, 12, '}');
       b.ground(116, 180).put(120, 11, 'Q').put(130, 6, 'x').put(136, 9, '*').put(140, 7, '*').put(144, 9, '*').put(150, 11, 'C').put(156, 11, 'z').put(160, 11, 'z').put(166, 11, 'M').fill(170, 170, 8, 11, 'Z');
       b.plat(184, 186, 9).put(185, 6, '*').plat(190, 192, 9).ground(196, 239).put(202, 11, 'c').row(206, 10, '$$$$$$$').put(226, 11, 'E');
+      return b;
+    } },
+  { id: 'son2d', camp: 'son2', tag: '1', name: 'CHEMICAL HELL', theme: 'chem', card: 'zone', rules: SON2, goal: 'sign',
+    build() { // the purple liquid is fine. Legal says it is fine
+      const b = LB(260);
+      b.ground(0, 60).put(3, 11, '@').row(6, 10, '$$$$$$').fill(12, 13, 12, 12, '}').put(18, 11, 'Q').put(28, 11, 'M').put(34, 11, 'z').fill(40, 40, 8, 11, 'Z').put(46, 6, 'x').fill(52, 53, 12, 12, '}');
+      b.ground(64, 130).put(66, 11, 's').plat(68, 76, 4).row(68, 3, '$$$$$$$$$').put(80, 11, 'Q').put(90, 11, 'C').put(96, 11, 'c').fill(102, 103, 11, 11, '^').put(108, 11, 'M').fill(114, 114, 8, 11, 'Z').put(120, 11, 'z').fill(124, 125, 12, 12, '}');
+      b.ground(134, 259).put(138, 11, 'Q').put(150, 6, 'x').put(156, 11, 'c').put(162, 11, 'C').fill(168, 169, 11, 11, '^').put(174, 11, 's').plat(176, 184, 4).row(176, 3, '$$$$$$$$$').put(190, 11, 'M').fill(196, 196, 8, 11, 'Z').fill(204, 205, 12, 12, '}').put(210, 11, 'Q').put(220, 11, 'z').row(226, 10, '$$$$$$').put(245, 11, 'E');
+      return b;
+    } },
+  { id: 'son2e', camp: 'son2', tag: '1', name: 'METROPOLIS', theme: 'metro', card: 'zone', rules: SON2, goal: 'sign',
+    build() { // famously too long, and full of crabs. Ours is shorter. The crabs stayed
+      const b = LB(240);
+      b.ground(0, 50).put(3, 11, '@').row(6, 10, '$$$$$$').put(12, 11, 'M').put(18, 11, 'c').put(24, 11, 'c').fill(30, 31, 9, 11, '#').put(36, 11, 'c').put(42, 6, 'x').put(46, 11, 'z');
+      b.plat(53, 56, 10).plat(59, 62, 8).row(59, 7, '$$$$').ground(65, 130).put(68, 11, 'M').put(74, 11, 'c').put(78, 11, 'c').put(84, 11, 'C').fill(90, 90, 8, 11, 'Z').put(96, 11, 'c').put(100, 6, 'x').fill(106, 107, 11, 11, '^').put(112, 11, 'c').put(118, 11, 's').plat(120, 128, 4).row(120, 3, '$$$$$$$$$');
+      b.ground(134, 239).put(138, 11, 'c').put(142, 11, 'c').put(146, 11, 'c').put(152, 11, 'M').put(158, 11, 'C').put(164, 6, 'x').put(170, 11, 'z').fill(176, 177, 11, 11, '^').put(184, 11, 'c').put(190, 11, 'c').fill(196, 196, 8, 11, 'Z').row(200, 10, '$$$$$$').put(225, 11, 'E');
       return b;
     } },
   { id: 'son2c', camp: 'son2', tag: '3', name: 'DEATH EGG', theme: 'death', card: 'zone', rules: SON2, goal: 'sign', boss: { id: 'mecha', at: 30 },
@@ -546,6 +620,22 @@ LEVELS.push(
       b.put(18, 9, 'f').put(26, 8, 'j').row(20, 10, '$$$$').put(34, 11, 'v').fill(40, 44, 9, 11, '#').put(48, 8, 'f').put(56, 11, 'v').put(62, 8, 'j').put(70, 11, 'M').put(76, 11, 'C');
       b.fill(84, 120, 6, 7, '#').put(90, 10, 'f').put(98, 9, 'j').put(104, 11, 'v').put(112, 10, 'f').row(86, 10, '$$$$$$$').put(124, 11, 'C').put(128, 11, 'M');
       b.put(136, 8, 'j').put(144, 11, 'v').put(150, 9, 'f').fill(156, 160, 8, 11, '#').put(166, 8, 'j').put(172, 11, 'v').put(182, 11, 'v').put(190, 11, 'E');
+      return b;
+    } },
+  { id: 'son3d', camp: 'son3', tag: '1', name: 'MARBLE GARDEN', theme: 'mgz', card: 'zone', rules: SON3, goal: 'sign', items: { '14,11': 'zap', '120,11': 'fire' },
+    build() { // ruins. Glide over the gaps, climb the pillars
+      const b = LB(240);
+      b.ground(0, 40).put(3, 11, '@').row(6, 10, '$$$$$$').put(14, 11, 'M').put(22, 11, 'z').fill(28, 29, 8, 11, '#').row(28, 7, '$$').put(34, 11, 'c');
+      b.plat(44, 47, 9).ground(52, 110).put(56, 11, 'z').fill(62, 63, 4, 11, '#').put(62, 3, '$').put(68, 11, 'C').put(74, 6, 'x').fill(80, 81, 11, 11, '^').put(86, 11, 'c').fill(92, 92, 8, 11, 'Z').put(98, 11, 's').plat(100, 106, 4).row(100, 3, '$$$$$$$');
+      b.ground(115, 239).put(120, 11, 'M').put(126, 11, 'z').fill(132, 133, 6, 11, '#').put(140, 11, 'C').put(146, 6, 'x').put(152, 11, 'c').fill(158, 160, 11, 11, '^').put(166, 11, 'Q').put(176, 11, 'z').fill(184, 184, 8, 11, 'Z').row(190, 10, '$$$$$$').put(225, 11, 'E');
+      return b;
+    } },
+  { id: 'son3e', camp: 'son3', tag: '1', name: 'CARNIVAL NIGHT', theme: 'carnival', card: 'zone', rules: SON3, goal: 'sign', signs: [[96, 12, '^v^v']], items: { '12,11': 'bubble', '110,11': 'zap' },
+    build() { // the barrel was cut. The sign explaining the barrel stayed
+      const b = LB(240);
+      b.ground(0, 50).put(3, 11, '@').row(8, 10, '$$$$$$').put(12, 11, 'M').put(16, 8, '*').put(20, 6, '*').put(24, 8, '*').put(30, 11, 'z').fill(36, 37, 12, 12, '}').put(42, 11, 'Q');
+      b.plat(54, 58, 9).put(56, 6, '*').plat(61, 64, 9).ground(66, 130).put(72, 11, 's').plat(74, 82, 4).put(76, 2, '*').put(80, 2, '*').row(74, 3, '$$$$$$$$$').put(88, 11, 'C').put(100, 11, 'c').put(104, 8, '*').put(108, 8, '*').put(110, 11, 'M').fill(116, 116, 8, 11, 'Z').put(122, 6, 'x');
+      b.ground(134, 239).put(138, 11, 'Q').put(150, 9, '*').put(154, 7, '*').put(158, 9, '*').put(164, 11, 'C').put(170, 11, 'z').put(176, 11, 'c').fill(182, 183, 11, 11, '^').fill(190, 191, 12, 12, '}').row(200, 10, '$$$$$$$').put(225, 11, 'E');
       return b;
     } },
   { id: 'son3c', camp: 'son3', tag: '3', name: 'SKY SANCTUARY', theme: 'sky', card: 'zone', rules: SON3, goal: 'sign', boss: { id: 'knux', at: 30 }, items: { '16,11': 'zap' },

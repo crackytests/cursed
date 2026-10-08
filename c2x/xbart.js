@@ -155,6 +155,14 @@ Object.assign(XTHEMES, {
   death: { P: tpal('#242436', '#49496d', '#9292b6', '#db2424', '#242436', '#49496d', '#ff2449'), sky: ['#000000', '#000010'], kind: 'space', grass: false, far: '#000010', mid: '#101024', music: 'space' },
   angel: { P: tpal('#6d3600', '#b66d24', '#ffb649', '#ffdb92', '#126d12', '#49b624', '#ffdb24'), sky: ['#ff6d24', '#ffdb92'], kind: 'jungle', grass: true, far: '#6d3600', mid: '#492400', music: 'cknux' },
   hydro: { P: tpal('#004949', '#249292', '#6ddbdb', '#dbffff', '#246d6d', '#49b6b6', '#6dffff'), sky: ['#2470b6', '#92dbff'], kind: 'hills', grass: false, far: '#2470b6', mid: '#246d92', music: 'lake' },
+  smbw: { P: tpal('#002449', '#2449b6', '#6d92ff', '#dbffff', '#126d49', '#24b66d', '#ffdb24'), sky: ['#2449db', '#002492'], kind: 'hills', grass: false, far: '#002492', mid: '#001c6d', music: 'lake' },
+  smwv: { P: tpal('#24246d', '#4949b6', '#9292db', '#dbdbff', '#246d6d', '#49b6b6', '#ffdb24'), sky: ['#000024', '#100036'], kind: 'cave', grass: false, far: '#100036', mid: '#24124f', music: 'cunder' },
+  marble: { P: tpal('#36246d', '#6d49b6', '#b692ff', '#ffffff', '#126d12', '#49b624', '#ff6d24'), sky: ['#240036', '#6d2449'], kind: 'castle', tile: 'stone', grass: false, far: '#240024', mid: '#490024', music: 'ccastle' },
+  laby: { P: tpal('#123624', '#246d49', '#49b66d', '#dbffb6', '#126d49', '#24b66d', '#ffdb24'), sky: ['#246d49', '#6db692'], kind: 'hills', tile: 'stone', grass: false, far: '#245b49', mid: '#124936', music: 'lake' },
+  chem: { P: tpal('#24246d', '#4949db', '#9292ff', '#ffffff', '#6d2492', '#b649db', '#ffdb24'), sky: ['#100036', '#24246d'], kind: 'space', tile: 'checker', grass: false, far: '#100036', mid: '#24124f', music: 'chog2' },
+  metro: { P: tpal('#492400', '#926d24', '#dbb649', '#ffffff', '#6d4924', '#b6926d', '#ff2449'), sky: ['#241200', '#6d3600'], kind: 'castle', grass: false, far: '#241200', mid: '#361c00', music: 'chog2' },
+  mgz: { P: tpal('#6d4924', '#b6924a', '#dbdb92', '#ffffff', '#246d24', '#49b649', '#ffdb24'), sky: ['#49b6db', '#dbffdb'], kind: 'jungle', tile: 'stone', grass: true, far: '#6d6d49', mid: '#494924', music: 'cknux' },
+  carnival: { P: tpal('#6d1236', '#b62449', '#ff6d92', '#ffdb24', '#6d1236', '#b62449', '#49dbff'), sky: ['#100024', '#36126d'], kind: 'casino', grass: false, far: '#241049', mid: '#100024', music: 'chog2' },
   sky: { P: tpal('#6d6d92', '#b6b6db', '#ffffff', '#ffdb24', '#6d6d92', '#b6b6db', '#ffdb24'), sky: ['#49b6ff', '#ffffff'], kind: 'sky', grass: false, far: '#dbdbff', mid: '#b6b6db', music: 'cknux' },
 });
 
