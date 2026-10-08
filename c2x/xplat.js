@@ -420,7 +420,7 @@ function drawTiles() {
     if (c === '#') draw(TILES[solidAt(tx, ty - 1) || ty === 0 ? '#' : '#top'], sx, sy, P);
     else if (c === '=' || c === '^' || c === 'W') draw(TILES[c], sx, sy, P);
     else if (c === 'w') draw(TILES.w[(frame >> 3) & 1], sx, sy, P);
-    else if (TILES2[c]) drawTile2(c, tx, ty, sx, sy);
+    else if (TILES2[c] || c === 'P') drawTile2(c, tx, ty, sx, sy);
   }
 }
 function drawEnts() {
