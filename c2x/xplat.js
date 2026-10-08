@@ -400,7 +400,7 @@ function worldUpdate() {
   for (const f of FX) { f.t--; if (f.vx) f.x += f.vx; if (f.vy) f.y += f.vy; if (f.k === 'bub' && !waterAt(f.y)) f.t = 0; if (f.k === 'spark') f.vy += .15; }
   FX = FX.filter(f => f.t > 0);
   for (const b of BUBBLES) b.t--; BUBBLES = BUBBLES.filter(b => b.t > 0);
-  if (BOSS) BOSS.update();
+  if (BOSS && !CUT) BOSS.update(); // he waits for the speech to end like everyone else
   bonusWorld();
   // camera
   if (LV.lock) camX += clamp(LV.lock - camX, -4, 4);

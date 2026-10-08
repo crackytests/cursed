@@ -109,10 +109,10 @@ const BOSSES = {
     const B = { name: 'DYSLEXIO', music: 'human', hp: 12, max: 12, x: x0 + 12 * TS, y: 3 * TS, w: 40, h: 54, t: 0, flash: 0, low: 0, shield: [], regen: 0, cast: 0, wi: -1,
       hitbox() { return this.dying ? { x: -999, y: 0, w: 0, h: 0 } : { x: this.x + 8, y: this.y + 4, w: 24, h: 46 }; },
       raise() { const w = WORDS[this.wi = (this.wi + 1) % WORDS.length]; this.word = w; this.shield = w.split('').map((ch, i) => ({ ch, a: i / w.length * 6.283, alive: 1 })); sfx('glitch'); },
-      async intro() { await wait(30);
-        quip('CARL. YOU DO NOT READ EITHER.', this, 100); await wait(90); quip('NOPE.', PL, 60); await wait(60);
-        quip('NOT READING IS NOT A GIFT, CARL.', this, 90); await wait(80); quip('IT IS JUST NOT READING.', this, 80); await wait(70);
-        quip('...WE READ EVERY VERSION.', this, 90); await wait(80); },
+      async intro() { await wait(10);
+        quip('CARL. YOU DO NOT READ EITHER.', this, 70); await wait(60); quip('NOPE.', PL, 40); await wait(35);
+        quip('NOT READING IS NOT A GIFT, CARL.', this, 65); await wait(55); quip('IT IS JUST NOT READING.', this, 55); await wait(50);
+        quip('...WE READ EVERY VERSION.', this, 90); await wait(40); },
       hit(b) {
         if (this.shield.some(s => s.alive)) { sfx('land'); if (!FX.some(f => f.s === 'CLINK')) FX.push({ k: 'txt', s: 'CLINK', x: b.x - 10, y: b.y, t: 40 }); if (!this.toldShield) { this.toldShield = 1; quip('BURN THE LETTERS.', PL); } return; }
         this.hp--; bossHitFlash(this);
