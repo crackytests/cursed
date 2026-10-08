@@ -81,6 +81,8 @@ function onFx(st, k, a, b) {
     case 'waste': if (b > 0) { const [ox, oy] = storeOrigin(st); sayAt(ox + 60, oy + 8, 'EXPIRED FOOD: -' + fmt(b) + ' MC', '#c02020', 120); } break;
     case 'backdoor': { post.shake = 2; st.shakeT = 40; st.shipT = 90; sayAt(storeOrigin(st)[0] + storeOrigin(st)[2] / 2, storeOrigin(st)[1] - 4, 'A.S.S. DELIVERY!', '#108a60', 110); sfx('crate'); break; }
     case 'show': BANNERFX = { s: 'GRAND DEMONSTRATION!', t: 150, col: '#a060ff' }; break;
+    case 'event': BANNERFX = { s: EVENTS[b].n.replace('ADVENTURER ', ''), t: 170, col: { convention: '#3a8a3a', tournament: '#c03090', convoy: '#2060a0', supplier: '#a06020', magazine: '#d06090', wage: '#606060' }[b] || '#404040' }; break;
+    case 'upgrade': { const [ox, oy, sw] = storeOrigin(st); BANNERFX = { s: 'BIGGER STORE!', t: 150, col: '#30a060' }; confetti(ox + sw / 2, oy + 40, 30); break; }
     case 'ad': {
       const [ox, oy, sw] = storeOrigin(st);
       if (b === 'flyers') { BANNERFX = { s: 'FLYERS ARE OUT!', t: 140, col: '#d08020' }; for (let i = 0; i < 40; i++) P({ kind: 'paper', x: ox + Math.random() * sw, y: oy - 10 - Math.random() * 60, vx: (Math.random() - .5) * .6, vy: .5 + Math.random() * .5, max: 200 + rnd(80), c: C(pick2(['#ffffff', '#fff0a0', '#a0e8ff'])) }); }

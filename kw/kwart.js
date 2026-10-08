@@ -35,8 +35,9 @@ function goodsColumns(f, x, y, st) { // the goods themselves: columns that shrin
 }
 function lipOf(f, x, y, c) { const [ax, ay] = DIRS[f.d]; if (ay > 0) rectF(x + 2, y + TH - 2, TW - 4, 1, c); else if (ay < 0) rectF(x + 2, y + 1, TW - 4, 1, c); else if (ax < 0) rectF(x + 1, y + 2, 1, TH - 4, c); else rectF(x + TW - 2, y + 2, 1, TH - 4, c); }
 function drawFixture(f, x, y, mgr, st, flash) {
-  const T = FXT[mgr] || FXT.carl, M = MGRS[mgr], fr = C(T.frame), ins = C(T.inside), tr = C(T.trim), cool = f.k === 'drink' || f.k === 'bento', t = frame + f.x * 7 + f.y * 13;
+  const T = FXT[mgr] || FXT.carl, M = MGRS[mgr], fr = C(T.frame), ins = C(T.inside), tr = C(T.trim), cool = f.k === 'drink' || f.k === 'bento' || f.k === 'liquor', t = frame + f.x * 7 + f.y * 13;
   if (f.k === 'reg') return drawRegister(f, x, y, mgr, T, flash);
+  if (FIX[f.k].deco) return drawDeco(f, x, y, mgr, T);
   if (cool) { // coolers and food cases
     rectF(x + 1, y + 1, TW - 2, TH - 2, C(T.cool)); rectF(x + 2, y + 2, TW - 4, TH - 4, C(T.glass));
     if (mgr === 'ghost') { pset(x + 1, y + 1, 0); pset(x + TW - 2, y + 1, 0); glow(x + 12, y + 8, 10, C('#40ff90'), .25); } // a potion cabinet, glowing
@@ -67,6 +68,20 @@ function drawFixture(f, x, y, mgr, st, flash) {
   if (f.k === 'spec') { rectF(x + 1, y + 1, TW - 2, 1, C(M.col2)); if (mgr === 'linda') text('L', x + 9, y - 1, tr, 0); }
   if (f.k === 'mag' && mgr !== 'yoko') rectF(x + 2, y + 2, TW - 4, 2, mgr === 'jb' ? C('#c0a070') : C('#e8e0c0'));
   lipOf(f, x, y, mgr === 'yoko' ? C('#30a898') : mgr === 'face' ? C('#40e0ff') : mgr === 'linda' ? C('#f0c040') : mgr === 'ghost' ? C('#a070ff') : mgr === 'jb' ? C('#ffa040') : C('#ffe8a0'));
+}
+// decorations: The Conveni's plants, benches, and fountains, in each manager's style
+function drawDeco(f, x, y, mgr, T) {
+  const t = frame + f.x * 11;
+  if (f.k === 'plant') { const pot = mgr === 'linda' ? '#f0c040' : mgr === 'ghost' ? '#3a1a4a' : mgr === 'face' ? '#8a9ab0' : mgr === 'jb' ? '#5a3a28' : '#c87040', leaf = mgr === 'ghost' ? '#6a4a8a' : '#3a9a40';
+    rectF(x + 8, y + 9, 8, 6, C(pot)); rectF(x + 7, y + 9, 10, 1, mix(C(pot), C('#ffffff'), .3)); const sw = Math.sin(t * .05) > .6 ? 1 : 0;
+    ellF(x + 12 + sw, y + 5, 6, 4, C(leaf)); ellF(x + 9, y + 7, 3, 2, mix(C(leaf), INKC, .2)); ellF(x + 15 + sw, y + 7, 3, 2, mix(C(leaf), C('#ffffff'), .2)); if (mgr === 'ghost') pset(x + 12, y + 3, C('#c0a0ff')); }
+  else if (f.k === 'bench') { const wd = C(mgr === 'linda' ? '#f4eef4' : mgr === 'face' ? '#8a9ab0' : mgr === 'yoko' ? '#d8bc94' : mgr === 'ghost' ? '#3a1a4a' : '#8a5a30');
+    rectF(x + 2, y + 6, TW - 4, 4, wd); rectF(x + 2, y + 6, TW - 4, 1, mix(wd, C('#ffffff'), .3)); rectF(x + 2, y + 3, TW - 4, 2, mix(wd, INKC, .15)); rectF(x + 3, y + 10, 2, 4, mix(wd, INKC, .4)); rectF(x + TW - 5, y + 10, 2, 4, mix(wd, INKC, .4)); if (mgr === 'linda') rectF(x + 2, y + 9, TW - 4, 1, C('#f0c040')); }
+  else if (f.k === 'fountain') { const w = TW * 2, h = TH * 2, rim = C(mgr === 'linda' ? '#f0c040' : mgr === 'ghost' ? '#4a3a5a' : mgr === 'face' ? '#8a9ab0' : mgr === 'jb' ? '#6a4a3a' : '#c8c0b0'), water = C(mgr === 'ghost' ? '#60ffa0' : mgr === 'jb' ? '#ff80c0' : '#60b0ff');
+    ellF(x + w / 2, y + h / 2 + 2, w / 2 - 2, h / 2 - 3, rim); ellF(x + w / 2, y + h / 2 + 2, w / 2 - 5, h / 2 - 6, mix(water, INKC, .2));
+    for (let i = 0; i < 6; i++) { const a = (t * .05 + i) % 6.28; pset(x + w / 2 + Math.cos(a) * (w / 2 - 8), y + h / 2 + 2 + Math.sin(a) * (h / 2 - 9), mix(water, C('#ffffff'), .5)); }
+    rectF(x + w / 2 - 2, y + 6, 4, h / 2 - 2, rim); const jet = 3 + ((t >> 2) & 3); rectF(x + w / 2 - 1, y + 6 - jet, 2, jet, mix(water, C('#ffffff'), .4)); pset(x + w / 2 - 3, y + 5 - (jet >> 1), water); pset(x + w / 2 + 2, y + 5 - (jet >> 1), water);
+    if (mgr === 'ghost') glow(x + w / 2, y + h / 2, 16, C('#40ff90'), .25); if (mgr === 'jb') glow(x + w / 2, y + h / 2, 14, C('#ff4aa0'), .2); }
 }
 function drawRegister(f, x, y, mgr, T, flash) {
   const sx = f.d === 3 ? x + 4 : f.d === 1 ? x + TW - 12 : x + 8, t = frame + f.y * 9;
@@ -405,6 +420,7 @@ function storeIcon(x, y, st, sel) {
   rectF(x + 1, y + 2, w - 2, h - 3, C(M.wall)); rectF(x + 1, y + 1, w - 2, 5, C(M.col)); rectF(x + 3, y + 2, w - 6, 3, C(M.col2));
   rectF(x + 4, y + 9, w - 8, 7, C('#a8e8ff')); rectF(x + w / 2 - 2, y + 11, 4, 6, C(M.col));
   if (st.permit.med) { rectF(x + w - 6, y + 7, 5, 5, C('#ffffff')); rectF(x + w - 4, y + 8, 1, 3, C('#e02020')); rectF(x + w - 5, y + 9, 3, 1, C('#e02020')); }
+  if (st.permit.tob) rectF(x + 1, y + 7, 3, 3, C('#c8a878')); if (st.permit.alc) rectF(x + 1, y + 11, 3, 3, C('#e8c050'));
   frameR(x, y, w, h, sel ? C('#ffff60') : INKC);
 }
 function facIcon(x, y, id, built) {

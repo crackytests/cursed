@@ -17,13 +17,13 @@ function drawMap() {
   for (const lot of G.lots) { const x = MAPX + lot.x * MSW, y = MAPY + lot.y * MSH, sel = MSEL && MSEL.lot === lot.i;
     if (lot.st >= 0) storeIcon(x, y, G.stores[lot.st], sel); else lotIcon(x, y, 0, sel); }
   // medicine permit ranges
-  if (MAPOVER === 'permit') for (const st of liveStores()) if (st.permit.med) { const l = G.lots[st.lot], cx = MAPX + (l.x + 1) * MSW, cy = MAPY + (l.y + 1) * MSH, col = st.chain === 0 ? C('#40ff80') : C('#ff4040');
-    for (let a = 0; a < 64; a++) { const t = a / 64 * Math.PI * 2, dx = Math.cos(t), dy = Math.sin(t), k = MED_RANGE / (Math.abs(dx) + Math.abs(dy)); pset(cx + dx * k * MSW, cy + dy * k * MSH, col); } }
+  if (MAPOVER === 'permit') for (const st of liveStores()) Object.keys(PERMITS).forEach((pk, pi) => { if (!st.permit[pk]) return; const l = G.lots[st.lot], cx = MAPX + (l.x + 1) * MSW, cy = MAPY + (l.y + 1) * MSH, col = C(['#ffffff', '#c8a878', '#e8c050'][pi]), R = PERMITS[pk].range;
+    for (let a = 0; a < 80; a++) { if (((a >> 2) + pi) % 3) continue; const t = a / 80 * Math.PI * 2, dx = Math.cos(t), dy = Math.sin(t), k = R / (Math.abs(dx) + Math.abs(dy)); pset(cx + dx * k * MSW, cy + dy * k * MSH, st.chain === 0 ? col : mix(col, C('#ff2020'), .5)); } });
   // legend / overlay buttons
   const by = MAPY + MH * MSH + 6; bevel(MAPX - 4, by - 2, MW * MSW + 8, 16);
   if (btn(MAPX, by, 60, 'LOTS', { on: MAPOVER === 'none' })) MAPOVER = 'none';
   if (btn(MAPX + 62, by, 66, 'FOOTFALL', { on: MAPOVER === 'foot', tip: 'Busier squares send more shoppers to nearby stores.' })) MAPOVER = 'foot';
-  if (btn(MAPX + 130, by, 66, 'PERMITS', { on: MAPOVER === 'permit', tip: 'Medicine permits block other chains within ' + MED_RANGE + ' squares.' })) MAPOVER = 'permit';
+  if (btn(MAPX + 130, by, 66, 'PERMITS', { on: MAPOVER === 'permit', tip: 'Rings: medicine (white), tobacco (tan), alcohol (gold). Rivals\' rings are reddish. No other chain can get the same permit inside a ring.' })) MAPOVER = 'permit';
   const share = G.share === undefined ? '--' : Math.round(G.share * 100) + '%';
   ink('MONOPOLY RATE ' + share + '   STORES ' + liveStores().length + '/' + STORE_CAP, MAPX + 210, by + 3);
 }

@@ -7,7 +7,7 @@ const TPD = 7200, MPT = 1440 / TPD;          // ticks per day, sim minutes per t
 const SAMPLE_DAYS = [3, 10, 17, 24];
 const SHOP = 1.6;
 const REP = 4;                               // each little customer on screen stands for 4 real ones (units, money, and trips all count x4)                             // share of passing footfall that makes a konbini trip
-const MED_RANGE = 8, MED_FEE = 10000000;     // medicine permit: exclusion range in squares, fee
+const MED_RANGE = PERMITS.med.range, MED_FEE = PERMITS.med.fee; // kept for older callers; see PERMITS
 const SHOW_COST = 20000, BACKDOOR_MARKUP = 1.2;
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
@@ -132,17 +132,32 @@ const managerOf = st => staffOf(st).find(s => s.mgr) || staffOf(st)[0];
 function capOf(s, k) { return k === 'reg' || k === 'sec' ? s.edu : k === 'rst' ? s.agi : s.soc; }
 function grow(st, s, k, amt) { const m = managerOf(st); s.ab[k] = Math.min(capOf(s, k), s.ab[k] + amt * (.5 + (m ? m.edu : 50) / 100)); }
 
-function getPermit(st) {
-  const c = chainOf(st); if (st.permit.med) return 'ALREADY HELD';
-  const lot = G.lots[st.lot];
-  for (const o of liveStores()) if (o.chain !== st.chain && o.permit.med) { const l2 = G.lots[o.lot]; if (Math.abs(l2.x - lot.x) + Math.abs(l2.y - lot.y) <= MED_RANGE) return 'TOO CLOSE TO ' + storeName(o); }
-  if (c.cash < MED_FEE) return 'NOT ENOUGH MONEY';
-  c.cash -= MED_FEE; st.permit.med = 1; st.day.capex += MED_FEE; return '';
+function permitBlocker(st, k) { const lot = G.lots[st.lot]; for (const o of liveStores()) if (o.chain !== st.chain && o.permit[k]) { const l2 = G.lots[o.lot]; if (Math.abs(l2.x - lot.x) + Math.abs(l2.y - lot.y) <= PERMITS[k].range) return o; } return null; }
+function getPermit(st, k = 'med') {
+  const c = chainOf(st), P = PERMITS[k]; if (st.permit[k]) return 'ALREADY HELD';
+  const o = permitBlocker(st, k); if (o) return 'TOO CLOSE TO ' + storeName(o);
+  if (c.cash < P.fee) return 'NOT ENOUGH MONEY';
+  c.cash -= P.fee; st.permit[k] = 1; st.day.capex += P.fee; if (c.player) news(storeName(st) + ' GOT A ' + P.n + ' PERMIT.'); return '';
 }
 
+function upgradeCost(st) { return SIZES[st.size + 1] ? SIZES[st.size + 1].cost : 0; }
+function upgradeStore(st) {
+  const c = chainOf(st), nx = SIZES[st.size + 1]; if (!nx) return 'ALREADY THE LARGEST SIZE'; if (chainSales(st.chain) < nx.unlock) return 'NEEDS ' + mc(nx.unlock) + ' IN CHAIN SALES'; if (c.cash < nx.cost) return 'NOT ENOUGH MONEY';
+  const old = { size: st.size, fw: st.fw, fh: st.fh, dirt: st.dirt };
+  st.size++; st.fw = nx.fw; st.fh = nx.fh; st.dirt = new Float32Array(st.fw * st.fh);
+  for (let y = 0; y < old.fh; y++) for (let x = 0; x < old.fw; x++) st.dirt[y * st.fw + x] = old.dirt[y * old.fw + x];
+  const why = checkLayout(st); if (why) { Object.assign(st, old); relayout(st); return 'THE LAYOUT DOESN\'T FIT THE BIGGER STORE: ' + why; }
+  c.cash -= nx.cost; st.day.capex += nx.cost; layoutChanged(st); for (const a of st.agents) if (!a.s) a.gone = 1; news(storeName(st) + ' GREW TO SIZE ' + st.size + '.'); FX(st, 'upgrade'); return '';
+}
+// ---------- the bank ----------
+function loanLimit(chain) { return Math.round(storesOf(chain).reduce((t, s) => t + lotPrice(G.lots[s.lot]), 0) * LOAN.ltv / 1e6) * 1e6; }
+function borrow(chain, amt) { const c = G.chains[chain]; c.loan = c.loan || 0; if (c.loan + amt > loanLimit(chain)) return 'THE BANK SAYS NO: ONLY ' + mc(loanLimit(chain)) + ' AGAINST YOUR LOTS'; c.loan += amt; c.cash += amt; return ''; }
+function repay(chain, amt) { const c = G.chains[chain]; amt = Math.min(amt, c.loan || 0, Math.max(0, c.cash)); if (amt <= 0) return 'NOTHING TO REPAY'; c.loan -= amt; c.cash -= amt; return ''; }
 // ---------- layout: grid, validation, path fields ----------
 const doorX = st => st.fw >> 1, backX = st => (st.fw >> 1) - 1;
-function blockedGrid(st) { const g = new Uint8Array(st.fw * st.fh); for (const f of st.fix) g[f.y * st.fw + f.x] = 1; return g; }
+function blockedGrid(st) { const g = new Uint8Array(st.fw * st.fh); for (const f of st.fix) for (let j = 0; j < fh_(f); j++) for (let i = 0; i < fw_(f); i++) if (f.x + i < st.fw && f.y + j < st.fh) g[(f.y + j) * st.fw + f.x + i] = 1; return g; }
+const fixAt = (st, x, y) => st.fix.find(f => x >= f.x && x < f.x + fw_(f) && y >= f.y && y < f.y + fh_(f));
+const decoOf = st => Math.min(60, st.fix.reduce((t, f) => t + (FIX[f.k].deco || 0), 0));
 const accessOf = f => [f.x + DIRS[f.d][0], f.y + DIRS[f.d][1]];
 const staffSpot = f => [f.x - DIRS[f.d][0], f.y - DIRS[f.d][1]];
 function field(st, tx, ty) {
@@ -172,7 +187,7 @@ function checkLayout(st) {
   if (!ok(backX(st), 0)) return 'THE BACKROOM DOOR IS BLOCKED';
   const F = field(st, doorX(st), st.fh - 1), B = field(st, backX(st), 0);
   if (!st.fix.some(f => f.k === 'reg')) return 'THE STORE NEEDS A REGISTER';
-  for (const f of st.fix) { const [ax, ay] = accessOf(f);
+  for (const f of st.fix) { if (FIX[f.k].deco) { if (f.x + fw_(f) > w || f.y + fh_(f) > st.fh) return 'IT DOESN\'T FIT THERE'; continue; } const [ax, ay] = accessOf(f);
     if (!ok(ax, ay) || F[ay * w + ax] < 0) return FIX[f.k].n + ' CAN\'T BE REACHED';
     if (f.k === 'reg') { const [sx, sy] = staffSpot(f); if (!ok(sx, sy) || B[sy * w + sx] < 0) return 'NO ROOM BEHIND THE REGISTER'; } }
   return '';
@@ -275,6 +290,7 @@ function simTick() {
   const t = G.tick % TPD;
   if (t === 0) startDay();
   if (t === 1800) deliveries();     // 6:00
+  if (t === 3600 && G.lateCat) lateDelivery(); // noon: the supplier's mistake arrives
   if (t % 900 === 450) aiRush();
   runAds(); if (t % 60 === 0) { runPilots(); runCases(); }
   for (const st of liveStores()) storeTick(st);
@@ -282,14 +298,14 @@ function simTick() {
   G.tick++;
   if (G.tick % TPD === 0) endDay();
 }
-function startDay() { DAYSNAP = serial(); rollWeather(); for (const c of G.chains) c.usedPower = 0; for (const st of liveStores()) newDay(st); catchment(); aiDay(); }
+function startDay() { DAYSNAP = serial(); rollWeather(); startEvent(); for (const c of G.chains) c.usedPower = 0; for (const st of liveStores()) newDay(st); catchment(); aiDay(); }
 function deliveries() {
   for (const st of liveStores()) {
     const w0 = st.day.waste; FX(st, 'delivery');
     // yesterday's food goes in the bin first
     for (const f of st.fix) f.p.forEach((pid, j) => { if (pid && CATS[PRODUCTS[pid].cat].life === 1 && f.n[j]) { st.day.waste += f.n[j] * PRODUCTS[pid].cost; f.n[j] = 0; } });
     for (const pid in st.back) if (CATS[PRODUCTS[pid].cat].life === 1 && st.back[pid]) { st.day.waste += st.back[pid] * PRODUCTS[pid].cost; st.back[pid] = 0; }
-    autoOrder(st); FX(st, 'waste', null, st.day.waste - w0);
+    autoOrder(st, 1, G.lateCat ? p => p.cat !== G.lateCat : null); FX(st, 'waste', null, st.day.waste - w0);
   }
 }
 function orderTarget(st, pid) {
@@ -339,6 +355,24 @@ function runAds() {
   }
   G.ads = G.ads.filter(a => a.at > G.tick); catchment();
 }
+// ---------- monthly events ----------
+function planEvent() { G.ev = null; if (Math.random() < .25) return; const ids = Object.keys(EVENTS), id = pick(ids); G.ev = { id, d: rnd(4), mo: G.months };
+  news('NEXT MONTH: ' + EVENTS[id].n + ' ON THE ' + SAMPLE_DAYS[G.ev.d] + (G.ev.d === 0 ? 'RD' : 'TH') + '. ' + EVENTS[id].d.toUpperCase()); }
+function evMul(g, hr) { const e = G.evToday && EVENTS[G.evToday]; if (!e || !e.seg || !e.seg[g]) return 1; if (e.late && e.seg) return hr < e.late ? .35 : e.seg[g] * 1.6; return e.seg[g]; }
+function startEvent() {
+  G.evToday = null; G.lateCat = null;
+  if (G.mo === 6 && G.d === 0) news('RAINY SEASON. UMBRELLAS, HOT FOOD, AND MUDDY FLOORS ALL MONTH.');
+  if (!G.ev || G.ev.mo !== G.months || G.ev.d !== G.d) return;
+  const id = G.ev.id, e = EVENTS[id]; G.evToday = id; news('TODAY: ' + e.n + '!');
+  if (id === 'supplier') G.lateCat = pick(['bento', 'drink', 'snack', 'daily']);
+  if (e.staff) for (const c of G.chains) { const pool = storesOf(c.id).flatMap(staffOf); if (!pool.length) continue; const s = pool.reduce((a, b) => (a.ab.reg + a.ab.svc > b.ab.reg + b.ab.svc ? a : b));
+    if (id === 'magazine') { s.edu = Math.min(99, s.edu + 10); const st = G.stores[s.st]; st.rate.pop = Math.min(100, st.rate.pop + 15); if (c.player) news(s.n + ' OF ' + storeName(st) + ' IS IN THE MALL MAGAZINE! (+10 EDU, +15 POPULARITY)'); }
+    if (id === 'wage') { const ask = Math.round(s.wage * 1.25 / 10) * 10; if (c.player && typeof onWage === 'function') onWage(s, ask); else s.wage = ask; } }
+  for (const st of liveStores()) FX(st, 'event', null, id);
+}
+function lateDelivery() { for (const st of liveStores()) autoOrder(st, 1, p => p.cat === G.lateCat); news('THE LATE ' + CATS[G.lateCat].n + ' DELIVERY FINALLY ARRIVED.'); G.lateCat = null; }
+// rainy season: June rains nearly every day
+{ const _rw = rollWeather; rollWeather = function () { _rw(); if (G.mo === 6 && Math.random() < .75) G.weather = 'RAIN'; }; }
 // ---------- the other managers' mechanics ----------
 // Linda: a brand contract. Cheaper premium and Linda lines; a monthly fee per store; every store must keep a specialty display.
 function signContract(chain) { const c = G.chains[chain]; if (c.mgr !== 'linda') return 'ONLY LINDA SIGNS BRAND CONTRACTS'; if (c.contract) return 'ALREADY SIGNED';
@@ -393,7 +427,7 @@ function storeTick(st) {
   for (const a of st.agents) if (a.s && a.s.st !== st.i) a.gone = 1; // fired or moved
   if (!open && !st.agents.some(a => !a.s)) st.agents = st.agents.filter(a => !a.s);
   if (open) {
-    let rate = 0; for (const g in st.e) rate += st.e[g] * HOURLY[hr] * (hr >= 22 || hr < 5 ? SEGS[g].night : 1);
+    let rate = 0; for (const g in st.e) rate += st.e[g] * HOURLY[hr] * (hr >= 22 || hr < 5 ? SEGS[g].night : 1) * evMul(g, hr);
     rate = rate / 19.4 * MPT / 60 / REP * (showOn(st) ? 2.4 : 1);  // HOURLY sums to ~19.4
     for (let r = rate; r > 0; r--) if (Math.random() < r) spawnCustomer(st, hr);
   }
@@ -403,12 +437,12 @@ function storeTick(st) {
   for (const fl of st.flash) fl.t--; st.flash = st.flash.filter(f => f.t > 0);
 }
 function spawnCustomer(st, hr) {
-  const w = {}; for (const g in st.e) w[g] = st.e[g] * (hr >= 22 || hr < 5 ? SEGS[g].night : 1);
+  const w = {}; for (const g in st.e) w[g] = st.e[g] * (hr >= 22 || hr < 5 ? SEGS[g].night : 1) * evMul(g, hr);
   if (showOn(st)) w.adventurer = (w.adventurer || 0) * 3 + 1;
   if (!Object.keys(w).length) return;
   const g = wpick(w), S = SEGS[g], wants = [];
   const pickCat = () => { const o = {}; for (const c in S.want) { let v = S.want[c] * (G.weather === 'RAIN' ? CATS[c].rain : G.weather === 'HOT' ? CATS[c].hot : 1);
-    if (c === 'bento' && (hr === 12 || hr === 13 || hr === 7 || hr === 18 || hr === 19)) v *= 1.8; if (c === 'spec') v *= ((SPEC_FIT[chainOf(st).mgr] || {})[g] || .2) * (showOn(st) ? 2 : 1); o[c] = v; } return wpick(o); };
+    if (c === 'bento' && (hr === 12 || hr === 13 || hr === 7 || hr === 18 || hr === 19)) v *= 1.8; if (G.evToday && EVENTS[G.evToday].want && EVENTS[G.evToday].want[c]) v *= EVENTS[G.evToday].want[c]; if (c === 'spec') v *= ((SPEC_FIT[chainOf(st).mgr] || {})[g] || .2) * (showOn(st) ? 2 : 1); o[c] = v; } return wpick(o); };
   wants.push(pickCat()); for (const p of [.55 + S.impulse * .3, S.impulse]) if (Math.random() < p) { const c2 = pickCat(); if (!wants.includes(c2)) wants.push(c2); }
   st.day.seg[g] = (st.day.seg[g] || 0) + REP;
   st.agents.push({ g, x: doorX(st), y: st.fh - 1, fx: doorX(st), fy: st.fh, st: 'next', wants, basket: [], t: 0, pat: S.pat * 32, look: g, seed: Math.random() });
@@ -539,7 +573,7 @@ function endDay() {
   for (const st of liveStores()) {
     const d = st.day, hrs = openHours(st.hours);
     d.wages = staffOf(st).reduce((t, s) => t + s.wage * hrs, 0);
-    d.util += (SIZES[st.size].util + st.fix.reduce((t, f) => t + FIX[f.k].power, 0) / 20) * hrs;
+    d.util += (SIZES[st.size].util + st.fix.reduce((t, f) => t + FIX[f.k].power, 0) / 20) * hrs + st.fix.reduce((t, f) => t + (FIX[f.k].upkeep || 0), 0);
     chainOf(st).cash -= d.wages + d.util;
     for (const pid in st.today) st.sold[pid] = Math.round(((st.sold[pid] || st.today[pid]) + st.today[pid] * 2) / 3);
     // ratings drift toward what the day showed
@@ -549,7 +583,7 @@ function endDay() {
     const R = st.rate, to = (k, v) => R[k] = Math.round(clamp(R[k] + (v - R[k]) * .4, 0, 100));
     to('sec', avg('sec') * .7 + Math.min(sf.length, 3) * 10);
     to('cln', 100 - dirt * 2.5);
-    to('svc', (avg('reg') + avg('svc')) * .3 + 70 * served / Math.max(1, served + bad));
+    to('svc', (avg('reg') + avg('svc')) * .3 + 70 * served / Math.max(1, served + bad) + decoOf(st)); // plants, benches, fountains: as in the original
     { const sat = (d.happy + served * .3) / Math.max(1, d.happy + d.sad + served * .3), aim = 10 + 45 * sat - (d.lost.price > served * .2 ? 10 : 0); R.pop = Math.round(clamp(R.pop + (aim - R.pop) * .15, 0, 100)); }
     st.mwant = st.mwant || {}; for (const k in d.want) st.mwant[k] = (st.mwant[k] || 0) + d.want[k];
     if (st.surveyOn) { st.survey = { y: G.y, mo: G.mo, day: SAMPLE_DAYS[G.d], months: G.months, want: Object.assign({}, d.want), miss: Object.assign({}, d.miss), seg: Object.assign({}, d.seg) }; st.surveyOn = 0; if (typeof onSurvey === 'function') onSurvey(st); }
@@ -580,7 +614,9 @@ function settle() {
   aiMonth();
   rep.stars = ownerStars(); rep.pop = population();
   G.hist.push({ y: rep.y, mo: rep.mo, cash: G.chains.map(c => c.cash), share: rep.share, pop: rep.pop });
-  contractMonth(rep); checkGoals(); G.lastRep = rep;
+  contractMonth(rep);
+  for (const c of G.chains) if (c.loan > 0) { const i = Math.round(c.loan * LOAN.rate); c.cash -= i; rep.chains[c.id].interest = i; if (!c.player && c.cash > c.loan + 60000000) repay(c.id, c.loan); }
+  planEvent(); checkGoals(); G.lastRep = rep;
   if (typeof onSettle === 'function') onSettle(rep);
 }
 function ownerStars(chain = 0) { const ss = storesOf(chain); if (!ss.length) return 0; let t = 0; for (const s of ss) t += (s.rate.sec + s.rate.cln + s.rate.svc + s.rate.pop) / 4; return Math.min(5, Math.floor(t / ss.length / 18 * 2) / 2); }
@@ -596,8 +632,8 @@ function win() { if (G.won) return; G.won = 1; news('GOAL REACHED: ' + GOALS[G.g
 // ---------- buying, selling, closing ----------
 function storeValue(st) { const lm = st.lastMonth; return lotPrice(G.lots[st.lot]) + Math.round(SIZES[st.size].cost * .8) + Math.max(0, lm ? lm.op * 6 : 0); }
 function buyoutPrice(st) { return Math.round(storeValue(st) * (st.losing ? 1 : 1.5) / 100000) * 100000; }
-function buyout(chain, si) {
-  const st = G.stores[si], c = G.chains[chain], p = buyoutPrice(st); if (st.chain === chain) return 'ALREADY YOURS'; if (c.cash < p) return 'NOT ENOUGH MONEY';
+function buyout(chain, si, price) {
+  const st = G.stores[si], c = G.chains[chain], p = price || buyoutPrice(st); if (st.chain === chain) return 'ALREADY YOURS'; if (c.cash < p) return 'NOT ENOUGH MONEY';
   c.cash -= p; G.chains[st.chain].cash += p; const from = MGRS[G.chains[st.chain].mgr].short;
   st.chain = chain; st.num = G.stores.filter(s => s.chain === chain).length; st.losing = 0;
   const mgr = c.mgr; for (const f of st.fix) if (f.k === 'spec') { const fresh = newFix('spec', f.x, f.y, f.d, mgr); f.p = fresh.p; f.n = fresh.n; }
@@ -631,6 +667,7 @@ function aiOpen(chain) {
   if (openStore(chain, lot, size, aiHires(chain, 1 + SIZES[size].staff))) return;
   const st = G.stores[G.stores.length - 1]; if (!(c.mgr === 'carl' && c.cash > MED_FEE + 40000000 && !getPermit(st))) for (const f of st.fix) if (f.k === 'med') Object.assign(f, newFix('daily', f.x, f.y, f.d, c.mgr));
   if (c.mgr === 'ghost') st.hours = 0;
+  for (const [k, fk] of [['alc', 'liquor'], ['tob', 'smoke']]) if (c.cash > PERMITS[k].fee + 50000000 && !getPermit(st, k)) { const d = st.fix.filter(f => f.k === 'daily'); if (d.length) Object.assign(d[d.length - 1], newFix(fk, d[d.length - 1].x, d[d.length - 1].y, d[d.length - 1].d, c.mgr)); }
 }
 function aiChains() { return G.chains.filter(c => !c.player || G.autopilot); }
 function aiMonth() {
@@ -644,6 +681,10 @@ function aiMonth() {
       if (G.months % 2 === 0 && c.cash > SURVEY_COST * 4 && st.lastWant) { c.cash -= SURVEY_COST; stockByRank(st, st.lastWant); }
     }
     if (mine.length < (c.player ? 6 : [5, 5, 4, 3][Math.min(3, G.chains.length - 1)])) aiOpen(c.id);
+    // pick up a struggling store from someone else; the player gets asked
+    if (!c.player || G.autopilot) { const prey = liveStores().filter(s => s.chain !== c.id && s.losing >= 2 && storesOf(s.chain).length > 1).sort((a, b) => buyoutPrice(a) - buyoutPrice(b))[0];
+      if (prey && c.cash > buyoutPrice(prey) * 1.1 + 40000000) { const price = Math.round(buyoutPrice(prey) * 1.1 / 100000) * 100000;
+        if (G.chains[prey.chain].player && !G.autopilot) { if (typeof onOffer === 'function') onOffer({ buyer: c.id, si: prey.i, price }); } else buyout(c.id, prey.i, price); } }
     // attract a facility when rich enough and it would help
     for (const id of ['vending', 'lounge', 'starport']) if (!canAttract(id) && c.cash > FACILITIES[id].cost + 80000000 && mine.length >= 2) { attract(c.id, id); break; }
     if (c.player && G.goal === 0 && !canAttract('tower') && c.cash > FACILITIES.tower.cost) attract(c.id, 'tower');

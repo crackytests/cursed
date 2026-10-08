@@ -17,7 +17,8 @@ function drawStore(st) {
   for (let y = 0; y < st.fh; y++) for (let x = 0; x < st.fw; x++) { const d = st.dirt[y * st.fw + x]; if (d < 8) continue; const [tx, ty] = tileXY(st, x, y), n = Math.min(10, d / 5 | 0);
     for (let k = 0; k < n; k++) pset(tx + 2 + hash(x, y, k) * 20, ty + 2 + hash(y, x, k) * 12, C('#4a3a2a')); }
   // the edit grid
-  if (TOOL) for (let y = 0; y < st.fh; y++) for (let x = 0; x < st.fw; x++) { const [tx, ty] = tileXY(st, x, y); frameR(tx, ty, TW, TH, mix(C(M.floor), C('#ffffff'), .25)); }
+  if (TOOL) { for (let y = 0; y < st.fh; y++) for (let x = 0; x < st.fw; x++) { const [tx, ty] = tileXY(st, x, y); frameR(tx, ty, TW, TH, mix(C(M.floor), C('#ffffff'), .25)); }
+    const ht = tileAt(st, MOUSE.x, MOUSE.y); if (ht && FIX[TOOL]) { const [tx, ty] = tileXY(st, ht[0], ht[1]); frameR(tx, ty, TW * (FIX[TOOL].w || 1), TH * (FIX[TOOL].h || 1), C('#ffff60')); } }
   // fixtures
   st.fix.forEach((f, i) => { const [tx, ty] = tileXY(st, f.x, f.y); drawFixture(f, tx, ty, chainOf(st).mgr, st, st.flash.some(fl => fl.fi === i)); });
   fxShelves(st);
@@ -81,7 +82,7 @@ function weatherIcon(x, y, w) {
 // ---------- clicks on the store ----------
 function storeInput(st) {
   if (OWNER !== 'desk') return;
-  const t = tileAt(st, MOUSE.x, MOUSE.y), f = t && st.fix.find(f => f.x === t[0] && f.y === t[1]);
+  const t = tileAt(st, MOUSE.x, MOUSE.y), f = t && fixAt(st, t[0], t[1]);
   CURSOR = TOOL ? 'cross' : f ? 'hand' : 'arrow';
   if (TOOL && MOUSE.rclick) { TOOLDIR = (TOOLDIR + 1) % 4; sfx('move'); }
   if (!MOUSE.click) return;
@@ -93,7 +94,7 @@ function storeInput(st) {
 // ---------- the editor ----------
 function editAt(st, x, y) {
   if (chainOf(st) !== playerChain()) return;
-  const at = st.fix.find(f => f.x === x && f.y === y), c = playerChain();
+  const at = fixAt(st, x, y), c = playerChain();
   if (TOOL === 'remove') {
     if (!at) return; const i = st.fix.indexOf(at); st.fix.splice(i, 1);
     const why = checkLayout(st); if (why && why !== 'THE STORE NEEDS A REGISTER' || at.k === 'reg' && !st.fix.some(f => f.k === 'reg')) { st.fix.splice(i, 0, at); relayout(st); sfx('bad'); alertBox(why || 'THE STORE NEEDS A REGISTER.'); return; }
@@ -101,7 +102,7 @@ function editAt(st, x, y) {
     const back = Math.round(FIX[at.k].cost * .3); c.cash += back; st.day.capex -= back; sfx('crate'); layoutChanged(st); return;
   }
   if (TOOL === 'rotate') { if (!at) return; const d0 = at.d; at.d = (at.d + 1) % 4; let why = checkLayout(st); for (let k = 0; k < 3 && why; k++) { at.d = (at.d + 1) % 4; why = checkLayout(st); } if (why) { at.d = d0; relayout(st); sfx('bad'); alertBox(why); return; } sfx('place'); layoutChanged(st); return; }
-  if (at) return;
+  if (at) return; const F = FIX[TOOL]; for (let j = 0; j < (F.h || 1); j++) for (let i = 0; i < (F.w || 1); i++) if (x + i >= st.fw || y + j >= st.fh || fixAt(st, x + i, y + j)) { sfx('bad'); alertBox('IT DOESN\'T FIT THERE.'); return; }
   const cost = FIX[TOOL].cost + 50000; if (c.cash < cost) { sfx('bad'); alertBox('NOT ENOUGH MONEY.'); return; }
   const f = newFix(TOOL, x, y, TOOLDIR, c.mgr); st.fix.push(f);
   let why = checkLayout(st); for (let k = 0; k < 3 && why; k++) { f.d = (f.d + 1) % 4; why = checkLayout(st); }
@@ -112,7 +113,7 @@ function editAt(st, x, y) {
 // ---------- the inspector: one click on a shelf says whether the stock is missing, in the back, or waiting for staff ----------
 function shelfStatus(st, f, j) {
   const pid = f.p[j]; if (!pid) return ['-', WIN.dim]; const p = PRODUCTS[pid];
-  if (p.permit && !st.permit[p.permit]) return ['NEEDS THE MEDICINE PERMIT', WIN.red];
+  if (p.permit && !st.permit[p.permit]) return ['NEEDS ' + PERMITS[p.permit].n + ' PERMIT', WIN.red];
   if (f.n[j] > FACE_CAP / 2) return ['OK', WIN.green];
   const back = st.back[pid] || 0;
   if (!back) return [f.n[j] ? 'LOW. NONE IN THE BACK' : 'EMPTY. NONE IN THE BACK', WIN.red];
@@ -134,6 +135,7 @@ function openInspect() {
     if (SEL.kind === 'fix') {
       const f = SEL.f; if (!st.fix.includes(f)) { SEL = null; return; }
       ink(FIX[f.k].n, x + 2, y + 2, WIN.title);
+      if (FIX[f.k].deco) { ink('+' + FIX[f.k].deco + ' SERVICE', x + 2, y + 14, WIN.green); ink('UPKEEP ' + fmt(FIX[f.k].upkeep) + ' MC/DAY', x + 2, y + 24, WIN.dim); ink('STORE DECOR +' + decoOf(st) + ' (MAX 60)', x + 2, y + 38, WIN.dim); return; }
       if (f.k === 'reg') { const q = st.q[st.fix.indexOf(f)] || [], who = st.agents.find(a => a.s && a.st === 'reg' && a.reg === st.fix.indexOf(f));
         ink('LINE: ' + q.length, x + 2, y + 14); ink(who ? 'STAFFED: ' + who.s.n : 'NOBODY ON THIS TILL', x + 2, y + 24, who ? WIN.ink : WIN.red); return; }
       f.p.forEach((pid, j) => { if (!pid) return; const yy = y + 13 + j * 24, [s, c] = shelfStatus(st, f, j), mine = st.chain === 0;

@@ -11,6 +11,8 @@ const CATS = {
   daily: { n: 'DAILY', life: 0, col: '#a0d070', rain: 1.1, hot: 1 },
   mag: { n: 'PRINT', life: 0, col: '#e8e0c0', rain: 1, hot: 1 },
   med: { n: 'MEDICINE', life: 0, col: '#f0f0f0', rain: 1.2, hot: 1, permit: 'med' },
+  tobacco: { n: 'TOBACCO', life: 0, col: '#c8a878', rain: 1, hot: 1, permit: 'tob' },
+  alcohol: { n: 'ALCOHOL', life: 0, col: '#e8c050', rain: .9, hot: 1.4, permit: 'alc' },
   spec: { n: 'SPECIALTY', life: 0, col: '#c080ff', rain: 1, hot: 1 },
 };
 const CAT_IDS = Object.keys(CATS);
@@ -43,6 +45,9 @@ const PRODUCTS = {};
   ['occultmo', 'OCCULT MONTHLY', 'mag', 280, 4, 'occult night'], ['travelguide', 'TRAVEL GUIDE', 'mag', 450, 5, 'portable'], ['streamdig', 'STREAM DIGEST', 'mag', 240, 7, 'fun fade', 4],
   ['coldmed', 'COLD MEDICINE', 'med', 600, 6, 'W'], ['headache', 'HEADACHE PILLS', 'med', 450, 6, 'night'], ['stomach', 'STOMACH MEDS', 'med', 500, 4, 'hearty'],
   ['bandage', 'BANDAGES', 'med', 300, 4, 'occult portable'], ['eyedrops', 'EYE DROPS', 'med', 400, 5, 'night portable'], ['tonic', 'ENERGY TONIC', 'med', 380, 5, 'night hearty'],
+  ['cigar', 'CIGARS', 'tobacco', 900, 3, 'premium'], ['incense', 'SPIRIT INCENSE', 'tobacco', 300, 4, 'occult'], ['cigs', 'CIGARETTES', 'tobacco', 420, 7, 'night'], ['vape', 'VAPE PODS', 'tobacco', 500, 6, 'fun night'],
+  ['wine', 'WINE', 'alcohol', 900, 3, 'premium'], ['ale', 'DUNGEON ALE', 'alcohol', 250, 5, 'occult hearty'], ['sake', 'SAKE', 'alcohol', 600, 4, 'premium'],
+  ['whiskey', 'SPACE WHISKEY', 'alcohol', 1400, 3, 'premium night'], ['beer', 'BEER', 'alcohol', 190, 8, 'night'], ['chuhi', 'CHU-HI', 'alcohol', 160, 7, 'fun night'],
   // Carl: Very Normal Convenience
   ['humancup', 'HUMAN CUP', 'spec', 300, 3, 'fun', 0, 'carl'], ['proppill', 'PROP PILLS', 'spec', 380, 7, 'portable', 0, 'carl', 'med'],
   ['roadmeal', 'ROAD MEAL', 'spec', 260, 6, 'hearty portable', 0, 'carl'], ['shipcable', 'SHIP CABLE', 'spec', 520, 6, 'portable premium', 0, 'carl'],
@@ -61,7 +66,7 @@ const PRODUCTS = {};
   // JB Garfield: Midnight Convenience
   ['detcap', 'DETECTIVE CAP', 'spec', 600, 3, 'rain portable', 0, 'jb'], ['noirpulp', 'NOIR PULP', 'spec', 240, 5, 'night fun', 0, 'jb'],
   ['detcoffee', 'DETECTIVE BLEND', 'spec', 160, 7, 'night', 0, 'jb'], ['lasagna', 'LASAGNA PORTION', 'spec', 330, 8, 'hearty night', 0, 'jb'],
-].forEach(([id, n, cat, cost, pop, tags, launch, mgr, permit]) => { PRODUCTS[id] = { id, n, cat, cost, pop, tags: tags ? tags.split(' ') : [], launch: launch || 0, mgr: mgr || null, permit: permit || (cat === 'med' ? 'med' : null) }; });
+].forEach(([id, n, cat, cost, pop, tags, launch, mgr, permit]) => { PRODUCTS[id] = { id, n, cat, cost, pop, tags: tags ? tags.split(' ') : [], launch: launch || 0, mgr: mgr || null, permit: permit || CATS[cat].permit || null }; });
 // the supplier's starter order (what a new store's shelves get): middling items first, then the duds, the hits last. A guess, not a plan.
 { const rank = p => p.pop >= 7 ? 2 : p.pop >= 5 ? 0 : 1, all = Object.values(PRODUCTS).sort((a, b) => a.cat === b.cat ? rank(a) - rank(b) : 0);
   for (const k in PRODUCTS) delete PRODUCTS[k]; for (const p of all) PRODUCTS[p.id] = p; }
@@ -81,11 +86,11 @@ const prodsIn = (cat, mgr, months = 0) => Object.values(PRODUCTS).filter(p => p.
 // want: category weights. budget: how far over a 30% markup they still buy. pat: patience (sim minutes in queue).
 // night: share of their trips after 22:00 relative to day. look: sprite palette.
 const SEGS = {
-  routine: { n: 'ROUTINE SHOPPER', want: { bento: 4, drink: 3, snack: 2, daily: 3, mag: 1, med: .4, spec: .3 }, budget: .25, pat: 9, night: .3, impulse: .35 },
-  traveler: { n: 'TRAVELER', want: { bento: 4, drink: 4, snack: 2, daily: 2.5, mag: .8, med: .5, spec: 1 }, budget: .35, pat: 5, night: .7, impulse: .3 },
-  adventurer: { n: 'ADVENTURER', want: { bento: 2, drink: 2, snack: 1, daily: .6, mag: .4, med: .8, spec: 4 }, budget: .45, pat: 8, night: 1.6, impulse: .25 },
+  routine: { n: 'ROUTINE SHOPPER', want: { bento: 4, drink: 3, snack: 2, daily: 3, mag: 1, med: .4, spec: .3, tobacco: .7, alcohol: 1.1 }, budget: .25, pat: 9, night: .3, impulse: .35 },
+  traveler: { n: 'TRAVELER', want: { bento: 4, drink: 4, snack: 2, daily: 2.5, mag: .8, med: .5, spec: 1, tobacco: .5, alcohol: .8 }, budget: .35, pat: 5, night: .7, impulse: .3 },
+  adventurer: { n: 'ADVENTURER', want: { bento: 2, drink: 2, snack: 1, daily: .6, mag: .4, med: .8, spec: 4, tobacco: .5, alcohol: 1.6 }, budget: .45, pat: 8, night: 1.6, impulse: .25 },
   student: { n: 'STUDENT', want: { bento: 1.5, drink: 3, snack: 4, daily: .2, mag: 3, med: 0, spec: .4 }, budget: .1, pat: 7, night: .15, impulse: .5 },
-  thief: { n: 'SHOPLIFTER', want: { snack: 2, daily: 2, mag: 1, spec: 2, med: 1 }, budget: 0, pat: 3, night: 1.2, impulse: 0 },
+  thief: { n: 'SHOPLIFTER', want: { snack: 2, daily: 2, mag: 1, spec: 2, med: 1, tobacco: 1.2, alcohol: .6 }, budget: 0, pat: 3, night: 1.2, impulse: 0 },
 };
 // which signature products a segment actually wants (a wand needs adventurers)
 const SPEC_FIT = { carl: { traveler: 1, routine: .5, adventurer: .4, student: .3 }, ghost: { adventurer: 1, student: .4, routine: .15, traveler: .2 },
@@ -106,6 +111,26 @@ const FIX = {
   med: { n: 'MEDICINE CASE', cat: 'med', cost: 600000, power: 0 },
   spec: { n: 'SPECIALTY', cat: 'spec', cost: 700000, power: 100 },
   reg: { n: 'REGISTER', cost: 1200000, power: 200 },
+  smoke: { n: 'TOBACCO CASE', cat: 'tobacco', cost: 500000, power: 0 },
+  liquor: { n: 'LIQUOR COOLER', cat: 'alcohol', cost: 900000, power: 600 },
+  // decorations (The Conveni's interior items): service bonus, daily upkeep in MC, footprint
+  plant: { n: 'POTTED PLANT', deco: 2, cost: 60000, upkeep: 120, power: 0 },
+  bench: { n: 'BENCH', deco: 3, cost: 120000, upkeep: 168, power: 0 },
+  fountain: { n: 'FOUNTAIN', deco: 25, cost: 3000000, upkeep: 2400, power: 0, w: 2, h: 2 },
+};
+const fw_ = f => FIX[f.k].w || 1, fh_ = f => FIX[f.k].h || 1;
+// permits: fee, and how close another chain's holder may be (in map squares)
+const PERMITS = { med: { n: 'MEDICINE', fee: 10000000, range: 8 }, tob: { n: 'TOBACCO', fee: 3000000, range: 6 }, alc: { n: 'ALCOHOL', fee: 7000000, range: 7 } };
+// bank: borrow against the lots you own
+const LOAN = { rate: .01, ltv: .5 };
+// monthly events: announced at the settlement, on one of next month's sample days
+const EVENTS = {
+  convention: { n: 'ADVENTURER CONVENTION', d: 'Adventurers flood the mall all day, and stay late.', seg: { adventurer: 2.4 }, want: { alcohol: 1.6, bento: 1.3, spec: 1.4 } },
+  tournament: { n: 'ARCADE TOURNAMENT', d: 'Students everywhere, buying snacks and drinks.', seg: { student: 2.4 }, want: { snack: 1.8, drink: 1.4 } },
+  convoy: { n: 'DELAYED CONVOY', d: 'The morning travelers arrive late, all at once, after 15:00.', seg: { traveler: 1.6 }, late: 15 },
+  supplier: { n: 'SUPPLIER MISTAKE', d: 'One category\'s delivery arrives at noon instead of 6:00.', late: 1 },
+  magazine: { n: 'MAGAZINE FEATURE', d: 'A mall magazine features one of your staff.', staff: 1 },
+  wage: { n: 'WAGE TALKS', d: 'One of your best staff wants a raise.', staff: 1 },
 };
 const FIX_KINDS = Object.keys(FIX);
 const FACINGS = 2, FACE_CAP = 32, FACE_ICON = 4; // a shelf has 2 facings of 32 units each (drawn as 8 icons of 4): never room for the whole catalogue

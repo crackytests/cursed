@@ -33,7 +33,7 @@ const MENU = [
   { n: 'MANAGER', list: [['SPECIAL POWER', () => withStore(openPower)]] },
   { n: 'PROMO', list: [['ADVERTISING', openPromo]] },
   { n: 'MAP', list: [['MALL MAP', () => { VIEW = { kind: 'map' }; }]] },
-  { n: 'REPORT', list: [['TODAY', () => openReport(0)], ['LAST MONTH', () => openReport(1)], ['GOAL', () => openReport(2)], ['BULLETIN', openNews]] },
+  { n: 'REPORT', list: [['BANK', openBank], ['TODAY', () => openReport(0)], ['LAST MONTH', () => openReport(1)], ['GOAL', () => openReport(2)], ['BULLETIN', openNews]] },
   { n: 'HELP', list: [['HOW TO PLAY', openHelp], ['ABOUT', () => alertBox(['MALL OF THE FUTURE: KONBINI WARS', 'PRETEND CO. SOFT 1998', 'ENGLISH PATCH v0.9 by the KW translation group.', 'Prototype build: Carl vs Ghost, one map.'])]] },
 ];
 function withStore(fn) { const st = curStore() && curStore().chain === 0 ? curStore() : storesOf(0)[0]; if (!st) { alertBox('Open a store first. Click a lot on the MAP.'); return; } if (curStore() !== st) goStore(st); fn(st); }
@@ -57,15 +57,19 @@ function taskbar() {
 
 // ---------- store settings: hours, permit ----------
 function openStoreWin(st) {
-  openWin({ id: 'storewin', title: 'STORE: ' + storeName(st), x: 150, y: 24, w: 200, h: 150, body(win, x, y, w, h) {
+  openWin({ id: 'storewin', title: 'STORE: ' + storeName(st), x: 150, y: 20, w: 204, h: 172, body(win, x, y, w, h) {
     if (st.chain !== 0) { ink('Not your store.', x + 2, y + 2); return; }
     ink('SIZE ' + st.size + ' (' + st.fw + 'x' + st.fh + ')   ' + districtOf(G.lots[st.lot].x).n.split(' ')[0], x + 2, y + 2);
     ink('OPENING HOURS', x + 2, y + 16, WIN.title);
-    HOURS.forEach((hh, i) => { if (btn(x + 2 + (i % 3) * 64, y + 26 + (i >> 2 ? 13 : 0) + ((i % 6) >= 3 ? 0 : 0), 62, hh.n, { on: st.hours === i, tip: 'Customers only come while you are open. Staff are paid for every open hour.' })) { st.hours = i; } });
-    ink('MEDICINE PERMIT', x + 2, y + 58, WIN.title);
-    if (st.permit.med) ink('HELD. COLD MEDICINE ' + (MGRS[playerChain().mgr].n === 'CARL' ? 'AND PROP PILLS ' : '') + 'CAN SELL.', x + 2, y + 70, WIN.green);
-    else { wrapT('Lets this store sell medicine' + (playerChain().mgr === 'carl' ? ' and Prop Pills' : '') + '. No other chain can get one within ' + MED_RANGE + ' squares of it.', 32).forEach((l, i) => ink(l, x + 2, y + 70 + i * 9, WIN.dim));
-      if (btn(x + 2, y + 92, w - 4, 'APPLY  ' + mc(MED_FEE), {})) { const r = getPermit(st); if (r) { sfx('bad'); alertBox(r); } else { sfx('cash'); catchment(); } } }
+    HOURS.forEach((hh, i) => { if (btn(x + 2 + (i % 3) * 64, y + 26 + (i / 3 | 0) * 13, 62, hh.n, { on: st.hours === i, tip: 'Customers only come while you are open. Staff are paid for every open hour.' })) { st.hours = i; } });
+    ink('PERMITS', x + 2, y + 56, WIN.title); ink('NO RIVAL WITHIN', x + 100, y + 56, WIN.dim);
+    Object.entries(PERMITS).forEach(([k, P], i) => { const yy = y + 67 + i * 14, bl = !st.permit[k] && permitBlocker(st, k);
+      ink(P.n, x + 2, yy + 3, st.permit[k] ? WIN.green : WIN.ink); ink(P.range + ' SQ', x + 72, yy + 3, WIN.dim);
+      if (st.permit[k]) ink('HELD', x + 140, yy + 3, WIN.green); else if (bl) ink('BLOCKED', x + 130, yy + 3, WIN.red);
+      else if (btn(x + 114, yy, 82, fmt(P.fee / 1e6) + 'M', { tip: 'Lets this store sell ' + P.n.toLowerCase() + (k === 'med' && playerChain().mgr === 'carl' ? ' and Prop Pills' : '') + '. Then build a case for it (BUILD). No other chain can get one within ' + P.range + ' squares.' })) { const r = getPermit(st, k); if (r) { sfx('bad'); alertBox(r); } else { sfx('cash'); catchment(); } } });
+    const nx = SIZES[st.size + 1]; ink('SIZE', x + 2, y + 112, WIN.title);
+    if (nx) { const lock = chainSales(0) < nx.unlock; if (btn(x + 40, y + 109, w - 42, lock ? 'SIZE ' + (st.size + 1) + ' AT ' + fmt(nx.unlock / 1e6) + 'M SALES' : 'GROW TO ' + nx.fw + 'x' + nx.fh + '  ' + fmt(nx.cost / 1e6) + 'M', { off: lock, tip: 'Rebuild bigger on the same lot. Your layout stays; you get more room and one more staff job.' })) run(async () => { if (await msgBox('GROW', 'Rebuild ' + storeName(st) + ' at size ' + (st.size + 1) + ' for ' + mc(nx.cost) + '? Customers inside will be asked to leave.', ['GROW', 'NO'], { icon: iconInfo }) === 0) { const r = upgradeStore(st); if (r) alertBox(r); else sfx('cash'); } }); }
+    else ink('LARGEST SIZE', x + 40, y + 112, WIN.dim);
     if (btn(x + 2, y + h - 14, 96, 'LAYOUT...', {})) openBuild(st);
     if (btn(x + 100, y + h - 14, 96, 'STAFF...', {})) openStaff(st);
   } });
@@ -73,9 +77,9 @@ function openStoreWin(st) {
 // ---------- build palette ----------
 function openBuild(st) {
   if (st.chain !== 0) return; TOOL = TOOL || 'snack';
-  openWin({ id: 'build', title: 'BUILD (PAUSED)', x: 4, y: 56, w: 148, h: 176, onClose() { TOOL = null; }, body(win, x, y, w, h) {
-    FIX_KINDS.forEach((k, i) => { const yy = y + i * 13; if (btn(x, yy, 90, FIX[k].n, { on: TOOL === k, tip: (FIX[k].cat ? 'Holds ' + CATS[FIX[k].cat].n + '. ' : '') + 'Click a floor tile. Right-click turns it.' })) TOOL = k; ink(fmt(FIX[k].cost / 1000) + 'K', x + 94, yy + 3, WIN.dim); });
-    const yy = y + FIX_KINDS.length * 13 + 2;
+  openWin({ id: 'build', title: 'BUILD (PAUSED)', x: 4, y: 14, w: 148, h: 228, onClose() { TOOL = null; }, body(win, x, y, w, h) {
+    FIX_KINDS.forEach((k, i) => { const yy = y + i * 12; if (btn(x, yy, 90, FIX[k].n, { h: 11, on: TOOL === k, tip: FIX[k].deco ? '+' + FIX[k].deco + ' service. Upkeep ' + FIX[k].upkeep + ' MC a day.' + (FIX[k].w ? ' Takes 2x2 tiles.' : '') : undefined, tip: (FIX[k].cat ? 'Holds ' + CATS[FIX[k].cat].n + '. ' : '') + 'Click a floor tile. Right-click turns it.' })) TOOL = k; ink(fmt(FIX[k].cost / 1000) + 'K', x + 94, yy + 3, WIN.dim); });
+    const yy = y + FIX_KINDS.length * 12 + 2;
     if (btn(x, yy, 68, 'REMOVE', { on: TOOL === 'remove', tip: 'Refunds 30%. Stock goes to the backroom.' })) TOOL = 'remove';
     if (btn(x + 70, yy, 68, 'TURN', { on: TOOL === 'rotate' })) TOOL = 'rotate';
     ink('FACING: ' + ['DOWN', 'LEFT', 'UP', 'RIGHT'][TOOLDIR], x, yy + 16, WIN.dim); ink('RIGHT-CLICK TURNS', x, yy + 26, WIN.dim);
@@ -84,24 +88,24 @@ function openBuild(st) {
 // ---------- stock: margins, orders, POS ----------
 function openStock(st, tab) {
   let t = tab, cat = 'bento';
-  openWin({ id: 'stock', title: 'STOCK: ' + storeName(st), x: 120, y: 16, w: 270, h: 214, body(win, x, y, w, h) {
+  openWin({ id: 'stock', title: 'STOCK: ' + storeName(st), x: 120, y: 12, w: 270, h: 230, body(win, x, y, w, h) {
     t = tabs(x, y, ['MARGINS', 'POS DATA'], t);
     const y0 = y + 16, c = playerChain();
     if (t === 0) {
       const rv = nearRival(st);
       ink('MARKUP OVER COST', x + 2, y0, WIN.title); ink('E.G.', x + 132, y0, WIN.dim); ink(rv ? 'RIVAL' : 'NO RIVAL', x + 206, y0, WIN.dim);
-      CAT_IDS.forEach((k, i) => { const yy = y0 + 12 + i * 14, ex = carried(st).find(p => PRODUCTS[p].cat === k);
+      CAT_IDS.forEach((k, i) => { const yy = y0 + 12 + i * 13, ex = carried(st).find(p => PRODUCTS[p].cat === k);
         const r = stepper(x + 70, yy, '', Math.round(st.margin[k] * 100) + '%', { w: 30 }); ink(CATS[k].n, x + 2, yy + 3);
         if (r) { st.margin[k] = clamp(Math.round((st.margin[k] + r * .02) * 100) / 100, 0, 1.5); catchment(); }
         if (ex) ink(PRODUCTS[ex].n.slice(0, 7) + ' ' + priceOf(st, ex), x + 132, yy + 3, WIN.dim);
         if (rv) { const d = st.margin[k] - rv.margin[k]; ink(Math.round(rv.margin[k] * 100) + '%', x + 212, yy + 3, d > .04 ? WIN.red : d < -.04 ? WIN.green : WIN.ink); } });
-      const yy = y0 + 14 + CAT_IDS.length * 14;
+      const yy = y0 + 14 + CAT_IDS.length * 13;
       wrapT(rv ? 'Next to a cheaper rival, a higher price empties your store. Alone, you can charge more.' : 'Customers pay more for the right thing. Too high and they put it back.', 43).forEach((l, i) => ink(l, x + 2, yy + i * 9, WIN.dim));
       ink('CASH RESERVE', x + 2, yy + 23); const r = stepper(x + 110, yy + 20, '', fmt((c.reserve || 3000000) / 1e6) + 'M', { w: 40 });
       if (r) c.reserve = clamp((c.reserve || 3000000) + r * 1000000, 0, 100000000);
       wrapT('Auto-order never spends below the reserve. Orders arrive at 6:00, sized to recent demand.', 43).forEach((l, i) => ink(l, x + 2, yy + 36 + i * 9, WIN.dim));
     } else {
-      let xx = x; for (const k of CAT_IDS) { const l = CATS[k].n.slice(0, 4); if (btn(xx, y0, tw(l) + 6, l, { on: cat === k, h: 11 })) cat = k; xx += tw(l) + 7; }
+      let xx = x; for (const k of CAT_IDS) { const l = CATS[k].n.slice(0, 3); if (btn(xx, y0, tw(l) + 6, l, { on: cat === k, h: 11 })) cat = k; xx += tw(l) + 7; }
       ink('ITEM', x + 2, y0 + 15, WIN.dim); ink('PRICE', x + 82, y0 + 15, WIN.dim); ink('DEMAND', x + 116, y0 + 15, WIN.dim); ink('TODAY', x + 158, y0 + 15, WIN.dim); ink('SH/BK', x + 192, y0 + 15, WIN.dim);
       const ps = carried(st).filter(p => PRODUCTS[p].cat === cat);
       ps.forEach((pid, i) => { const yy = y0 + 27 + i * 11, shelf = onHand(st, pid) - (st.back[pid] || 0);
@@ -220,7 +224,7 @@ function monthBody(rep, x, y, w) {
   ink('SALES', x + 2, y + 12); ink(mc(cr.sales), x + 130, y + 12);
   ink('OPERATING PROFIT', x + 2, y + 22); ink(mc(cr.op), x + 130, y + 22, cr.op < 0 ? WIN.red : WIN.green);
   ink('OTHER DAYS (ESTIMATED)', x + 2, y + 32, WIN.dim); ink(mc(cr.rest), x + 130, y + 32, WIN.dim);
-  ink('ADS AND SURVEYS', x + 2, y + 42, WIN.dim); ink(mc(rep.stores.filter(s => s.chain === 0).reduce((t, s) => t + (s.m.other || 0), 0)), x + 130, y + 42, WIN.dim);
+  ink('ADS, SURVEYS, LOANS', x + 2, y + 42, WIN.dim); ink(mc(rep.stores.filter(s => s.chain === 0).reduce((t, s) => t + (s.m.other || 0), 0) + (cr.interest || 0) + (cr.contract || 0)), x + 130, y + 42, WIN.dim);
   ink('CASH NOW', x + 2, y + 51); ink(mc(playerChain().cash), x + 130, y + 51);
   ink('MONOPOLY RATE ' + Math.round(rep.share * 100) + '%   FOOTFALL ' + fmt(rep.pop), x + 2, y + 62); ink('OWNER RATING', x + 2, y + 72); stars(x + 80, y + 71, rep.stars);
   let yy = y + 88; const lost = { missing: 0, empty: 0, price: 0, queue: 0 }, lc = {}; let waste = 0, wages = 0;
@@ -228,6 +232,24 @@ function monthBody(rep, x, y, w) {
   lossList(lost, lc, x + 2, yy + 4, w);
   ink('WASTE ' + mc(waste) + '  WAGES ' + mc(wages), x + 2, yy + 72, WIN.dim);
 }
+function openBank() {
+  openWin({ id: 'bank', title: 'MALL BANK', x: 150, y: 40, w: 210, h: 132, body(win, x, y, w, h) {
+    const c = playerChain(), lim = loanLimit(0), ln = c.loan || 0;
+    ink('BORROWED', x + 2, y + 2); ink(mc(ln), x + 90, y + 2, ln ? WIN.red : WIN.ink);
+    ink('LIMIT', x + 2, y + 12); ink(mc(lim), x + 90, y + 12, WIN.dim);
+    ink('INTEREST', x + 2, y + 22); ink(Math.round(LOAN.rate * 100) + '% A MONTH', x + 90, y + 22, WIN.dim);
+    wrapT('The bank lends half the value of the lots you own. Interest is paid at each settlement.', 33).forEach((l, i) => ink(l, x + 2, y + 38 + i * 9, WIN.dim));
+    if (btn(x + 2, y + h - 30, 100, 'BORROW 10M', { off: ln + 10000000 > lim })) { const r = borrow(0, 10000000); if (r) alertBox(r); else sfx('cash'); }
+    if (btn(x + 104, y + h - 30, 98, 'REPAY 10M', { off: !ln || c.cash < Math.min(ln, 10000000) })) { const r = repay(0, 10000000); if (r) alertBox(r); else sfx('ok'); }
+    if (btn(x + 2, y + h - 15, 200, 'REPAY EVERYTHING', { off: !ln || c.cash < ln })) { const r = repay(0, ln); if (r) alertBox(r); else sfx('ok'); }
+  } });
+}
+function onOffer(o) { const st = G.stores[o.si], buyer = G.chains[o.buyer]; run(async () => { const was = SPEED; SPEED = 0;
+  const r = await msgBox('AN OFFER', [MGRS[buyer.mgr].n + ' wants to buy ' + storeName(st) + ' for ' + mc(o.price) + '.', 'It has lost money ' + st.losing + ' months running. Sell it?'], ['SELL', 'KEEP IT'], { icon: iconInfo });
+  if (r === 0) { const e = buyout(o.buyer, o.si, o.price); if (e) alertBox(e); else sfx('cash'); } else news('YOU TURNED DOWN ' + MGRS[buyer.mgr].short + '\'S OFFER FOR ' + storeName(st) + '.'); SPEED = was; }); }
+function onWage(s, ask) { run(async () => { const was = SPEED; SPEED = 0;
+  const r = await msgBox('WAGE TALKS', [s.n + ' asks for a raise: ' + s.wage + ' -> ' + ask + ' MC an hour.', 'Say no and they quit.'], ['PAY IT', 'NO'], { icon: iconWarn });
+  if (r === 0) { s.wage = ask; news(s.n + ' GOT A RAISE.'); } else { news(s.n + ' QUIT.'); s.st = -1; s.mgr = 0; } SPEED = was; }); }
 // the nearest rival store (its prices are public: you can walk in and look)
 function nearRival(st) { const l = G.lots[st.lot]; let best = null, bd = 11; for (const o of liveStores()) { if (o.chain === st.chain) continue; const l2 = G.lots[o.lot], d = Math.abs(l2.x - l.x) + Math.abs(l2.y - l.y); if (d < bd) { bd = d; best = o; } } return best; }
 function openPromo() {
@@ -259,7 +281,8 @@ function openHelp() {
     'STOCK: set the markup per category. A rival next door that is cheaper will take your customers; alone, you can charge more. Orders arrive at 6:00; yesterday\'s food is thrown out first.',
     'PROMO: ads lift every store\'s popularity, which pulls shoppers from farther away and fades over time. Your 10,000th customer brings a free idol appearance.',
     'STAFF: the hiring list shows limits, not skill. Skill grows with work. A smart manager makes everyone learn faster.',
-    'TIME: each month plays four sample days. The settlement counts the other days from them.',
+    'TIME: each month plays four sample days. The settlement counts the other days from them. Events (conventions, tournaments, late deliveries) are announced a month ahead.',
+    'STORE: permits for medicine, tobacco and alcohol; each blocks rivals nearby. Plants, benches and fountains raise service. Grow a store on its lot once sales allow. REPORT > BANK lends against your lots.',
     'BUILD opens the layout editor (the game pauses). Every shelf needs a reachable side, and registers need room behind.',
     'Keyboard: arrows move the pointer, Z clicks, X right-clicks.'];
   openWin({ id: 'help', title: 'HOW TO PLAY', x: 60, y: 20, w: 392, h: 200, body(win, x, y) { let yy = y + 2; for (const p of L) { for (const l of wrapT(p, 62)) { ink(l, x + 2, yy); yy += 9; } yy += 4; } } });
@@ -279,7 +302,7 @@ function openSurvey(st) {
     else if (btn(x + 2, y, w - 4, 'RUN A SURVEY TOMORROW  ' + mc(SURVEY_COST), { tip: 'Staff ask every customer for a full day what they came in for, including things you don\'t sell.' })) { const r = orderSurvey(st); if (r) alertBox(r); else sfx('ok'); }
     if (!sv) { wrapT('No survey yet. POS data only shows what you already sell. A survey shows what people actually wanted, including things you don\'t carry. Tastes change with the seasons and new releases, so old surveys go stale.', 44).forEach((l, i) => ink(l, x + 2, y + 20 + i * 9, WIN.dim)); return; }
     ink('RESULTS FROM ' + MONTHS[sv.mo - 1] + ' ' + sv.day + ' Y' + sv.y + (G.months - sv.months > 1 ? '  (GETTING OLD)' : ''), x + 2, y + 16, G.months - sv.months > 1 ? WIN.red : WIN.dim);
-    let xx = x; for (const k of CAT_IDS) { const l = CATS[k].n.slice(0, 5); if (btn(xx, y + 27, tw(l) + 6, l, { on: cat === k, h: 11 })) cat = k; xx += tw(l) + 7; }
+    let xx = x; for (const k of CAT_IDS) { const l = CATS[k].n.slice(0, 3); if (btn(xx, y + 27, tw(l) + 6, l, { on: cat === k, h: 11 })) cat = k; xx += tw(l) + 7; }
     const ps = catalogue(st, cat), tot = ps.reduce((t, p) => t + (sv.want[p.id] || 0), 0), have = rangeOf(st);
     ink('WHAT THEY CAME IN FOR', x + 2, y + 42, WIN.title); ink('ASKED', x + 150, y + 42, WIN.dim); ink('STOCKED?', x + 210, y + 42, WIN.dim);
     ps.slice().sort((a, b) => (sv.want[b.id] || 0) - (sv.want[a.id] || 0)).slice(0, 12).forEach((p, i) => { const yy = y + 53 + i * 10, v = tot ? (sv.want[p.id] || 0) / tot : 0;
