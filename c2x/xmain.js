@@ -105,7 +105,7 @@ async function intro() {
     for (let x = 0; x < W; x += 16) draw(TILES['#top'], x, 180, T.P), draw(TILES['#'], x, 196, T.P), draw(TILES['#'], x, 212, T.P);
     rectF(118, 150, 50, 30, hex('#6d4924')); rectF(118, 150, 50, 3, hex('#926d49')); text('CEO', 133, 162, hex('#ffdb24'));
     draw(XS.linda[carried ? 1 : (t >> 5) & 1], linda.x, linda.y, XP.linda);
-    draw(XS.dys[ph === 1 ? 2 : (t >> 4) & 1], dys.x, dys.y, XP.dys);
+    draw(XS.dys[ph === 1 ? 2 : (t >> 4) & 1], dys.x, dys.y, XP.dyx);
     if (ph === 1) for (let i = 0; i < 12; i++) { const a = t * .1 + i; draw(XS.letterShot['ABCDEFGHIJKL'[i]], dys.x + 16 + Math.cos(a) * 40, dys.y + 26 + Math.sin(a) * 30, XP.dys); }
     drawBubbles();
   } };
@@ -113,9 +113,11 @@ async function intro() {
   quip('KPI MEETING. NOW.', linda, 80); await wait(70);
   ph = 1; sfx('glitch'); post.wave = 2;
   while (dys.y < 96) { dys.y += 2; await nextFrame(); }
-  quip('YUO CTU ME!', dys, 90); await wait(60);
+  quip('HOMO BASIC. STILL READING LEFT TO RIGHT.', dys, 110); await wait(100);
   quip('WHO ARE YOU?', linda, 70); await wait(60);
-  quip('TEH WRODS!', dys, 70); await wait(50);
+  quip('DYSLEXIO. WITH AN O.', dys, 90); await wait(80);
+  quip('KPI. PIK. IPK. I SEE EVERY ARRANGEMENT.', dys, 110); await wait(100);
+  quip('THE MEETING IS OURS NOW.', dys, 90); await wait(70);
   carried = 1; sfx('crash'); post.wave = 0;
   for (let i = 0; i < 90; i++) { dys.y -= 2.4; linda.y = dys.y + 40; linda.x = dys.x + 12; await nextFrame(); }
   ph = 0; await fadeOut(.06); music(null);
@@ -219,7 +221,7 @@ async function ending() {
 }
 async function credits() {
   music('credits');
-  const L = ['CARL 2 EXTREME', '', 'DIRECTED BY', 'A FOCUS GROUP', '', 'WRITTEN BY', '(CUT)', '', 'STORY', 'LINDA. TAKEN. GO.', '', 'DYSLEXIO', 'EVERY WORD WE CUT', '', 'ROBO MALL COP', 'HIMSELF', '', 'MOBY DICK', 'UNABRIDGED', '', 'SPECIAL THANKS', 'CONSOLE PLAYERS', 'NINTENDO FANS', 'THE OTHER GUYS', '', 'AND YOU', 'FOR NOT READING THIS', '', '', PUB];
+  const L = ['CARL 2 EXTREME', '', 'DIRECTED BY', 'A FOCUS GROUP', '', 'WRITTEN BY', '(CUT)', '', 'STORY', 'LINDA. TAKEN. GO.', '', 'DYSLEXIO', 'EVERY ARRANGEMENT', '', 'ROBO MALL COP', 'HIMSELF', '', 'MOBY DICK', 'UNABRIDGED', '', 'SPECIAL THANKS', 'CONSOLE PLAYERS', 'NINTENDO FANS', 'THE OTHER GUYS', '', 'AND YOU', 'FOR NOT READING THIS', '', '', PUB];
   let y = H + 10;
   scene = { update() { y -= .9; if (held.a || held.b) y -= 2; }, draw() { cls(BLACK); L.forEach((l, i) => { const yy = y + i * 14; if (yy > -10 && yy < H) ctext(l, yy, i % 3 === 0 ? hex('#ffdb24') : WHITE); }); } };
   await fadeIn(.06);

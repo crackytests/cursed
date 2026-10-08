@@ -101,22 +101,28 @@ const BOSSES = {
   },
 
   // ---------------- 5: DYSLEXIO. burn the shield, then bong him ----------------
+  // He's dyslexic, and he's Magneto about it: dyslexics are the superior life form, everyone else is HOMO BASIC.
+  // His shield is a word; each time he raises it again it's rearranged into another word (DANGER, GARDEN...).
   dys() {
-    const x0 = ARENA.x0, LINES = ['I WAS TEH PLOT!', 'YUO CTU ME!', 'DAER EM!', 'OS MNAY WRODS!', 'TL;RD?!'];
-    const B = { name: 'DYSLEXIO', music: 'human', hp: 12, max: 12, x: x0 + 12 * TS, y: 3 * TS, w: 40, h: 54, t: 0, flash: 0, low: 0, shield: [], regen: 0, cast: 0,
+    const x0 = ARENA.x0, LINES = ['HOMO BASIC. LOOK UPON US.', 'WE ARE THE NEXT STEP, CARL.', 'YOU READ LEFT TO RIGHT. LIKE A PRISONER.', 'EVERY WORD IS EVERY OTHER WORD.', 'THE DICTIONARY IS INCOMPLETE.', 'THEY CALLED IT A DISORDER. IT IS AN ORDER.'],
+      WORDS = ['DANGER', 'GARDEN', 'SILENT', 'LISTEN', 'REACTION', 'CREATION', 'EVIL', 'LIVE'];
+    const B = { name: 'DYSLEXIO', music: 'human', hp: 12, max: 12, x: x0 + 12 * TS, y: 3 * TS, w: 40, h: 54, t: 0, flash: 0, low: 0, shield: [], regen: 0, cast: 0, wi: -1,
       hitbox() { return this.dying ? { x: -999, y: 0, w: 0, h: 0 } : { x: this.x + 8, y: this.y + 4, w: 24, h: 46 }; },
-      raise() { this.shield = 'SCRAMBLE'.split('').map((ch, i) => ({ ch, a: i / 8 * 6.283, alive: 1 })); sfx('glitch'); },
-      async intro() { await wait(30); quip(pick(LINES), this, 120); await wait(70); quip('SUBTITLES OFF.', PL, 90); await wait(50); },
+      raise() { const w = WORDS[this.wi = (this.wi + 1) % WORDS.length]; this.word = w; this.shield = w.split('').map((ch, i) => ({ ch, a: i / w.length * 6.283, alive: 1 })); sfx('glitch'); },
+      async intro() { await wait(30);
+        quip('CARL. YOU DO NOT READ EITHER.', this, 100); await wait(90); quip('NOPE.', PL, 60); await wait(60);
+        quip('NOT READING IS NOT A GIFT, CARL.', this, 90); await wait(80); quip('IT IS JUST NOT READING.', this, 80); await wait(70);
+        quip('...WE READ EVERY VERSION.', this, 90); await wait(80); },
       hit(b) {
         if (this.shield.some(s => s.alive)) { sfx('land'); if (!FX.some(f => f.s === 'CLINK')) FX.push({ k: 'txt', s: 'CLINK', x: b.x - 10, y: b.y, t: 40 }); if (!this.toldShield) { this.toldShield = 1; quip('BURN THE LETTERS.', PL); } return; }
         this.hp--; bossHitFlash(this);
         if (this.hp % 4 === 0 && this.hp > 0) { this.daze = 0; this.raise(); quip(pick(LINES), this, 100); this.t = 0; }
-        if (this.hp <= 0) bossDown(this, () => LV.finish('clear'));
+        if (this.hp <= 0) { quip('WE MEANT EVERY VERSION.', this, 120); bossDown(this, () => LV.finish('clear')); }
       },
       fire(z) {
         if (this.dying) return;
         z = { x: z.x, y: z.y - 14, w: z.w, h: z.h + 26 }; // the flame licks up a bit at a paper shield
-        for (const s of this.shield) if (s.alive) { const p = this.sp(s); if (overlap(z, { x: p.x - 4, y: p.y - 5, w: 9, h: 11 })) { s.alive = 0; sfx('crash'); FX.push({ k: 'puff', x: p.x, y: p.y, t: 18 }); if (!this.shield.some(q => q.alive)) { this.daze = 240; carlSays('burn', 1); quip('MY WRODS!', this, 60); SHOTS = SHOTS.filter(q => !q.ch); } } }
+        for (const s of this.shield) if (s.alive) { const p = this.sp(s); if (overlap(z, { x: p.x - 4, y: p.y - 5, w: 9, h: 11 })) { s.alive = 0; sfx('crash'); FX.push({ k: 'puff', x: p.x, y: p.y, t: 18 }); if (!this.shield.some(q => q.alive)) { this.daze = 240; carlSays('burn', 1); quip(this.word + '. GONE. FOR NOW.', this, 70); SHOTS = SHOTS.filter(q => !q.ch); } } }
       },
       sp(s) { return { x: this.x + 20 + Math.cos(s.a) * 30, y: this.y + 26 + Math.sin(s.a) * 22 }; },
       update() {
@@ -125,7 +131,7 @@ const BOSSES = {
         // no shield: he's dazed, sinks to the floor and can be bonged. then he rewrites himself
         if (this.daze > 0) {
           this.y += clamp(12 * TS - 54 - this.y, -3, 3); this.x += Math.sin(this.t * .2) * .4;
-          if (--this.daze === 0) { this.raise(); quip('REWRITE!', this); this.t = 0; }
+          if (--this.daze === 0) { const old = this.word; this.raise(); quip(old + '. ' + this.word + '. SAME LETTERS.', this, 100); this.t = 0; }
           return;
         }
         const phase = this.hp > 8 ? 1 : this.hp > 4 ? 2 : 3;
@@ -137,7 +143,7 @@ const BOSSES = {
         this.x += clamp(tx - this.x, -2, 2); this.y += clamp(ty - this.y, -2, 2);
         if (cyc === 60 || (phase > 1 && cyc === 180)) { this.cast = 40; sfx('glitch');
           const n = 4 + phase * 2; for (let i = 0; i < n; i++) SHOTS.push({ ch: pick('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), x: x0 + 24 + rnd(16 * TS), y: -20 - i * 22, w: 9, h: 11, vx: 0, vy: 1.2, ay: .02, t: 300, burn: 1, bongable: 1, solid: 0 }); }
-        if (phase >= 2 && cyc === 120) { PL.scr = 240; quip('!THGIR TFEL', this, 80); sfx('glitch'); post.wave = 3; this.waveT = 60; }
+        if (phase >= 2 && cyc === 120) { PL.scr = 240; quip('LEFT IS RIGHT. IT ALWAYS WAS.', this, 90); sfx('glitch'); post.wave = 3; this.waveT = 60; }
         if (this.waveT > 0 && --this.waveT === 0) post.wave = 0;
         if (phase === 3 && this.t % 90 === 0) { const a = Math.atan2(PL.y - this.y - 20, PL.x - this.x - 20); SHOTS.push({ ch: 'Z', x: this.x + 16, y: this.y + 20, w: 9, h: 11, vx: Math.cos(a) * 2, vy: Math.sin(a) * 2, t: 200, burn: 1, bongable: 1, solid: 0 }); }
         if (this.cast > 0) this.cast--;
@@ -145,7 +151,7 @@ const BOSSES = {
       },
       draw() {
         const f = this.cast > 0 ? 2 : (this.t >> 4) & 1;
-        draw(XS.dys[f], this.x - camX, this.y - camY, XP.dys, PL.x < this.x, this.flash & 2 ? WHITE : 0);
+        draw(XS.dys[f], this.x - camX, this.y - camY, XP.dyx, PL.x < this.x, this.flash & 2 ? WHITE : 0);
         for (const s of this.shield) if (s.alive) { const p = this.sp(s); draw(XS.letterShot[s.ch], p.x - 4 - camX, p.y - 5 - camY, XP.dys); }
         if (this.daze > 0) for (let i = 0; i < 3; i++) text('?', this.x + 16 + Math.cos(frame * .1 + i * 2) * 14 - camX, this.y - 4 + Math.sin(frame * .1 + i * 2) * 3 - camY, hex('#ffdb24'));
       },

@@ -168,37 +168,52 @@ XS.moby = [0, 1].map(open => outline(spr(80, 42, g => {
   else { g.line(54, 26, 78, 24, 6); g.line(54, 27, 78, 25, 9); }
   g.r(30, 0, 2, 4, 9); g.r(26, 0, 10, 1, 3);
 }), 15));
-// DYSLEXIO: all the words they cut from CARL 2, wearing a robe of the script. 40x52
-XP.dys = pal0('#f8f0d8', '#c8b890', '#8f7a5a', '#242424', '#6d2449', '#b6246d', '#ffdb24', '#6dffff', '#ffffff', '#db2424', '#49246d', '#9249db');
+// DYSLEXIO: Old Face (a projected face: magenta eyes with green waveforms, the え nose, a bar of a mouth, wireframe hands)
+// in a Magneto helmet, with a cape. He's dyslexic and he's sure that makes him the superior life form. 40x54; f2 = casting
+XP.dyx = pal0('#0c0c1c', '#1c6d6d', '#b62449', '#6d0024', '#ff4992', '#ff24db', '#6dff24', '#49ff92', '#126d36', '#49246d', '#240036', '#ffffff');
 XS.dys = [0, 1, 2].map(f => outline(spr(40, 54, g => {
-  // robe of manuscript pages
-  g.each((x, y) => y > 18 && Math.abs(x - 20) < 6 + (y - 18) * .38 ? (y > 50 - (x * 3 + f * 2) % 4 ? 0 : 1) : 0);
-  for (let y = 22; y < 50; y += 3) g.r(20 - (y - 18) * .3, y, (y - 18) * .6, 1, 2);
-  g.r(19, 19, 2, 30, 5);
-  // sleeves + hands; f2 = casting
-  if (f === 2) { g.line(12, 24, 2, 12, 11); g.line(28, 24, 38, 12, 11); g.e(2, 11, 2, 2, 2); g.e(38, 11, 2, 2, 2); }
-  else { g.line(13, 24, 8, 34 + f, 11); g.line(27, 24, 32, 34 - f, 11); g.e(8, 35 + f, 2, 2, 2); g.e(32, 35 - f, 2, 2, 2); }
-  // head: an ink-blot face with huge reading glasses
-  g.e(20, 13, 8, 8, 4); g.e(20, 13, 7, 7, 11);
-  g.e(16, 13, 3.5, 3, 9); g.e(24, 13, 3.5, 3, 9); g.e(16, 13, 2.5, 2, 8); g.e(24, 13, 2.5, 2, 8); g.r(19, 12, 2, 1, 9);
-  g.p(16 + f % 2, 13, 4); g.p(24 - f % 2, 13, 4); g.r(17, 18, 6, 1, 10);
-  // crown of loose letters
-  for (let i = 0; i < 5; i++) { const x = 11 + i * 4, y = 2 + ((i + f) % 3); g.r(x, y, 3, 4, 7); g.p(x + 1, y + 1, 4); }
-  // the quill
-  g.line(33, 8, 37, 0, 12); g.line(34, 8, 38, 1, 12); g.line(32, 10, 33, 8, 4);
+  // the cape: hangs from a high collar under his chin
+  g.each((x, y) => y > 33 && y < 53 - ((x + f) % 5 === 0 ? 2 : 0) && Math.abs(x - 20) < 6 + (y - 33) * .55 ? ((x + (y >> 2) + f) % 7 === 0 ? 11 : 10) : 0);
+  g.line(11, 28, 14, 37, 10); g.line(10, 28, 13, 37, 11); g.line(29, 28, 26, 37, 10); g.line(30, 28, 27, 37, 11);
+  // the projected face: an egg of black glass, a few wireframe points showing through
+  g.e(20, 22, 11, 13, 1); g.each((x, y) => g.get(x, y) === 1 && y > 15 && (x * 3 + y * 5) % 23 === 0 ? 2 : 0);
+  // the helmet: dome, centre ridge, the V over the eyes, cheek guards, the little fins
+  g.each((x, y) => y <= 15 && ((x - 20) / 13) ** 2 + ((y - 15) / 13) ** 2 <= 1 ? 3 : 0);
+  g.line(8, 15, 20, 18, 4); g.line(20, 18, 32, 15, 4); g.each((x, y) => y >= 15 && y <= 17 && g.get(x, y) === 1 && y < 15 + (12 - Math.abs(x - 20)) * .25 ? 3 : 0);
+  for (const [x0, d] of [[8, 1], [32, -1]]) for (let y = 14; y < 26; y++) { const w = y < 22 ? 2 : 1; g.r(d > 0 ? x0 - 1 : x0 + 1 - w + 1, y, w, 1, 3); }
+  g.r(19, 2, 2, 14, 5); g.line(10, 9, 15, 5, 5); g.line(7, 12, 4, 8, 3); g.line(33, 12, 36, 8, 3);
+  // eyes: magenta, a green waveform in each
+  for (const ex of [15, 25]) { g.e(ex, 22, 4, 2.4, 6); g.e(ex, 22, 3, 1.4, 1); for (let i = -2; i <= 2; i++) g.p(ex + i, 22 + [0, -1, 1, 0][(i + 2 + f) & 3], 7); }
+  CAST.stamp(g, CAST.E_KANA, 18, 25, 6); // the nose
+  if (f === 2) { g.r(15, 31, 10, 3, 6); g.r(17, 32, 6, 1, 12); } else { g.r(16, 31, 8, 2, 6); g.p(15, 32, 6); g.p(24, 32, 6); g.r(18, 31, 4, 1, 12); }
+  // the hands (wireframe), at his sides; raised to cast
+  const hand = (x, y, d) => { g.e(x, y, 3, 2.6, 9); for (let i = 0; i < 4; i++) g.line(x - 2 + i * 1.4, y - 1, x - 2 + i * 1.6 + d, y - 6 + (i === 0 ? 2 : 0), 8); g.p(x, y, 8); };
+  if (f === 2) { hand(4, 22, -1); hand(36, 22, 1); } else { hand(5, 40 + f, 0); hand(35, 40 - f, 0); }
 }), 15));
+XP.dys = pal0('#f8f0d8', '#c8b890', '#8f7a5a', '#242424', '#6d2449', '#b6246d', '#ffdb24', '#6dffff', '#ffffff', '#db2424', '#49246d', '#9249db'); // his letters: paper, ink, red edge
 XS.letterShot = {}; for (const ch of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') XS.letterShot[ch] = outline(spr(9, 11, g => { g.r(0, 0, 9, 11, 1); const gl = FONT[ch]; for (let j = 0; j < 7; j++) for (let i = 0; i < 5; i++) if (gl[j] & (16 >> i)) g.p(2 + i, 2 + j, 4); }), 10);
 
 // ---------------- CEO LINDA, side view, 18x30, and her cage ----------------
-XP.linda = pal0('#ffdbdb', '#db9292', '#ff6db6', '#ffb6db', '#b62492', '#ffffff', '#ff49b6', '#242424', '#494949', '#6d2449', '#ffdb24', '#b6b6b6', '#6d6d6d');
+// as in her portrait: pink hair swept up into a big ponytail, pink eyeshadow, dark lips, black high-collar uniform with pink stripes and a pink tie
+XP.linda = pal0('#ffe4d6', '#e8b4a4', '#ff6db6', '#ffb6db', '#ff49b6', '#ff24a0', '#ff92c8', '#16161f', '#36364a', '#6d1240', '#c2408a', '#ffffff');
 XS.linda = [0, 1].map(f => outline(spr(18, 30, g => {
-  g.r(6, 24, 3, 5, 8); g.r(10, 24, 3, 5, 8); g.r(5, 28, 4, 2, 8); g.r(10, 28, 4, 2, 8);
-  g.r(4, 19, 11, 6, 9); g.r(4, 23, 11, 2, 8);
-  g.r(5, 12, 9, 8, 6); for (let y = 13; y < 20; y += 2) g.r(5, y, 9, 1, 3); g.r(8, 12, 3, 2, 7); g.p(9, 14, 7);
-  if (f) { g.line(4, 13, 1, 8, 6); g.line(14, 13, 17, 8, 6); g.p(1, 7, 1); g.p(17, 7, 1); } else { g.r(3, 13, 2, 6, 6); g.r(14, 13, 2, 6, 6); }
-  g.e(10, 7, 4.5, 5, 1); g.r(10, 8, 5, 3, 2);
-  g.e(9, 3, 6, 4, 4); g.e(6, 6, 3, 5, 4); g.e(12, 1, 4, 2, 4); g.line(5, 2, 11, 0, 5); g.p(4, 8, 5);
-  g.r(11, 6, 3, 1, 5); g.p(12, 7, 8); g.r(12, 10, 2, 1, 10);
+  // ponytail: a big pink sweep from the crown down her back
+  g.e(4, 8, 3.4, 5.5, 3); g.e(3, 12, 2.4, 3, 11); g.line(4, 3, 2, 12, 4);
+  // legs, heels, pencil skirt
+  g.r(9, 26, 2, 3, 1); g.r(12, 26, 2, 3, 1); g.r(8, 29, 3, 1, 8); g.r(12, 29, 3, 1, 8); g.p(10, 28, 8); g.p(14, 28, 8);
+  g.r(8, 21, 7, 5, 9); g.r(8, 21, 7, 1, 5);
+  // jacket: black, pink pinstripes, high collar, pink tie; waist in, chest out
+  g.r(8, 13, 6, 8, 8); g.e(13, 16, 2.4, 2.2, 8); g.r(9, 20, 5, 1, 8);
+  for (const x of [9, 11, 13]) g.r(x, 15, 1, 5, 5);
+  g.r(9, 12, 4, 2, 8); g.r(12, 13, 2, 2, 3); g.p(12, 14, 6);
+  // arms: on her hip, or up (being carried off)
+  if (f) { g.line(9, 14, 6, 8, 8); g.line(13, 14, 16, 8, 8); g.p(6, 7, 1); g.p(16, 7, 1); }
+  else { g.e(8, 14, 1.8, 1.6, 8); g.r(7, 15, 2, 5, 8); g.p(8, 20, 1); }
+  // head: face to the right, hair swept back and up off the forehead
+  g.e(11, 7, 4, 4.4, 1); g.r(12, 10, 2, 1, 2); g.p(14, 9, 2); g.p(15, 7, 1);
+  g.e(9, 2, 5, 2.6, 3); g.e(6, 5, 2.4, 3.4, 3); g.r(7, 2, 3, 6, 3); g.line(5, 1, 11, 0, 4); g.line(8, 3, 12, 1, 4);
+  g.r(12, 4, 3, 1, 8); g.r(12, 5, 3, 1, 7); g.p(13, 6, 8); g.p(14, 6, 12); g.p(15, 5, 8);
+  g.r(13, 9, 2, 1, 10); g.p(9, 8, 6);
 }), 15));
 XS.cage = outline(spr(28, 40, g => { g.r(0, 4, 28, 3, 13); g.r(0, 37, 28, 3, 13); for (let x = 0; x < 28; x += 5) g.r(x, 4, 2, 36, 12); g.r(12, 0, 4, 4, 13); g.r(11, 20, 6, 5, 11); }), 15);
 
