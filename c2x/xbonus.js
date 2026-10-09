@@ -1037,7 +1037,30 @@ function mxPre(dir) {
   PL.dash = 22; if (dir) PL.face = dir; sfx('switch'); FX.push({ k: 'puff', x: PL.x + 5 - PL.face * 6, y: PL.y + PL.h - 4, t: 12 });
   if (!RUN.saidXDash) { RUN.saidXDash = 1; quip('DASH. NORMAL.'); }
 }
+// the charge shot: hold A (a tap still throws the bong), let go at full and a BIG BONG goes through everything in a line
+const MX_CHARGE = 45;
+function mxCharge() {
+  const big = LV.big || (LV.big = []);
+  if (held.a && !PL.hang) { if (++PL.charge === MX_CHARGE) sfx('alert'); if (PL.charge > 15 && frame % 3 === 0) { const a = Math.random() * 6.28; FX.push({ k: 'spark', x: PL.x + 5 + Math.cos(a) * 18, y: PL.y + 10 + Math.sin(a) * 18, vx: -Math.cos(a) * 1.5, vy: -Math.sin(a) * 1.5, t: 10 }); } }
+  else { if (PL.charge >= MX_CHARGE) { big.push({ x: PL.x + 5 + PL.face * 10, y: PL.y + 8, vx: PL.face * 5.5, t: 0, hits: new Set() }); sfx('crash'); post.shake = 2;
+      if (!RUN.saidBig) { RUN.saidBig = 1; quip('BIG BONG.'); } } PL.charge = 0; }
+  for (const s of big) {
+    s.x += s.vx; s.t++; const box = { x: s.x - 10, y: s.y - 9, w: 20, h: 18 };
+    if (s.t > 70 || boxHit(box.x + 6, box.y + 5, 8, 8, solidAt)) { s.dead = 1; FX.push({ k: 'puff', x: s.x, y: s.y, t: 16 }); continue; }
+    for (const e of ENTS) if (e.foe && !e.dead && !s.hits.has(e) && overlap(box, e)) { s.hits.add(e); hitFoe(e, 3, 'bong'); }
+    if (BOSS && BOSS.hitbox && !s.hits.has(BOSS) && overlap(box, BOSS.hitbox())) { s.hits.add(BOSS); for (let i = 0; i < 3 && !BOSS.dying; i++) BOSS.hit(s); }
+    for (const sh of SHOTS) if (sh.bongable && overlap(box, sh)) { sh.dead = 1; FX.push({ k: 'puff', x: sh.x, y: sh.y, t: 16 }); }
+    for (let ty = Math.floor(box.y / TS); ty <= Math.floor((box.y + box.h) / TS); ty++) for (let tx = Math.floor(box.x / TS); tx <= Math.floor((box.x + box.w) / TS); tx++) if (tileAt(tx, ty) === 'W') burnTile(tx, ty);
+  }
+  LV.big = big.filter(s => !s.dead);
+}
+function drawBigBong() {
+  for (const s of LV.big || []) { const x = s.x - camX, y = s.y - camY;
+    for (let i = 1; i < 4; i++) circF(x - s.vx * i * 2, y, 8 - i * 2, hex('#2449db'));
+    circF(x, y, 9, hex((frame & 2) ? '#ffdb24' : '#6dffff')); circF(x, y, 5, WHITE); }
+}
 function mxPost(dir) {
+  mxCharge();
   if (PL.dash > 0 && !PL.on) { PL.dash = 0; PL.dashJ = 1; } // dashed off a ledge: keep the speed
   if (PL.dash > 0 && frame % 3 === 0) FX.push({ k: 'puff', x: PL.x + 5 - PL.face * 6, y: PL.y + PL.h - 4, t: 10 });
   for (const e of ENTS) if (e.kind === 'capsule' && !e.used && overlap(PL, e)) drLite(e);
