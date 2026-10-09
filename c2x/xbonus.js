@@ -101,6 +101,7 @@ function bonusAir() { // jump again in the air
   if (RULES.knux && PL.jumped && !PL.glide && !PL.sprung) { PL.glide = 1; PL.ball = 0; PL.vy = Math.max(PL.vy, 0); PL.vx = PL.face * Math.max(1.5, Math.abs(PL.vx)); sfx('switch'); if (!RUN.saidGlide) { RUN.saidGlide = 1; quip('I CAN GLIDE NOW.'); } }
 }
 function bonusPre(dir) {
+  if (RULES.mx) mxPre(dir);
   if (PL.loop) { // around the loop at whatever speed you came in with
     const L = PL.loop, r = L.e.r - 10; L.a += L.sp / r;
     PL.x = L.e.cx + L.d * Math.sin(L.a) * r - PL.w / 2; PL.y = L.e.cy + Math.cos(L.a) * r - PL.h / 2;
@@ -123,6 +124,7 @@ function bonusPre(dir) {
   return false;
 }
 function bonusPost(dir) {
+  if (RULES.mx) mxPost(dir);
   if (RULES.puff) { if (PL.y < 0) { PL.y = 0; PL.vy = Math.max(PL.vy, 0); } if (PL.puff && pressed.a) { PL.puff = 0; FX.push({ k: 'puff', x: PL.x + 5 + PL.face * 10, y: PL.y + 8, t: 16 }); } }
   if (RULES.vania && PL.jumped && !RUN.saidStiff) { RUN.saidStiff = 1; quip('I CAN\'T STEER IN THE AIR.'); }
   if (PL.loopCD > 0) PL.loopCD--; if (PL.star > 0) PL.star--; if (PL.tongue > 0) PL.tongue--;
@@ -681,14 +683,14 @@ async function bonusMenu() {
   const prev = scene; let i = 0, t = 0;
   const menu = scene = { update() { t++; }, draw() {
     skyD(0, H, '#100020', '#241049'); ctext('BONUS CARTS', 8, hex('#ffdb24'), BLACK, 2); ctext('OTHER GAMES. SIMPLIFIED MORE.', 30, UI.dim);
-    CARTS.forEach((c, k) => drawCart(c, 34 + (k % 4) * 66, 50 + (k >> 2) * 70 - (k === i ? 4 + ((t >> 3) & 1) : 0), k === i)); // two rows of four
+    CARTS.forEach((c, k) => drawCart(c, 14 + (k % 5) * 60, 50 + Math.floor(k / 5) * 70 - (k === i ? 4 + ((t >> 3) & 1) : 0), k === i)); // two rows of five
     ctext(CARTS[i].name, 186, WHITE, BLACK, 1); ctext(CARTS[i].line, 200, UI.dim);
   } };
   for (;;) {
     await nextFrame();
     if (pressed.left) { i = (i + CARTS.length - 1) % CARTS.length; sfx('move'); }
     if (pressed.right) { i = (i + 1) % CARTS.length; sfx('move'); }
-    if (pressed.up || pressed.down) { i = (i + 4) % 8 < CARTS.length ? (i + 4) % 8 : i; sfx('move'); }
+    if (pressed.up || pressed.down) { i = (i + 5) % 10 < CARTS.length ? (i + 5) % 10 : i; sfx('move'); }
     if (pressed.b || pressed.c) { sfx('tick'); break; }
     if (pressed.a || pressed.start) { sfx('ok'); await fadeOut(); await playCart(CARTS[i]); music('title'); scene = menu; await fadeIn(); }
   }
@@ -1026,3 +1028,126 @@ Object.assign(CARDS, {
     scene = { update() { t++; }, draw() { cls(hex('#ffdbe0')); ctext(L.name, 60, hex('#db2449'), WHITE, 2); drawScaled(S.puff, 138, 100 + Math.sin(t * .08) * 6, S.P, 2); } };
     RUN.words += words(L.name); await fadeIn(.15); await readWait(90, 0, 90, 0); await fadeOut(.15); },
 });
+
+// ================= third shipment: MEGA CARL X =================
+// rules.mx: down + jump on the ground dashes (jump out of a dash and the speed comes along); jump at a wall to kick off it,
+// hold toward it to slide down slow. Spikes still kill (rules.mega). CC PENGUIN adds rules.ice.
+function mxPre(dir) {
+  if (!(PL.on && held.down && pressed.b) || swimming()) return;
+  PL.dash = 22; if (dir) PL.face = dir; sfx('switch'); FX.push({ k: 'puff', x: PL.x + 5 - PL.face * 6, y: PL.y + PL.h - 4, t: 12 });
+  if (!RUN.saidXDash) { RUN.saidXDash = 1; quip('DASH. NORMAL.'); }
+}
+function mxPost(dir) {
+  if (PL.dash > 0 && !PL.on) { PL.dash = 0; PL.dashJ = 1; } // dashed off a ledge: keep the speed
+  if (PL.dash > 0 && frame % 3 === 0) FX.push({ k: 'puff', x: PL.x + 5 - PL.face * 6, y: PL.y + PL.h - 4, t: 10 });
+  for (const e of ENTS) if (e.kind === 'capsule' && !e.used && overlap(PL, e)) drLite(e);
+  PL.wall = 0;
+  if (PL.on || PL.hang || PL.rope || swimming()) return;
+  const side = d => solidAt(Math.floor((d > 0 ? PL.x + PL.w + 1 : PL.x - 1) / TS), Math.floor((PL.y + PL.h / 2) / TS));
+  if (pressed.b) {
+    const wd = dir && side(dir) ? dir : side(1) ? 1 : side(-1) ? -1 : 0;
+    if (wd) { PL.vy = -5.4; PL.vx = -wd * 2; PL.kick = 5; PL.face = -wd; PL.jbuf = 0; PL.jumped = 1; sfx('jump');
+      FX.push({ k: 'spark', x: PL.x + 5 + wd * 7, y: PL.y + PL.h - 6, vx: 0, vy: 0, t: 8 });
+      if (!RUN.saidKick) { RUN.saidKick = 1; quip('WALLS ARE FLOORS NOW.'); } return; }
+  }
+  if (dir && side(dir) && PL.vy > 0 && !PL.kick) { PL.vy = Math.min(PL.vy, 1.2); PL.wall = dir; PL.face = dir; if (frame % 5 === 0) FX.push({ k: 'puff', x: PL.x + 5 + dir * 7, y: PL.y + PL.h - 4, t: 8 }); }
+}
+// DR. LITE's capsule: a recorded message. It's very long. Carl skips it. It was two sentences
+function drLite(e) {
+  e.used = 1; e.holo = 1; sfx('get');
+  run(async () => {
+    quip('CARL. I AM DR. LITE.', e, 70); await wait(60);
+    quip('THIS IS A RECORDED MESSAGE. IT IS VERY LONG.', e, 90); await wait(70);
+    quip('SKIP.', PL, 50); await wait(50);
+    quip('...DOWN AND JUMP TO DASH.', e, 80); await wait(70);
+    quip('JUMP AT A WALL TO KICK OFF IT.', e, 80); await wait(80);
+    quip('THAT WAS THE WHOLE MESSAGE.', e, 80); await wait(80); e.holo = 0;
+  });
+}
+BONUS_ENTS.U = (wx, wy) => ({ kind: 'capsule', x: wx - 4, y: wy - 24, w: 24, h: 40,
+  draw(e, sx, sy) { draw(XS.capsule[e.used ? 1 : 0], sx, sy, XP.bn); if (e.holo && (frame & 3)) draw(XS.drlite, sx + 4, sy + 2, XP.bn); } });
+
+Object.assign(BOSSES, {
+  // ---------------- MEGA CARL X: SIGNA. Dashes with a pen the size of a sword, leaps to a wall, throws contracts ----------------
+  signa() {
+    const x0 = ARENA.x0, floor = 12 * TS, L = x0 + TS, R = x0 + 19 * TS - 20;
+    const B = { name: 'SIGNA', hp: 16, max: 16, x: x0 + 14 * TS, y: floor - 38, w: 20, h: 38, dir: -1, t: 0, flash: 0, vx: 0, vy: 0, st: 'stand',
+      hitbox() { return this.dying ? none : { x: this.x, y: this.y, w: 20, h: 38 }; },
+      hit() { this.hp--; bossHitFlash(this);
+        if (this.hp === 12) quip('SIGN HERE, CARL.', this); if (this.hp === 8) quip('INITIAL HERE. AND HERE. AND HERE.', this); if (this.hp === 4) quip('YOU DID NOT READ THE TERMS.', this);
+        if (this.hp <= 0) { quip('THE TERMS SAID I WIN.', this, 90); bossDown(this, async () => { quip('NOBODY READS THE TERMS.'); openArena(); }); } },
+      fire(z) { if (!this.dying && frame % 10 === 0 && overlap(z, this.hitbox())) this.hit(); },
+      update() {
+        if (this.dying) return; this.t++; if (this.flash > 0) this.flash--;
+        const s = this.st;
+        if (s === 'stand') { this.dir = PL.x < this.x + 10 ? -1 : 1;
+          if (this.t > (this.hp > 8 ? 45 : 28)) { this.t = 0;
+            if (Math.random() < .4) { this.st = 'dash'; this.vx = this.dir * 5.5; sfx('switch'); }
+            else { this.st = 'leap'; this.tx = Math.abs(PL.x - L) > Math.abs(PL.x - R) ? L : R; this.vx = (this.tx - this.x) / 34; this.vy = -7; } } }
+        else if (s === 'dash') { this.x = clamp(this.x + this.vx, L, R); if (this.t % 3 === 0) FX.push({ k: 'puff', x: this.x + 10, y: floor - 4, t: 12 });
+          if (this.x <= L || this.x >= R || this.t > 50) { this.st = 'stand'; this.t = 0; } }
+        else if (s === 'leap') { this.vy += .3; this.y += this.vy; this.x = clamp(this.x + this.vx, L, R);
+          if (this.x === this.tx) { this.st = 'cling'; this.t = 0; this.vy = 0; this.dir = this.x === L ? 1 : -1; sfx('land'); }
+          else if (this.y >= floor - this.h) { this.y = floor - this.h; this.st = 'stand'; this.t = 0; } }
+        else if (s === 'cling') {
+          if (this.t === 24) { const base = Math.atan2(PL.y + 10 - this.y - 12, PL.x + 5 - this.x - 10);
+            for (const a of [-.3, 0, .3]) SHOTS.push({ x: this.x + 6, y: this.y + 10, w: 8, h: 10, vx: Math.cos(base + a) * 2.4, vy: Math.sin(base + a) * 2.4, t: 200, bongable: 1, spr: XS.contract, P: XP.bn }); sfx('tick'); }
+          if (this.t > 44) { this.st = 'pounce'; this.t = 0; this.vx = clamp((PL.x - this.x) / 36, -4, 4); this.vy = -3; } }
+        else if (s === 'pounce') { this.vy += .3; this.y += this.vy; this.x = clamp(this.x + this.vx, L, R);
+          if (this.y >= floor - this.h) { this.y = floor - this.h; this.st = 'stand'; this.t = 0; sfx('land'); post.shake = 2; } }
+        bossTouch(this, this.hitbox(), false);
+      },
+      draw() { const f = this.st === 'dash' ? 1 : this.st === 'stand' ? 0 : 2; draw(XS.signa[f], this.x - 8 - camX, this.y - 2 - camY, XP.bn, this.dir < 0, this.flash & 2 ? WHITE : 0); },
+    };
+    return B;
+  },
+});
+
+const MX = { mega: 1, mx: 1 }, MXICE = { mega: 1, mx: 1, ice: 1 };
+LEVELS.push(
+  { id: 'mx1', camp: 'mx', tag: '1', name: 'CENTRAL HALLWAY', theme: 'mxhw', outfit: 'xsuit', card: 'ready', rules: MX, goal: 'door',
+    build() { // the capsule, a wall, a gap you dash over, a wall you climb
+      const b = LB(170);
+      b.ground(0, 44).put(2, 11, '@').put(7, 11, 'U').put(16, 11, 'm').put(22, 6, 'l').fill(28, 29, 6, 11, '#').put(34, 11, 'm').put(40, 11, 'C');
+      b.ground(51, 80).put(56, 11, 'm').put(62, 6, 'l').fill(66, 67, 7, 11, '#').put(67, 3, 'X').put(74, 11, 'm');
+      b.ground(81, 104, 5).put(86, 4, 'm').put(94, 0, 'l').put(100, 4, 'C');
+      b.ground(110, 120, 5).put(115, 4, 'm');
+      b.ground(121, 169).put(128, 11, 'm').put(134, 6, 'l').fill(140, 141, 11, 11, '^').put(148, 11, 'm').put(160, 11, 'E');
+      return b;
+    } },
+  { id: 'mx2', camp: 'mx', tag: '2', name: 'CC PENGUIN', theme: 'mxice', card: 'ready', rules: MXICE, goal: 'door',
+    build() { // ice. You will slide. Everyone on the thread will see
+      const b = LB(170);
+      b.ground(0, 40).put(2, 11, '@').put(12, 11, 'm').put(20, 6, 'l').fill(26, 27, 8, 11, '#').put(33, 11, 'm').put(38, 11, 'C');
+      b.ground(46, 90).put(52, 11, 'm').fill(58, 59, 11, 11, '^').put(64, 6, 'l').fill(70, 71, 5, 11, '#').put(78, 11, 'm').put(86, 11, 'C');
+      b.col(95, 6, 13).col(96, 6, 13).col(101, 4, 13).col(102, 4, 13).col(107, 6, 13).col(108, 6, 13);
+      b.ground(113, 169).put(118, 11, 'm').put(124, 6, 'l').fill(130, 131, 7, 11, '#').put(140, 11, 'm').put(146, 11, 'C').fill(150, 151, 11, 11, '^').put(162, 11, 'E');
+      return b;
+    } },
+  { id: 'mx3', camp: 'mx', tag: '3', name: 'SPARK MANAGER', theme: 'mxspark', card: 'ready', rules: MX, goal: 'door',
+    build() { // the power's on a schedule. So are the blocks
+      const b = LB(170);
+      b.ground(0, 36).put(2, 11, '@').put(10, 11, 'm').put(16, 6, 'l').fill(22, 23, 6, 11, '#').put(28, 11, 'm').put(34, 11, 'C');
+      b.ground(37, 62).fill(37, 62, 12, 12, '^'); for (const [x, y] of [[39, 10], [42, 9], [45, 8], [48, 9], [51, 10], [54, 9], [57, 8], [60, 9]]) b.put(x, y, 'D');
+      b.ground(63, 100).put(68, 11, 'm').put(74, 6, 'l').fill(80, 81, 4, 11, '#').fill(86, 87, 4, 11, '#').put(92, 11, 'm').put(98, 11, 'C');
+      b.ground(108, 169).put(114, 11, 'm').put(120, 6, 'l').fill(126, 127, 11, 11, '^').put(134, 11, 'm').put(140, 11, 'C').put(160, 11, 'E');
+      return b;
+    } },
+  { id: 'mx4', camp: 'mx', tag: '4', name: 'STORM EMAIL', theme: 'mxsky', card: 'ready', rules: MX, goal: 'door',
+    build() { // the airship. Reply-all is on
+      const b = LB(180);
+      b.ground(0, 30).put(2, 11, '@').put(10, 11, 'm').put(18, 6, 'l').put(24, 11, 'm').put(28, 11, 'C');
+      b.col(36, 8, 13).col(37, 8, 13).col(43, 8, 13).col(44, 8, 13).put(40, 4, 'l');
+      b.ground(50, 80).put(54, 11, 'm').fill(60, 61, 6, 11, '#').put(66, 6, 'l').put(72, 11, 'm').put(78, 11, 'C');
+      b.col(82, 5, 13).col(86, 3, 13).col(87, 3, 13).ground(88, 110, 3).put(94, 2, 'm').put(102, 0, 'l');
+      b.ground(117, 179).put(122, 11, 'm').put(128, 6, 'l').fill(134, 135, 11, 11, '^').put(142, 11, 'm').put(148, 11, 'C').put(170, 11, 'E');
+      return b;
+    } },
+  { id: 'mx5', camp: 'mx', tag: '5', name: 'SIGNA FORTRESS', theme: 'mxsig', card: 'ready', rules: MX, goal: 'door', boss: { id: 'signa', at: 30 },
+    build() {
+      const b = LB(60);
+      b.ground(0, 59).put(3, 11, '@').put(12, 11, '+').row(16, 10, '$$$$').put(55, 11, 'E');
+      return b;
+    } },
+);
+CARTS.push({ id: 'mx', name: 'MEGA CARL X', short: 'MCX', col: '#12248f', bg: '#000012', line: 'NOW WITH WALLS.', year: '1993ISH', end: ['SIGNA WILL RETURN.', 'IN X2. AND X3.', 'AND X4 THROUGH X8.'] });

@@ -103,7 +103,7 @@ function bossKeys() {
     if (b.open > 0 && !b.bong && (dx > 0) === (b.face > 0) && Math.abs(b.py - ty) < 26) k.a = 1;
     return k;
   }
-  if (['bosser', 'intern', 'robux', 'mecha', 'knux', 'staple', 'dracu', 'dedede'].includes(b.id)) { // the bonus carts: keep a distance, face it, bong it
+  if (['bosser', 'intern', 'robux', 'mecha', 'knux', 'staple', 'dracu', 'dedede', 'signa'].includes(b.id)) { // the bonus carts: keep a distance, face it, bong it
     const facing = (dx > 0) === (b.face > 0);
     const danger = b.shots.some(([x, y, vx]) => Math.abs(x - b.px) < 46 && (x - b.px) * vx <= 0 && y > b.py - 14 && y < b.py + 14)
       || (b.ball && Math.abs(b.ball[0] - b.px) < 48 && b.ball[1] > b.py - 22)
