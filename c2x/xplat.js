@@ -93,7 +93,7 @@ const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h 
 // ---------------- player physics ----------------
 function respawnState() {
   Object.assign(PL, { vx: 0, vy: 0, hp: LIMIT.maxHP, hurt: 60, hang: null, rope: null, fuel: 100, hot: 0, air: 100, choke: 0, scr: 0, dead: 0,
-    ball: 0, roll: 0, rev: 0, crouch: 0, loop: null, loopCD: 0, dino: 0, tongue: 0, shield: null, star: 0, glide: 0, climb: 0, sprung: 0, puff: 0, dash: 0, dashJ: 0, kick: 0, wall: 0, tldr: 0, tldrCD: 0, tldrFlash: 0 });
+    ball: 0, roll: 0, rev: 0, crouch: 0, loop: null, loopCD: 0, dino: 0, tongue: 0, shield: null, star: 0, glide: 0, climb: 0, sprung: 0, puff: 0, dash: 0, dashJ: 0, kick: 0, wall: 0, charge: 0, tldr: 0, tldrCD: 0, tldrFlash: 0 });
   BONG = null; camX = clamp(PL.x - 140, 0, LV.w * TS - W); camY = clamp(PL.y - 120, 0, LV.h * TS - H);
 }
 function moveX(dx) {
@@ -498,10 +498,11 @@ function carlPose() {
   return ['stand', 0];
 }
 function drawCarl() {
+  if (RULES.mx) drawBigBong();
   if (PL.hurt > 0 && !PL.dead && (PL.hurt & 4)) return;
   const S = carlSet(OUTFITS.find(o => o.id === RUN.outfit) || OUTFITS[0]), [p, f] = carlPose();
   const sx = PL.x - 5 - camX, sy = PL.y + PL.h - 25 - camY - (PL.dino ? 9 : 0);
-  let tn = PL.tldr > 0 && (frame & 2) ? hex('#ffdb24') : PL.tldrFlash > 0 && (PL.tldrFlash & 4) ? WHITE : PL.star > 0 && (frame & 4) ? hex(['#ffdb24', '#ff49db', '#6dffff', '#ffffff'][(frame >> 3) & 3]) : 0;
+  let tn = PL.tldr > 0 && (frame & 2) ? hex('#ffdb24') : PL.charge >= 45 && (frame & 2) ? hex((frame & 4) ? '#ffdb24' : '#6dffff') : PL.charge > 15 && (frame & 4) ? hex('#49b6ff') : PL.tldrFlash > 0 && (PL.tldrFlash & 4) ? WHITE : PL.star > 0 && (frame & 4) ? hex(['#ffdb24', '#ff49db', '#6dffff', '#ffffff'][(frame >> 3) & 3]) : 0;
   if (PL.dino) drawDino(sx - 4, PL.y + PL.h - camY - 18, PL.face < 0, (PL.anim | 0) & 1);
   if (PL.puff) draw(S.puff, sx - 1, sy + 4, S.P, PL.face < 0, tn);
   else if (PL.ball || PL.roll || PL.loop || PL.crouch) draw(S.ball[PL.crouch && !PL.rev ? 0 : (frame >> 1) & 3], sx + 1, sy + 8, S.P, PL.face < 0, tn);
