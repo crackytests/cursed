@@ -212,6 +212,8 @@ OUTFITS.push(
   { id: 'proto', name: 'PROTO CARL', blurb: 'WHISTLES ON ENTRY', c: { 5: '#db2424', 6: '#ff6d6d', 10: '#db2424', 13: '#6d6d6d', 15: '#db2424' }, acc: 'helmet', camp: 'mega', clear: 1 },
   { id: 'whip', name: 'VAMPIRE KILLER', blurb: 'IT IS STILL A BONG', c: { 5: '#6d4924', 6: '#b6926d', 10: '#6d4924', 13: '#492400' }, acc: 'gloves', camp: 'vania' },
   { id: 'alucarl', name: 'ALUCARL', blurb: 'HALF VAMPIRE. ALL CARL.', c: { 2: '#ffdbdb', 5: '#dbdbdb', 6: '#ffffff', 10: '#242436', 13: '#242436', 15: '#db2424' }, acc: 'cape', camp: 'vania', clear: 1 },
+  { id: 'xsuit', name: 'X ARMOR', blurb: 'BLUE. BUT LATER.', c: { 5: '#2449db', 6: '#49b6ff', 10: '#12248f', 11: '#0a1249', 13: '#49b6ff', 15: '#2449db' }, acc: 'helmet', camp: 'mx' },
+  { id: 'zero', name: 'ZERO CARL', blurb: 'THE HAIR IS IMPLIED.', c: { 5: '#db2424', 6: '#ff6d6d', 10: '#920000', 11: '#4f0000', 13: '#ffdb24', 15: '#db2424' }, acc: 'helmet', camp: 'mx', clear: 1 },
   { id: 'pink', name: 'PINK', blurb: 'VERY ROUND', c: { 5: '#ff92b6', 6: '#ffdbe0', 10: '#ff92b6', 11: '#db6d92', 13: '#db2449' }, camp: 'kirby' },
   { id: 'kingcarl', name: 'KING CARL', blurb: 'HE OWES YOU MONEY', c: { 5: '#2449db', 10: '#db2424', 13: '#ffdb24', 15: '#ffdb24' }, acc: 'crown', camp: 'kirby', clear: 1 },
 );
@@ -278,6 +280,11 @@ Object.assign(BACKS, {
   },
 });
 Object.assign(XTHEMES, {
+  mxhw: { P: tpal('#36364a', '#6d6d92', '#b6b6db', '#ffffff', '#24246d', '#4949b6', '#ffdb24'), sky: ['#000012', '#24124f'], kind: 'mega', tile: 'stone', grass: false, far: '#000012', mid: '#1c1236', lite: '#ffdb24', music: 'cmx' },
+  mxice: { P: tpal('#246d92', '#49b6db', '#b6ffff', '#ffffff', '#246d92', '#49b6db', '#ffffff'), sky: ['#6db6db', '#dbffff'], kind: 'mega', tile: 'stone', grass: false, far: '#92dbff', mid: '#6db6db', lite: '#ffffff', music: 'cmx' },
+  mxspark: { P: tpal('#493600', '#926d00', '#dbb624', '#ffff92', '#243624', '#496d49', '#ffff24'), sky: ['#000000', '#242400'], kind: 'mega', tile: 'brick', grass: false, far: '#000000', mid: '#2a2400', lite: '#ffff24', music: 'cmx' },
+  mxsky: { P: tpal('#49496d', '#7a7a9e', '#b6b6db', '#ffffff', '#36364a', '#6d6d92', '#ff2449'), sky: ['#36496d', '#92a0b6'], kind: 'mega', tile: 'stone', grass: false, far: '#36496d', mid: '#4f5f80', lite: '#ffffff', music: 'cmx' },
+  mxsig: { P: tpal('#241236', '#493670', '#9270b6', '#dbb6ff', '#241236', '#493670', '#ff2449'), sky: ['#000000', '#1c0a2a'], kind: 'mega', tile: 'stone', grass: false, far: '#000000', mid: '#1c0a2a', lite: '#ff2449', music: 'cmx' },
   mega1: { P: tpal('#24246d', '#4949b6', '#9292db', '#dbdbff', '#246d6d', '#49b6b6', '#6dffff'), sky: ['#000024', '#00006d'], kind: 'mega', tile: 'stone', grass: false, far: '#000024', mid: '#12124f', lite: '#6dffff', music: 'cmega' },
   megaf: { P: tpal('#6d2400', '#b64900', '#ff9249', '#ffdb92', '#6d2400', '#b64900', '#ff6d24'), sky: ['#240000', '#6d1200'], kind: 'mega', tile: 'brick', grass: false, far: '#240000', mid: '#4f1200', lite: '#ff9224', music: 'cmega' },
   megap: { P: tpal('#6d6d49', '#b6b692', '#f8f8db', '#ffffff', '#6d6d49', '#b6b692', '#ff2449'), sky: ['#244970', '#6d92b6'], kind: 'mega', tile: 'stone', grass: false, far: '#244970', mid: '#36598a', lite: '#ffffff', music: 'cmega' },
@@ -293,6 +300,10 @@ Object.assign(XTHEMES, {
   kmt: { P: tpal('#6d3624', '#b66d49', '#ffb692', '#ffffff', '#6d3624', '#b66d49', '#ffdb24'), sky: ['#ff9249', '#ffdb92'], kind: 'dream', grass: false, far: '#db6d49', mid: '#b64924', music: 'ckirby' },
 });
 Object.assign(TRACKS, {
+  cmx: { bpm: 168, ch: [ // the guitar is a square wave. It is trying very hard
+    { ins: 'lead', n: 'A4 . C5 . E5 . A5 - G5 . E5 . D5 . E5 - - - C5 . D5 . E5 . G5 - A5 . G5 . E5 . D5 - - - A4 . C5 . E5 . A5 - B5 . A5 . G5 . E5 - - - F5 . E5 . D5 . C5 - D5 . E5 - - - - - . .' },
+    { ins: 'bass', n: 'A1 A2 A1 A2 A1 A2 G1 G2 F1 F2 F1 F2 G1 G2 G1 G2 A1 A2 A1 A2 A1 A2 G1 G2 F1 F2 G1 G2 E1 E2 E1 E2' },
+    { drum: 1, vol: .55, n: 'k . h k s . h . k k h . s . h s' }] },
   cmega: { bpm: 150, ch: [
     { ins: 'lead', n: 'E5 . D5 . B4 . A4 . B4 - - . G4 . A4 . B4 . D5 . E5 . F#5 . E5 - D5 . B4 - - - E5 . D5 . B4 . A4 . B4 - - . D5 . E5 . G5 - F#5 . E5 . D5 . E5 - - - - - . .' },
     { ins: 'bass', n: 'E2 E3 E2 E3 E2 E3 E2 E3 C2 C3 C2 C3 C2 C3 C2 C3 D2 D3 D2 D3 D2 D3 D2 D3 B1 B2 B1 B2 B1 B2 B1 B2' },
@@ -308,3 +319,30 @@ Object.assign(TRACKS, {
     { ins: 'bell', vol: .4, n: '. . E5 . . . G5 . . . E5 . . . C5 .' },
     { drum: 1, vol: .4, n: 'k . h . s . h . k . h k s . h .' }] },
 });
+
+// ---------------- MEGA CARL X: SIGNA (bald, a cape, a pen the size of a sword), his contracts, DR. LITE and his capsule ----------------
+XS.signa = [0, 1, 2].map(f => outline(spr(40, 42, g => {
+  // cape
+  g.each((x, y) => y > 12 && y < 40 && x > 4 && x < 20 + (y - 12) * .1 && x > 12 - (y - 12) * .3 ? 7 : 0);
+  // legs, shoes
+  if (f === 1) { g.r(10, 31, 4, 8, 2); g.r(18, 30, 4, 8, 2); g.r(8, 39, 6, 2, 1); g.r(19, 38, 6, 2, 1); }
+  else { g.r(12, 31, 4, 9, 2); g.r(17, 31, 4, 9, 2); g.r(11, 40, 6, 2, 1); g.r(17, 40, 6, 2, 1); }
+  // suit, shirt, tie, big grey shoulders
+  g.r(11, 14, 11, 17, 1); g.r(15, 14, 3, 3, 3); g.r(16, 15, 1, 9, 4); g.p(16, 24, 4);
+  g.e(10, 15, 3.5, 2.5, 11); g.e(23, 15, 3.5, 2.5, 11); g.r(8, 16, 4, 1, 12); g.r(21, 16, 4, 1, 12);
+  // head: bald, the shine, two marks down from the eyes, a frown
+  g.e(16, 7, 5, 6.2, 5); g.p(14, 3, 3); g.p(13, 4, 3); g.r(17, 5, 3, 1, 1); g.p(19, 6, 1); g.line(18, 8, 18, 11, 7); g.line(20, 8, 20, 11, 7); g.r(17, 11, 3, 1, 12);
+  // the arms and the pen
+  if (f === 1) { g.line(22, 18, 28, 20, 1); g.r(27, 19, 13, 3, 10); g.r(27, 19, 3, 3, 12); g.p(39, 20, 1); g.r(31, 19, 1, 3, 11); }
+  else if (f === 2) { g.line(10, 16, 6, 6, 1); g.line(22, 16, 26, 6, 1); g.r(25, 0, 3, 7, 10); g.r(25, 5, 3, 2, 12); }
+  else { g.line(22, 17, 24, 27, 1); g.r(23, 22, 3, 14, 10); g.r(23, 22, 3, 3, 12); g.p(24, 36, 1); g.line(11, 17, 9, 27, 1); }
+}), 15));
+XS.contract = outline(spr(8, 10, g => { g.r(0, 0, 8, 10, 3); for (const y of [2, 4]) g.r(1, y, 6, 1, 12); g.line(1, 7, 3, 9, 4); g.line(3, 7, 1, 9, 4); g.r(4, 8, 3, 1, 1); }), 15);
+XS.capsule = [0, 1].map(f => outline(spr(24, 40, g => {
+  g.r(2, 34, 20, 6, 12); g.r(0, 36, 24, 4, 11); g.r(4, 30, 16, 4, 11);
+  g.e(12, 18, 10, 14, f ? 0 : 9); if (f) g.each((x, y) => ((x - 12) / 10) ** 2 + ((y - 18) / 14) ** 2 <= 1 && ((x - 12) / 8) ** 2 + ((y - 18) / 12) ** 2 > 1 ? 9 : 0);
+  g.r(10, 2, 4, 3, 11); g.p(11, 1, 10); if (!f) for (let y = 8; y < 30; y += 4) g.r(6, y, 2, 1, 3);
+}), 15));
+XS.drlite = outline(spr(16, 28, g => { // a hologram of a kind old man with a lot to say
+  g.r(3, 10, 10, 16, 3); g.r(7, 10, 2, 14, 9); g.e(8, 6, 4, 4.5, 9); g.r(4, 1, 8, 2, 3); g.r(3, 2, 2, 4, 3); g.r(11, 2, 2, 4, 3); g.r(5, 9, 6, 2, 3); g.p(6, 6, 8); g.p(10, 6, 8);
+}), 15);

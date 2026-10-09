@@ -39,6 +39,12 @@ function planRoute(spec) {
     if (RULES.spindash) macros.push({ seq: [[1, k], [3, { down: 1 }], [1, { down: 1, b: 1 }], [2, { down: 1 }], [1, { down: 1, b: 1 }], [2, { down: 1 }], [1, { down: 1, b: 1 }], [16, {}]], air: {} });
     if (RULES.puff) for (const n of [3, 6, 10, 16]) { const seq = [[10, k], [1, Object.assign({ b: 1 }, k)], [8, k]]; for (let i = 0; i < n; i++) seq.push([1, Object.assign({ b: 1 }, k)], [9, k]); macros.push({ seq, air: k }); }
     if (RULES.knux) for (const run of [0, 14]) for (const w of [4, 12]) macros.push({ seq: [[run, k], [6, Object.assign({ b: 1 }, k)], [w, k], [1, Object.assign({ b: 1 }, k)]], air: Object.assign({ b: 1, up: 1 }, k) });
+    if (RULES.mx) { // dash, dash-jump, wall kicks up one wall, wall kicks up a shaft
+      macros.push({ seq: [[1, Object.assign({ down: 1, b: 1 }, k)], [22, k]], air: k });
+      for (const h of [6, 14, 30]) for (const ad of [k, {}]) macros.push({ seq: [[1, Object.assign({ down: 1, b: 1 }, k)], [3, k], [h, Object.assign({ b: 1 }, k)]], air: ad });
+      for (const run of [0, 14]) for (const n of [1, 2, 4, 7]) for (const c of [14, 20]) { const seq = [[run, k], [16, Object.assign({ b: 1 }, k)]]; for (let i = 0; i < n; i++) seq.push([1, k], [c, Object.assign({ b: 1 }, k)]); macros.push({ seq, air: k }); }
+      for (const n of [2, 4, 6]) { const seq = [[16, Object.assign({ b: 1 }, k)]]; let dd = d; for (let i = 0; i < n; i++) { dd = -dd; const kk = { [D(dd)]: 1 }; seq.push([1, kk], [14, Object.assign({ b: 1 }, kk)]); } macros.push({ seq, air: { [D(dd)]: 1 } }); }
+    }
     if (water) for (const n of [2, 4, 7, 10]) for (const up of [0, 1]) { const seq = []; for (let i = 0; i < n; i++) seq.push([1, Object.assign({ b: 1 }, k, up ? { up: 1 } : {})], [11, Object.assign({}, k, up ? { up: 1 } : {})]); macros.push({ seq, air: k }); }
   }
   if (RULES.mega) macros.push(...macros.flatMap(m => [30, 60, 90, 120, 150, 180, 210, 240].map(w => ({ seq: [[w, {}]].concat(m.seq), air: m.air, wait: 1 })))); // appearing blocks: wait for the next one (only tried near one)
