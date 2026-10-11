@@ -1,6 +1,6 @@
 # PRETEND CO. — project handoff
 
-Read this first, then the character bibles in this folder.
+Read this first, then the character bibles in `ref/` (with the reference art and source material).
 
 ## What this is
 

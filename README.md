@@ -37,6 +37,9 @@ Lost games from a studio that never existed.
 - `stw/` — SAVE THE WORLD: A Pretend Co. Gaiden (16-bit epic RPG: active-time battles, combos, save crystals, an airship on the WORLD-FX scaling chip; out of continuity)
 - `end/` — THE END: A Pretend Co. Gaiden (it plays backwards: from the ending at level 99 back through four shades and plain text to the publisher logo)
 
+**Generation 3 — HYPER-32 (320×224, early 3D: polygon people over prerendered backdrops)**
+- `carl3/` — CARL 3: Return to Sender (the first HYPER-32 game: early 3D, chunky polygon people over prerendered backdrops, a road trip across Nevada; his explanations become jobs)
+
 FACE: BEFORE THE STREAM happens before everything else; THE END's last text prompt leads to it.
 FACE and YOKO are a pair: play FACE first. Both read the saves of every other PRETEND CO. game.
 CARL 2 is the sequel to CARL, released after the generation ended. It's where the series jumps the shark.
@@ -46,3 +49,4 @@ Controls (Gen 0): arrows pick, Z/X confirm, Enter = Start. THINK in the menu giv
 Controls (Gen 2): arrows move, Z = A, X/Space = B, C = C, Enter = Start. F = fullscreen.
 
 See `HANDOFF.md` for how everything is built and tested.
+Reference art, character bibles and source material are in `ref/`.

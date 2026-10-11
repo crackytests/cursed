@@ -2,3 +2,5 @@ tools/*.png
 tools/*.log
 nul
 tools/shots/
+# source books: kept locally, not published
+ref/Romancing*.pdf
