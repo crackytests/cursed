@@ -43,7 +43,7 @@ async function clerkTalk() {
   } else if (G.flags.clerkBad >= 2) {
     setFlag('clerkLost'); setFlag('raftReady');
     await say('...I\'M SORRY, GENERAL. I THINK I\'M MISPLACED. IT HAPPENS TO CLERKS. WE TAG EVERYTHING BUT OURSELVES.', 'CLERK');
-    await fadeOut(.03); await wait(60);
+    await fadeTo(.5, .03); await wait(60);
     await say('THE CLERK WAS GONE. ON THE BED WAS A TAG. IT SAID "CLERK. UNCLAIMED."', null);
     await LI('...I\'LL CLAIM IT.');
     await say('UNDER THE BED THERE WAS A RAFT, HALF-BUILT, AND A NOTE: "FINISH IT. THERE\'S A CAP ON THE BEACH. SOMEONE WEARS THAT."', null);

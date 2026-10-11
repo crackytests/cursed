@@ -243,6 +243,7 @@ async function panels(list, o = {}) {
         rectF(bx, y + 8, bw, L.length * 9 + 8, WHITE); frameRect(bx, y + 8, bw, L.length * 9 + 8, BLACK); L.forEach((l, k) => text(l, bx + 6, y + 12 + k * 9, BLACK, 0)); }
       if (p.sfx) text(p.sfx, x + pw - p.sfx.length * 12 - 8, y + ph - 24, hex('#db2424'), BLACK, 2);
     }); } };
+  if (post.fade > 0) await fadeIn(.1); // panels paint their own page; a leftover fadeOut would hide them
   for (shown = 1; shown <= list.length; shown++) { sfx('ok'); await wait(12); await waitBtn(); }
   scene = prev;
 }

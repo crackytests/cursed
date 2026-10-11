@@ -87,7 +87,7 @@ async function raftersBruce() {
   sfx('powerdown'); post.shake = 4; await wait(30); post.shake = 0;
   await say('BRUCE, THE WEIGHT, THE PARTY AND A GREAT DEAL OF SCENERY FALL ONTO THE STAGE IN THE MIDDLE OF THE FINALE.', null);
   await say('THE AUDIENCE GIVES IT A STANDING OVATION.', null);
-  await fadeOut(.05); music('ghost');
+  await fadeTo(.5, .05); music('ghost'); // half-dark: post.fade dims the text box too
   await say('AND THEN THE ROOF OPENS.', null);
   await panels([{ port: 'SPOOKY GHOST', text: 'GOOD EVENING, OPERA. YOU\'RE WATCHING THE BROADCAST. AND I\'M TAKING THE DIVA.', bg: '#dbdbff' }, { port: 'CEO LINDA', text: '...THAT\'S ME. FOR TONIGHT, THAT\'S ME.', bg: '#ffdbdb' }, { port: 'CARL', text: 'HE\'S TAKING HER! THAT\'S THE PLAN! WHY DOES THE PLAN FEEL BAD!', bg: '#dbffdb' }, { text: 'THE PARTY GRABS THE LANDING GEAR.', sfx: 'WHOOSH', bg: '#ffffdb' }]);
   setFlag('lindaTaken'); FIELD_LOCK--;
