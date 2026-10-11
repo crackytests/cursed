@@ -15,6 +15,7 @@ Lost games from a studio that never existed.
 | YOKO: What Happened | https://crackytests.github.io/cursed/yoko/ |
 | CARL 2: Hu-Man Boogaloo | https://crackytests.github.io/cursed/carl2/ |
 | CARL 2 EXTREME | https://crackytests.github.io/cursed/c2x/ |
+| CARL 3: Return to Sender | https://crackytests.github.io/cursed/carl3/ |
 | SAVE THE WORLD: A Pretend Co. Gaiden | https://crackytests.github.io/cursed/stw/ |
 | THE END: A Pretend Co. Gaiden | https://crackytests.github.io/cursed/end/ |
 | FACE: BEFORE THE STREAM | https://crackytests.github.io/cursed/orig/ |
@@ -50,7 +51,3 @@ Controls (Gen 2): arrows move, Z = A, X/Space = B, C = C, Enter = Start. F = ful
 
 See `HANDOFF.md` for how everything is built and tested.
 Reference art, character bibles and source material are in `ref/`.
-
-## CARL 3: RETURN TO SENDER
-
-Open `carl3/index.html` locally. The first HYPER-32 game: early 3D, chunky polygon people over prerendered backdrops and fixed camera cuts. After CARL 2, Carl gets a parcel addressed to himself, postage paid before he was born. To find the return address he follows its route across Nevada in three acts: eleven stamps held by a chain of clerks who were each given a card nineteen years ago. Every explanation Carl gives becomes a job he has to do, and the lies go in a ledger that the Postal Inspection Service is reading. ACT I is a straight line; ACT II opens the map (a mall, an alien-believers' inn, a casino, a snowed-in lodge, a drive-in) in any order; ACT III is a ghost-town stealth stop, the Sorting Center and the Dead Letter Office. Between stops: a drive map, Service checkpoints that rise with your heat, roadside events, a job board, 31 decoy crates, and ship upgrades. Six endings, one of them bad and one that needs every crate. Arrows move; Z talks and looks; hold X to run; C smokes (the haze shows what's hidden); Enter pauses. Save from the pause menu, or by sleeping on the ship. See `CARL3_DESIGN.md` for the design and the test tools (`tools/c3reach.js`, `c3seg.js`, `c3act.js`, `c3cams.js`).
