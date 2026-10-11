@@ -374,6 +374,7 @@ function foeUpdate(e) {
 
 // ---------------- world update ----------------
 function worldUpdate() {
+  if (post.shake && !SHAKE) SHAKE = 6; // a shake nobody timed still stops
   if (SHAKE > 0 && --SHAKE === 0) post.shake = 0;
   for (const k in LV.burn) if (--LV.burn[k] <= 0) { delete LV.burn[k]; const [x, y] = k.split(',').map(Number); LV.g[y][x] = '.'; for (let i = 0; i < 5; i++) FX.push({ k: 'puff', x: x * TS + rnd(16), y: y * TS + rnd(16), t: 20 }); }
   if (!CUT || PL.dead) playerUpdate();
