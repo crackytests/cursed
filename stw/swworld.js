@@ -180,11 +180,13 @@ const AIR_Y0 = 46, FOC = 150;
 function airDraw() {
   if (G.world === 2) skyD(0, AIR_Y0 + 2, '#0f380f', '#306230'); else skyD(0, AIR_Y0 + 2, '#2449b6', '#b6dbff');
   const ca = Math.cos(AIR.a), sa = Math.sin(AIR.a), crushed = G.world === 2, T = TONES.dmg.map(hex);
+  // camera sits behind the ship so the ground under its shadow (screen row H-28) is AIR.x/AIR.y, where it lands
+  const back = AIR.h * FOC / (H - 28 - AIR_Y0 + 1), cx = AIR.x - ca * back, cy = AIR.y - sa * back;
   for (let y = AIR_Y0; y < H; y++) {
     const z = AIR.h * FOC / (y - AIR_Y0 + 1), fog = Math.min(1, z / 1400);
     const row = y * W;
     for (let x = 0; x < W; x++) {
-      const lat = (x - W / 2) * z / FOC, wx = AIR.x + ca * z - sa * lat, wy = AIR.y + sa * z + ca * lat;
+      const lat = (x - W / 2) * z / FOC, wx = cx + ca * z - sa * lat, wy = cy + sa * z + ca * lat;
       const tx = Math.floor(wx / TS), ty = Math.floor(wy / TS); let c;
       const t = wtile(tx, ty), fr = OW_TILES[t] || OW_TILES['~'], s = fr[(frame >> 4) % fr.length], v = s.d[((wy | 0) & 15) * 16 + ((wx | 0) & 15)];
       c = OW_P[v] || OW_P[1];
