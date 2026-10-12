@@ -19,6 +19,9 @@ Lost games from a studio that never existed.
 | SAVE THE WORLD: A Pretend Co. Gaiden | https://crackytests.github.io/cursed/stw/ |
 | THE END: A Pretend Co. Gaiden | https://crackytests.github.io/cursed/end/ |
 | FACE: BEFORE THE STREAM | https://crackytests.github.io/cursed/orig/ |
+| NEO MONDAY: The Cat Who Knew Too Little | https://crackytests.github.io/cursed/neomonday/ |
+| EYE OF THE BEHOLDEN II: The Legend of Dark Monday | https://crackytests.github.io/cursed/dm/ |
+| MALL OF THE FUTURE: KONBINI WARS | https://crackytests.github.io/cursed/kw/ |
 
 **Generation 0 — home computer (HOME-8, 1983, 4 colors per scene)**
 - `orig/` — FACE: BEFORE THE STREAM (the prequel: an illustrated adventure in three acts. Two old versions of the same man build a machine to escape a future that loves its people too much to let them leave. Act I: the house that cares. Act II: two routes, and the Curse. Act III: a piece of each, and the first broadcast. Three endings; design in ORIGIN_DESIGN.md)
@@ -40,6 +43,11 @@ Lost games from a studio that never existed.
 
 **Generation 3 — HYPER-32 (320×224, early 3D: polygon people over prerendered backdrops)**
 - `carl3/` — CARL 3: Return to Sender (the first HYPER-32 game: early 3D, chunky polygon people over prerendered backdrops, a road trip across Nevada; his explanations become jobs)
+
+**68k-X — home computer (512×256, 4096 colors, FM sound)**
+- `neomonday/` — NEO MONDAY: The Cat Who Knew Too Little (Snatcher-style detective adventure, including Case 2: The Static)
+- `dm/` — EYE OF THE BEHOLDEN II: The Legend of Dark Monday (first-person party dungeon crawler)
+- `kw/` — MALL OF THE FUTURE: KONBINI WARS (convenience-store management simulation)
 
 FACE: BEFORE THE STREAM happens before everything else; THE END's last text prompt leads to it.
 FACE and YOKO are a pair: play FACE first. Both read the saves of every other PRETEND CO. game.
