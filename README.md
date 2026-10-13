@@ -22,6 +22,7 @@ Lost games from a studio that never existed.
 | NEO MONDAY: The Cat Who Knew Too Little | https://crackytests.github.io/cursed/neomonday/ |
 | EYE OF THE BEHOLDEN II: The Legend of Dark Monday | https://crackytests.github.io/cursed/dm/ |
 | MALL OF THE FUTURE: KONBINI WARS | https://crackytests.github.io/cursed/kw/ |
+| ROMANCING STREAM: The Ten Cartridges | https://crackytests.github.io/cursed/rsopus/ |
 
 **Generation 0 — home computer (HOME-8, 1983, 4 colors per scene)**
 - `orig/` — FACE: BEFORE THE STREAM (the prequel: an illustrated adventure in three acts. Two old versions of the same man build a machine to escape a future that loves its people too much to let them leave. Act I: the house that cares. Act II: two routes, and the Curse. Act III: a piece of each, and the first broadcast. Three endings; design in ORIGIN_DESIGN.md)
@@ -48,6 +49,7 @@ Lost games from a studio that never existed.
 - `neomonday/` — NEO MONDAY: The Cat Who Knew Too Little (Snatcher-style detective adventure, including Case 2: The Static)
 - `dm/` — EYE OF THE BEHOLDEN II: The Legend of Dark Monday (first-person party dungeon crawler)
 - `kw/` — MALL OF THE FUTURE: KONBINI WARS (convenience-store management simulation)
+- `rsopus/` — ROMANCING STREAM: THE TEN CARTRIDGES (full-scale Romancing SaGa 1 clone: 15 towns on 6 lands with ship routes, 26 dungeons, 20 monster families, 52 quests + fixers' guild, event rank + battle rank, expiring content, formations, statuses, elements, combined attacks, 8 magic schools with opposed pairs, guardians before each of the ten cartridges, personal stories for every hero and recruit; design in RSOPUS_DESIGN.md)
 
 FACE: BEFORE THE STREAM happens before everything else; THE END's last text prompt leads to it.
 FACE and YOKO are a pair: play FACE first. Both read the saves of every other PRETEND CO. game.

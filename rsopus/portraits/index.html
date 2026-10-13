@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Romancing Stream: Character Portraits</title>
+<style>
+  body {
+    background: #1a1612;
+    color: #e8dcc4;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 24px;
+  }
+  h1 {
+    color: #f6d6a0;
+    text-align: center;
+    font-size: 28px;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+    border-bottom: 2px solid #5a4836;
+    padding-bottom: 12px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #b09a78;
+    margin-bottom: 30px;
+    font-size: 14px;
+  }
+  h2 {
+    color: #ffd870;
+    border-left: 4px solid #d07040;
+    padding-left: 10px;
+    margin-top: 36px;
+    margin-bottom: 16px;
+    font-size: 18px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: #28221c;
+    border: 1px solid #4a3c2e;
+    border-radius: 6px;
+    padding: 10px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: #f6d6a0;
+  }
+  .port-wrap {
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 8px auto;
+    background: #f4e8d0;
+    border: 2px solid #5a4836;
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .port-wrap img {
+    width: 96px;
+    height: 96px;
+    image-rendering: pixelated;
+  }
+  .name {
+    font-size: 12px;
+    font-weight: bold;
+    color: #f0e0c8;
+    word-break: break-word;
+    margin-top: 4px;
+  }
+  .illustrated-section {
+    margin-top: 40px;
+    border-top: 2px solid #5a4836;
+    padding-top: 20px;
+  }
+  .ill-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+  }
+  .ill-card {
+    background: #28221c;
+    border: 2px solid #5a4836;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+  }
+  .ill-card img {
+    width: 100%;
+    border-radius: 4px;
+    border: 1px solid #3e3224;
+  }
+  .ill-title {
+    font-size: 15px;
+    font-weight: bold;
+    color: #ffd870;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+<h1>ROMANCING STREAM: CHARACTER PORTRAITS</h1>
+<div class="subtitle">Complete Portrait Collection &bull; In-Game Dithered Watercolor (60x60) &bull; Classic JRPG Fine Art</div>
+<h2>THE EIGHT HEROES (8)</h2><div class="grid">
+      <div class="card">
+        <div class="port-wrap"><img src="carl.png" alt="CARL"></div>
+        <div class="name">CARL</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="ceo_linda.png" alt="CEO LINDA"></div>
+        <div class="name">CEO LINDA</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="spooky_ghost.png" alt="SPOOKY GHOST"></div>
+        <div class="name">SPOOKY GHOST</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="new_face.png" alt="NEW FACE"></div>
+        <div class="name">NEW FACE</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="yoko.png" alt="YOKO"></div>
+        <div class="name">YOKO</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="jb_garfield.png" alt="JB GARFIELD"></div>
+        <div class="name">JB GARFIELD</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="pee_kid.png" alt="PEE KID"></div>
+        <div class="name">PEE KID</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="pilot_x.png" alt="PILOT X"></div>
+        <div class="name">PILOT X</div>
+      </div>
+    </div><h2>RECRUITS & NEW LORE CAST (10)</h2><div class="grid">
+      <div class="card">
+        <div class="port-wrap"><img src="mall_cop.png" alt="MALL COP"></div>
+        <div class="name">MALL COP</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="prop_pills_driver.png" alt="PROP PILLS DRIVER"></div>
+        <div class="name">PROP PILLS DRIVER</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="the_stoolie.png" alt="THE STOOLIE"></div>
+        <div class="name">THE STOOLIE</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="the_medium.png" alt="THE MEDIUM"></div>
+        <div class="name">THE MEDIUM</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="tapehead.png" alt="TAPEHEAD"></div>
+        <div class="name">TAPEHEAD</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="the_deckhand.png" alt="THE DECKHAND"></div>
+        <div class="name">THE DECKHAND</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="the_busker.png" alt="THE BUSKER"></div>
+        <div class="name">THE BUSKER</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="the_finder.png" alt="THE FINDER"></div>
+        <div class="name">THE FINDER</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="gate_centurion.png" alt="GATE CENTURION"></div>
+        <div class="name">GATE CENTURION</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="the_intern.png" alt="THE INTERN"></div>
+        <div class="name">THE INTERN</div>
+      </div>
+    </div><h2>TOWNSFOLK (5)</h2><div class="grid">
+      <div class="card">
+        <div class="port-wrap"><img src="barkeep.png" alt="BARKEEP"></div>
+        <div class="name">BARKEEP</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="clerk.png" alt="CLERK"></div>
+        <div class="name">CLERK</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="innkeeper.png" alt="INNKEEPER"></div>
+        <div class="name">INNKEEPER</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="teacher.png" alt="TEACHER"></div>
+        <div class="name">TEACHER</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="local.png" alt="LOCAL"></div>
+        <div class="name">LOCAL</div>
+      </div>
+    </div><h2>BOSSES & GUARDIANS (22)</h2><div class="grid">
+      <div class="card">
+        <div class="port-wrap"><img src="white_suit_director.png" alt="WHITE SUIT DIRECTOR"></div>
+        <div class="name">WHITE SUIT DIRECTOR</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="general_red.png" alt="GENERAL RED"></div>
+        <div class="name">GENERAL RED</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="dyslexio.png" alt="DYSLEXIO"></div>
+        <div class="name">DYSLEXIO</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="the_curse.png" alt="THE CURSE"></div>
+        <div class="name">THE CURSE</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="the_curse_live.png" alt="THE CURSE, LIVE"></div>
+        <div class="name">THE CURSE, LIVE</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="mimi.png" alt="MIMI"></div>
+        <div class="name">MIMI</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="backup_face.png" alt="BACKUP FACE"></div>
+        <div class="name">BACKUP FACE</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="evil_yoko.png" alt="EVIL YOKO"></div>
+        <div class="name">EVIL YOKO</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="spooky_alimony.png" alt="SPOOKY ALIMONY"></div>
+        <div class="name">SPOOKY ALIMONY</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="aunt_pretzel.png" alt="AUNT PRETZEL"></div>
+        <div class="name">AUNT PRETZEL</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="big_lasagna.png" alt="BIG LASAGNA"></div>
+        <div class="name">BIG LASAGNA</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="potential_generator.png" alt="POTENTIAL GENERATOR"></div>
+        <div class="name">POTENTIAL GENERATOR</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="the_bus.png" alt="THE BUS"></div>
+        <div class="name">THE BUS</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="the_late_fee.png" alt="THE LATE FEE"></div>
+        <div class="name">THE LATE FEE</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="mother_pickle.png" alt="MOTHER PICKLE"></div>
+        <div class="name">MOTHER PICKLE</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="the_dryer_lord.png" alt="THE DRYER LORD"></div>
+        <div class="name">THE DRYER LORD</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="the_walk_in.png" alt="THE WALK-IN"></div>
+        <div class="name">THE WALK-IN</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="the_pizza_pigeon.png" alt="THE PIZZA PIGEON"></div>
+        <div class="name">THE PIZZA PIGEON</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="the_pyre.png" alt="THE PYRE"></div>
+        <div class="name">THE PYRE</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="the_gatekeeper.png" alt="THE GATEKEEPER"></div>
+        <div class="name">THE GATEKEEPER</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="the_chorus.png" alt="THE CHORUS"></div>
+        <div class="name">THE CHORUS</div>
+      </div>
+    
+      <div class="card">
+        <div class="port-wrap"><img src="sargasso.png" alt="SARGASSO"></div>
+        <div class="name">SARGASSO</div>
+      </div>
+    </div>
+<div class="illustrated-section">
+  <h2>ILLUSTRATED CONCEPT ART PORTRAITS (Romancing SaGa / Tomomi Kobayashi Style)</h2>
+  <div class="ill-grid">
+
+    <div class="ill-card">
+      <img src="illustrated/carl_portrait.jpg" alt="CARL">
+      <div class="ill-title">CARL</div>
+    </div>
+  
+    <div class="ill-card">
+      <img src="illustrated/linda_portrait.jpg" alt="CEO LINDA">
+      <div class="ill-title">CEO LINDA</div>
+    </div>
+  
+    <div class="ill-card">
+      <img src="illustrated/garfield_portrait.jpg" alt="JB GARFIELD">
+      <div class="ill-title">JB GARFIELD</div>
+    </div>
+  
+    <div class="ill-card">
+      <img src="illustrated/newface_portrait.jpg" alt="NEW FACE">
+      <div class="ill-title">NEW FACE</div>
+    </div>
+  
+    <div class="ill-card">
+      <img src="illustrated/yoko_portrait.jpg" alt="YOKO">
+      <div class="ill-title">YOKO</div>
+    </div>
+  
+    <div class="ill-card">
+      <img src="illustrated/peekid_portrait.jpg" alt="PEE KID">
+      <div class="ill-title">PEE KID</div>
+    </div>
+  
+    <div class="ill-card">
+      <img src="illustrated/pilotx_portrait.jpg" alt="PILOT X">
+      <div class="ill-title">PILOT X</div>
+    </div>
+  
+    <div class="ill-card">
+      <img src="illustrated/spookyghost_portrait.jpg" alt="SPOOKY GHOST">
+      <div class="ill-title">SPOOKY GHOST</div>
+    </div>
+  
+    <div class="ill-card">
+      <img src="illustrated/medium_portrait.jpg" alt="THE MEDIUM">
+      <div class="ill-title">THE MEDIUM</div>
+    </div>
+  
+    <div class="ill-card">
+      <img src="illustrated/tapehead_portrait.jpg" alt="TAPEHEAD">
+      <div class="ill-title">TAPEHEAD</div>
+    </div>
+  
+    <div class="ill-card">
+      <img src="illustrated/busker_portrait.jpg" alt="THE BUSKER">
+      <div class="ill-title">THE BUSKER</div>
+    </div>
+  
+    <div class="ill-card">
+      <img src="illustrated/director_portrait.jpg" alt="WHITE SUIT DIRECTOR">
+      <div class="ill-title">WHITE SUIT DIRECTOR</div>
+    </div>
+  
+    <div class="ill-card">
+      <img src="illustrated/generalred_portrait.jpg" alt="GENERAL RED">
+      <div class="ill-title">GENERAL RED</div>
+    </div>
+  
+  </div>
+</div>
+</body>
+</html>
