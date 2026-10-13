@@ -44,12 +44,12 @@ Lost games from a studio that never existed.
 
 **Generation 3 — HYPER-32 (320×224, early 3D: polygon people over prerendered backdrops)**
 - `carl3/` — CARL 3: Return to Sender (the first HYPER-32 game: early 3D, chunky polygon people over prerendered backdrops, a road trip across Nevada; his explanations become jobs)
+- `rsopus/` — ROMANCING STREAM: THE TEN CARTRIDGES (full-scale Romancing SaGa 1 clone: 15 towns on 6 lands with ship routes, 26 dungeons, 20 monster families, 52 quests + fixers' guild, event rank + battle rank, expiring content, formations, statuses, elements, combined attacks, 8 magic schools with opposed pairs, guardians before each of the ten cartridges, personal stories for every hero and recruit; design in RSOPUS_DESIGN.md)
 
 **68k-X — home computer (512×256, 4096 colors, FM sound)**
 - `neomonday/` — NEO MONDAY: The Cat Who Knew Too Little (Snatcher-style detective adventure, including Case 2: The Static)
 - `dm/` — EYE OF THE BEHOLDEN II: The Legend of Dark Monday (first-person party dungeon crawler)
 - `kw/` — MALL OF THE FUTURE: KONBINI WARS (convenience-store management simulation)
-- `rsopus/` — ROMANCING STREAM: THE TEN CARTRIDGES (full-scale Romancing SaGa 1 clone: 15 towns on 6 lands with ship routes, 26 dungeons, 20 monster families, 52 quests + fixers' guild, event rank + battle rank, expiring content, formations, statuses, elements, combined attacks, 8 magic schools with opposed pairs, guardians before each of the ten cartridges, personal stories for every hero and recruit; design in RSOPUS_DESIGN.md)
 
 FACE: BEFORE THE STREAM happens before everything else; THE END's last text prompt leads to it.
 FACE and YOKO are a pair: play FACE first. Both read the saves of every other PRETEND CO. game.
