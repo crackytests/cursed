@@ -24,6 +24,7 @@ Lost games from a studio that never existed.
 | EYE OF THE BEHOLDEN II: The Legend of Dark Monday | https://crackytests.github.io/cursed/dm/ |
 | MALL OF THE FUTURE: KONBINI WARS | https://crackytests.github.io/cursed/kw/ |
 | ROMANCING STREAM: The Ten Cartridges | https://crackytests.github.io/cursed/rsopus/ |
+| VISITOR: The Normalcy | https://crackytests.github.io/cursed/vn/ |
 
 **Generation 0 — home computer (HOME-8, 1983, 4 colors per scene)**
 - `orig/` — FACE: BEFORE THE STREAM (the prequel: an illustrated adventure in three acts. Two old versions of the same man build a machine to escape a future that loves its people too much to let them leave. Act I: the house that cares. Act II: two routes, and the Curse. Act III: a piece of each, and the first broadcast. Three endings; design in ORIGIN_DESIGN.md)
@@ -52,6 +53,7 @@ Lost games from a studio that never existed.
 - `neomonday/` — NEO MONDAY: The Cat Who Knew Too Little (Snatcher-style detective adventure, including Case 2: The Static)
 - `dm/` — EYE OF THE BEHOLDEN II: The Legend of Dark Monday (first-person party dungeon crawler)
 - `kw/` — MALL OF THE FUTURE: KONBINI WARS (convenience-store management simulation)
+- `vn/` — VISITOR: THE NORMALCY (Vampire: The Masquerade – Bloodlines with aliens, top-down: Los Angeles is full of visitors pretending to be people, and Carl has been breaking their First Rule, Be Normal, on stream for years. Pick a species, feed, keep your Normalcy and your Humanity, choose a side; five endings; design in VN_DESIGN.md)
 
 FACE: BEFORE THE STREAM happens before everything else; THE END's last text prompt leads to it.
 FACE and YOKO are a pair: play FACE first. Both read the saves of every other PRETEND CO. game.
