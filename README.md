@@ -24,6 +24,7 @@ Lost games from a studio that never existed.
 | EYE OF THE BEHOLDEN II: The Legend of Dark Monday | https://crackytests.github.io/cursed/dm/ |
 | MALL OF THE FUTURE: KONBINI WARS | https://crackytests.github.io/cursed/kw/ |
 | ROMANCING STREAM: The Ten Cartridges | https://crackytests.github.io/cursed/rsopus/ |
+| CARL DENTON: Deus Ex Nevada | https://crackytests.github.io/cursed/dx/ |
 | VISITOR: The Normalcy | https://crackytests.github.io/cursed/vn/ |
 
 **Generation 0 — home computer (HOME-8, 1983, 4 colors per scene)**
@@ -53,6 +54,7 @@ Lost games from a studio that never existed.
 - `neomonday/` — NEO MONDAY: The Cat Who Knew Too Little (Snatcher-style detective adventure, including Case 2: The Static)
 - `dm/` — EYE OF THE BEHOLDEN II: The Legend of Dark Monday (first-person party dungeon crawler)
 - `kw/` — MALL OF THE FUTURE: KONBINI WARS (convenience-store management simulation)
+- `dx/` — CARL DENTON: DEUS EX NEVADA (a Deus Ex immersive sim, top-down: a government hands Carl an ID that says SPECIES: HUMAN, and the price of keeping it is hunting the people it's lying to. Augmentations, skills, stealth, lockpicks and keypads, ten hubs from Mall Island to below Nevada, four endings; design in DX_DESIGN.md)
 - `vn/` — VISITOR: THE NORMALCY (Vampire: The Masquerade – Bloodlines with aliens, top-down: Los Angeles is full of visitors pretending to be people, and Carl has been breaking their First Rule, Be Normal, on stream for years. Pick a species, feed, keep your Normalcy and your Humanity, choose a side; five endings; design in VN_DESIGN.md)
 
 FACE: BEFORE THE STREAM happens before everything else; THE END's last text prompt leads to it.
