@@ -95,7 +95,7 @@ const BLACK = rgb(0, 0, 0), WHITE = rgb(255, 255, 255);
 
 // ---------- postprocess: fades, raster wave, legacy downgrade ----------
 function present() {
-  const t = frame, lg = post.legacy, fade = post.fade, flash = post.flash, sh = post.shake ? rnd(post.shake * 2 + 1) - post.shake : 0;
+  const t = frame, lg = post.legacy, fade = post.fade, flash = post.flash, sh = post.shake ? Math.round(rnd(post.shake * 2 + 1) - post.shake) : 0;
   for (let y = 0; y < H; y++) {
     const off = (post.wave ? Math.round(Math.sin(y * .09 + t * .08) * post.wave) : 0) + sh;
     const legacyRow = lg >= 1 || y < lg * H;

@@ -18,6 +18,7 @@ Lost games from a studio that never existed.
 | CARL 3: Return to Sender | https://crackytests.github.io/cursed/carl3/ |
 | CARL: Resident Human | https://crackytests.github.io/cursed/rh/ |
 | CARL: This Is a Stick Up! | https://crackytests.github.io/cursed/su/ |
+| JB GARFIELD: The Missing Original | https://crackytests.github.io/cursed/mo/ |
 | SAVE THE WORLD: A Pretend Co. Gaiden | https://crackytests.github.io/cursed/stw/ |
 | THE END: A Pretend Co. Gaiden | https://crackytests.github.io/cursed/end/ |
 | FACE: BEFORE THE STREAM | https://crackytests.github.io/cursed/orig/ |
@@ -50,6 +51,7 @@ Lost games from a studio that never existed.
 - `carl3/` — CARL 3: Return to Sender (the first HYPER-32 game: early 3D, chunky polygon people over prerendered backdrops, a road trip across Nevada; his explanations become jobs)
 - `rh/` — CARL: RESIDENT HUMAN (a HYPER-32 spin-off on CARL 3's engine: Carl signs a lease for a normal apartment in THE RESIDENCES AT TOMORROW; whatever he says becomes an obligation; THINGS I SAID; five chapters, four endings; design in RH_DESIGN.md)
 - `su/` — CARL: THIS IS A STICK UP! (GTA1/2-style top-down crime cart on CARL 3's engine: Carl robs Vice Versa, Nevada with a stick, and it works because nobody has met anyone who believes that hard in a stick. 16 missions in three acts, cars, cops, the A.S.S., odd jobs, rampages, stunt jumps, cheat codes, walk-in interiors, a psychedelic Below; design in SU_DESIGN.md)
+- `mo/` — JB GARFIELD: THE MISSING ORIGINAL (Resident Evil structure and a Silent Hill story on CARL 3's engine: JB takes a missing-person case at the closed Meridian Continuity Center, where every clock says Friday and the front door welcomes him back as Subject 41. Fixed cameras, tank controls, scarce ammo, saves cost blank tapes, and noir narration that strains as the evidence points at him. Three acts, 29 rooms, four endings; design in MO_DESIGN.md)
 - `rsopus/` — ROMANCING STREAM: THE TEN CARTRIDGES (full-scale Romancing SaGa 1 clone: 15 towns on 6 lands with ship routes, 26 dungeons, 20 monster families, 52 quests + fixers' guild, event rank + battle rank, expiring content, formations, statuses, elements, combined attacks, 8 magic schools with opposed pairs, guardians before each of the ten cartridges, personal stories for every hero and recruit; design in RSOPUS_DESIGN.md)
 
 **68k-X — home computer (512×256, 4096 colors, FM sound)**
