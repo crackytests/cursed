@@ -2,6 +2,8 @@
 
 **Transcript-grounded working edition · 29 September 2026**
 
+**Expanded archive revision · 9 November 2026**
+
 For writing and performing TP in streams, scripted interludes, and possible game adaptations. Companion to the [Carl bible](J:/carladv/CARL_CHARACTER_BIBLE.md), [CEO Linda bible](J:/carladv/CEO_LINDA_CHARACTER_BIBLE.md), and [Spooky Ghost bible](J:/carladv/SPOOKY_GHOST_CHARACTER_BIBLE.md).
 
 **The central principle:** TP is the performance that happens when Cracky announces that he is giving up on performing the elaborate story—and remains a talking toilet-paper roll doing increasingly elaborate bits with the audience.
@@ -108,6 +110,10 @@ Mickey Mouse is later discussed as a different out-of-character presentation. Th
 A bonus-game stream explicitly defines the roll as out of character plus a baseball-bat bit, yet later declines to take up viewers’ attempts to trigger the wipe routine because the game is absorbing his attention. [T7]
 
 That is valuable evidence: **the signature bit is available, not compulsory.** A sustained stretch of actual gaming does not break the character.
+
+### How the once-only special became a format
+
+The first special ties the roll to the creator's exaggerated account of briefly tasting front-page success and then giving up. In the same exchange he pauses the GateBox fight and long visual novels and gives a prospective return day. The second special explicitly acknowledges that he had planned to do it once. A later explanation says the audience liked the experiment and it became a regular way to hang out, do bits and play Jackbox. Write the retirement speech as something TP can keep making every time he comes back. [First special gives up the storyline, 3:30:24](https://www.youtube.com/watch?v=0NVXC9gwzhw&t=12624s) [Second special opens, 12:17](https://www.youtube.com/watch?v=1EPlo8E8SHM&t=737s) [Creator explains the recurring format, 1:14:13](https://www.youtube.com/watch?v=CbX2aBEIAsA&t=4453s)
 
 ## 5. Personality without an invented biography
 

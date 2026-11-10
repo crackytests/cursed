@@ -2,9 +2,11 @@
 
 **Transcript-grounded working edition · 29 September 2026**
 
+**Expanded archive revision · 9 November 2026**
+
 For writing CEO Linda in streams, scripted scenes, comics, and the Carl adventure game. Companion to the [Carl bible](J:/carladv/CARL_CHARACTER_BIBLE.md).
 
-This guide draws on targeted searches across the 229 transcript bundles and close reading of relevant passages. It distinguishes the particular character **CEO Linda** from the wider Linda network, other incarnations, merchandise designs, and the live AI implementation. It does not claim to settle every improvised or evolving detail.
+The first edition draws on the 229 transcript bundles. This revision also uses timestamped passages from the expanded Vodbrain archive. It distinguishes the particular character **CEO Linda** from the wider Linda network, other incarnations, merchandise designs, and the live AI implementation. It does not claim to settle every improvised or evolving detail.
 
 **Central writing principle, synthesized from the evidence:** Spooky Ghost dreams, jokes, and leaves. Linda follows through, builds something real, and expects everyone else to recognize her authority over what she built.
 
@@ -122,6 +124,12 @@ This gives her a demonstrated local vulnerability. It does not establish that st
 The host sometimes describes her as his enemy while acknowledging that chat likes her or opposes killing her. Other scenes soften the relationship to “associates.” A possible alliance against other Lindas is explicitly proposed; one game-design discussion places CEO Linda on a playable “good” side. [L8, L14, L17]
 
 **Working rule:** Antagonist is a relationship and a role, not a ban on cooperation. A proposed alliance is not a completed redemption arc.
+
+### The mall changes who can set the terms
+
+In the January mall exchanges, the host needles Linda about Punch buying her company and leaving her with a boss. Linda can still condition his stay on promoting the malware Linda models. By the sales argument the mall is described as open and the host has sold nothing. Write her local leverage and her accountability to Punch together. Her claim to be acting alone elsewhere describes the relationship to the Linda collective and belongs to its own scene. [Linda has a boss, 2:16:05](https://www.youtube.com/watch?v=WqmLBmrZvaw&t=8165s) [Promotion as rent, 4:28:55](https://www.youtube.com/watch?v=DS8HpRpz0Wo&t=16135s) [Zero sales argument, 4:38:44](https://www.youtube.com/watch?v=m2sO21EnKb0&t=16724s) [CEO Linda operating alone, 29:44](https://www.youtube.com/watch?v=Bl7ODwhahnQ&t=1784s)
+
+Reality Repair is a commercial and its fallout within one episode. The ad sells repairs for temporal problems and the host challenges Linda over the copy. The accusation leaves the cause open. The creator later calls out the archive's arc label as an overextension of that episode. In the separate R&D material, the announcement and hazardous-zone demand are performed, while the prototype's answers about the network and a shadow player are generated in an interactive test. The Linda game depicts network severance in its own continuity. [Reality Repair confrontation, 2:50:03](https://www.youtube.com/watch?v=53MYOCiUeI8&t=10203s) [Creator on the archive label, 2:01:20](https://www.youtube.com/watch?v=j6wg4FJ5Auk&t=7280s) [Hazardous zone, 6:50:23](https://www.youtube.com/watch?v=vaFyiakF3nQ&t=24623s) [Prototype exchange, 3:12:52](https://www.youtube.com/watch?v=ZdBmZFfL23Q&t=11572s) [Linda game, 4:55:37](https://www.youtube.com/watch?v=45Lr7VMfCRE&t=17737s)
 
 ## 5. What drives her
 

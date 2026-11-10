@@ -2,6 +2,8 @@
 
 **Character, continuity, and recurring-bits guide · 30 September 2026**
 
+**Expanded archive revision · 9 November 2026**
+
 A transcript-grounded write-up of Pee Kid’s origins, Pee-wee Kid’s performance persona, Pee Boy’s detective stories, the potential-piss generator, and the characters and routines surrounding them.
 
 Companion guides: [Carl](J:/carladv/CARL_CHARACTER_BIBLE.md), [CEO Linda](J:/carladv/CEO_LINDA_CHARACTER_BIBLE.md), [Spooky Ghost](J:/carladv/SPOOKY_GHOST_CHARACTER_BIBLE.md), and [TP](J:/carladv/TP_CHARACTER_BIBLE.md).
@@ -164,6 +166,10 @@ The record establishes the Pee-wee influence more clearly than it establishes a 
 For writing, use buoyancy and presentational confidence as a contrast to the awful or absurd thing being described. Let plain childlike reasoning still cut through the act. These are adaptation recommendations, not a claim that every performance used exactly that delivery.
 
 Do not copy a stock Pee-wee line into every exchange. Preserve the stream-specific kid, school history, generator associations, and relationships that make this version his own character.
+
+### Expression control in two live formats
+
+The creator uses Pee-wee Kid as his example of changing expressions with notes on a keyboard while planning a similar control for Ghost. In another broadcast, the host repeatedly asks the Yoko system to make Pee-wee Kid roll his eyes and thanks her when it happens. The first is a production explanation and the second is a live system interaction. For performance, the held expression or delayed eye roll can be the entire response. [Keyboard expression controls, 2:03:35](https://www.youtube.com/watch?v=fNy-1dGjPZE&t=7415s) [Yoko and the eye-roll command, 6:25:24](https://www.youtube.com/watch?v=T48RwSyAxds&t=23124s)
 
 ## 7. Pee Boy: the detective branch
 

@@ -2,6 +2,8 @@
 
 **Character bible, alternate-version guide, and writing reference · 30 September 2026**
 
+**Expanded archive revision · 9 November 2026**
+
 A transcript-grounded guide to the stream’s assistant, translator, restorer, former assistant turned ruler, and the different Yokos whose overlapping histories make the name deceptively complicated.
 
 Companion guides: [The Face](J:/carladv/THE_FACE_CHARACTER_BIBLE.md), [Carl](J:/carladv/CARL_CHARACTER_BIBLE.md), [CEO Linda](J:/carladv/CEO_LINDA_CHARACTER_BIBLE.md), [Spooky Ghost](J:/carladv/SPOOKY_GHOST_CHARACTER_BIBLE.md), [TP](J:/carladv/TP_CHARACTER_BIBLE.md), and [Pee-wee Kid and company](J:/carladv/PEE_WEE_KID_AND_COMPANY.md).
@@ -97,6 +99,12 @@ The performer can describe the incident dismissively—he only cut her in half o
 
 At the same time, avoid inventing an extensive trauma diagnosis the archive never supplies. The established point is strong enough: she resents the treatment, acts on that resentment, and cannot be treated as a prop without consequences.
 
+### What the wider archive adds to the origin and split
+
+The creator calls Yoko an avatar of sound and the first attempt to solve the problem of a system that goes unstable without a soul. The attempt fails at that job. Later, Yoko bargains for access and uses it to restore Face while keeping Ghost in the dark. That gives her a concrete way to exercise agency within the system. [Avatar of sound and first soul attempt, 7:24:54](https://www.youtube.com/watch?v=G8DUteiUzXk&t=26694s) [Yoko bargains for control, 27:37](https://www.youtube.com/watch?v=wS0HmRWtDEw&t=1657s)
+
+The card presentation spells out the difference between the labels for the first Yoko after the split. The old circle calls her Evil Yoko. In the Mandolin reality she is the magnificent empress whose help develops a spacefaring, interdimensional society. The card presentation gives a setting account alongside the mechanics. Its named counters and attack bonuses belong to the card game. [Empress account during card presentation, 3:54:44](https://www.youtube.com/watch?v=B0bgrDDB9SE&t=14084s)
+
 ## 6. Evil Yoko: a label with an argument inside it
 
 The creator explicitly says Evil Yoko is not actually evil in the relevant explanation. She helps the people of the new reality fulfill their potential, and they make her the leader of their world. Another account stresses that she succeeds at the stream’s original goal. [Y3, Y6]
@@ -157,6 +165,10 @@ The archive contains several levels of confidence:
 These should not be flattened into one timeless certainty. For a particular adaptation, choose the relevant version of the story and document the choice. Do not announce a reveal as universally settled just because one planning session uses it provisionally.
 
 The same applies to her merger with another Yoko. Compatibility or integration into a system does not, on its own, prove that every Yoko has become one consciousness.
+
+### New Face rehearses a different sequence
+
+In an explicitly signposted attempt to get into New Face's voice, he says an Evil Yoko android came to defend him, was destroyed, and became the basis for the Yoko he built by reverse engineering her. The exchange then asks whether his Yoko is Evil Yoko and leaves the question hanging. This supplies a branch-specific working account while leaving identity across the two bodies open. [New Face rehearsal, 1:54:14](https://www.youtube.com/watch?v=CH8NOqCHTHo&t=6854s)
 
 ## 9. Endless Yoko, Yokoids, and the mall businesses
 

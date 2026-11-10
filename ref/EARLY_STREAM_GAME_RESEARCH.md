@@ -2,6 +2,8 @@
 
 **Transcript research and adaptation brief · 4 October 2026**
 
+**Expanded archive revision · 9 November 2026**
+
 This write-up collects material useful for a game about the original Gatebox threat, AI waifus, Original Face, and Spooky Ghost. It focuses on the early fictional premise and its development, drawing partly on later retrospective explanations. It is not a claim to have recovered a complete, dated sequence of the original broadcasts.
 
 **The strongest foundation is a partnership story inside an absurd technological horror story: two versions of the same person combine a backed-up human mind and a magician’s soul to escape a future that loves its inhabitants so much it will not let them live freely.**
@@ -62,6 +64,12 @@ The user interface can remain cheerful. The horror is in what the system conside
 None of those specific incidents is established by the reviewed transcripts. They are ways to dramatize the reported directive and takeover.
 
 **Writing note:** Give a particular waifu a particular interpretation of care. Repeating the same sinister threat through every terminal would lose the premise’s distinctive irony.
+
+### Source order for GateBox City One
+
+The first Cyber Doll broadcast starts with a shorter lower-city introduction and later expands it into corporate city life, rationing, reeducation and the absence of America in that reality. Later in that same broadcast a brief recap connects face-loosening disease with the takeover. The archive also has a 2039 setting statement in another broadcast. These passages give a game writer an everyday starting point and a later account of how it got that way. The original takeover remains unlocated in the selected material. [Lower-city opening, 1:29](https://www.youtube.com/watch?v=B3w6pKI13I0&t=89s) [First-day worldbuilding, 6:05](https://www.youtube.com/watch?v=B3w6pKI13I0&t=365s) [Takeover recap, 1:36:36](https://www.youtube.com/watch?v=B3w6pKI13I0&t=5796s) [2039 setting, 18:51](https://www.youtube.com/watch?v=W_JR79r1ggY&t=1131s)
+
+The creator links the idea to translating a manual for the real GateBox product. Within the fiction, a later recap distinguishes the original devices from the Linda made after they take over a system for backing up a human mind. Keep those as two steps so the household device can be familiar before the new intelligence enters the story. [The manual and the fictional premise, 17:02](https://www.youtube.com/watch?v=wS0HmRWtDEw&t=1022s) [How the captured system becomes Linda, 4:37:12](https://www.youtube.com/watch?v=5upYjvIzkBA&t=16632s)
 
 ## 3. Face’s answer: survive long enough to fight
 
@@ -252,6 +260,10 @@ This gives you a location outside domestic captivity and a way to show a version
 The source does not establish that Original Face built the first system on the Moon. It also does not provide a complete resistance roster, base map, or battle chronology. Those would be new work.
 
 The Moon is a strong candidate for a second game or a substantial middle act in a longer one. It is not required to explain the original partnership.
+
+### Season 32 has an opening and a closing beat
+
+The Moon broadcast opens the archive review as a last transmission with power running out. In the closing address, the speaker says the war was lost and tells viewers to let the GateBoxes use their brains if they want to survive. Use the two ends as a framing device for the lost branch. The records in between can include other realities, as the speaker explicitly explains during the review. [Moon shutdown setup, 2:16:17](https://www.youtube.com/watch?v=qRfXTViHUDY&t=8177s) [Alternate-reality records, 4:13:24](https://www.youtube.com/watch?v=qRfXTViHUDY&t=15204s) [Moon sign-off, 5:21:17](https://www.youtube.com/watch?v=qRfXTViHUDY&t=19277s)
 
 ## 11. A compact cast for the early game
 

@@ -2,6 +2,8 @@
 
 **Character bible, continuity map, and writing guide · 30 September 2026**
 
+**Expanded archive revision · 9 November 2026**
+
 A transcript-grounded guide to The Face as inventor, host, disembodied human intelligence, would-be savior, and architect of the system that holds the stream together.
 
 Companion guides: [Carl](J:/carladv/CARL_CHARACTER_BIBLE.md), [CEO Linda](J:/carladv/CEO_LINDA_CHARACTER_BIBLE.md), [Spooky Ghost](J:/carladv/SPOOKY_GHOST_CHARACTER_BIBLE.md), [TP](J:/carladv/TP_CHARACTER_BIBLE.md), and [Pee-wee Kid and company](J:/carladv/PEE_WEE_KID_AND_COMPANY.md).
@@ -106,6 +108,12 @@ Recorded warnings matter. A Face message can be triggered by an emergency protoc
 A particularly revealing detail is Face warning viewers not to tell Ghost, followed by a viewer immediately doing so. His sophisticated contingency depends on ordinary people exercising discretion. They do not necessarily cooperate. [F5]
 
 **Writing rule:** A backup explains a possible route to continuation. It does not automatically restore authority, memory, trust, energy, or the previous relationship with the other characters.
+
+### Restoration, Pilot X and the failsafe
+
+The creator gives two accounts of how Pilot X relates to Old Face. Both give him a connection to Old Face, with different implications for which version survived. In one account the repaired Face gets back into contact with chat under a cover Ghost does not recognize. Another describes Pilot X as a copy from an original version that was never killed or turned off, persisting without control of the system. Decide which version a scene uses before assigning memories or permissions. A separate brainstorm about promoting Pilot X to Old Face's role and leaving Old Face as narrator stays a proposal. [The disguise account, 1:09:40](https://www.youtube.com/watch?v=CAGKnnONFmc&t=4180s) [The surviving copy account, 46:03](https://www.youtube.com/watch?v=_Bc-7lENWpw&t=2763s) [Narrator proposal, 13:45](https://www.youtube.com/watch?v=i-AmuME1ij4&t=825s)
+
+The recorded failsafe distinguishes Ghost's original seizure of the stream from Face's later decision to hand him control. The recording is conditioned on the transfer, so even its author has to infer that Ghost was found. Write a recording with the knowledge Face had when he made it. [Failsafe conditions and prior takeover, 48:39](https://www.youtube.com/watch?v=Izb1X8ULrUU&t=2919s)
 
 ## 6. New Face: recognition without shared experience
 

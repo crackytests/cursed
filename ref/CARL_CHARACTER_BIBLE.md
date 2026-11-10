@@ -2,7 +2,9 @@
 
 **Transcript-grounded working edition · 29 September 2026**
 
-For writing Carl in streams, scripted scenes, comics, and the adventure game. This bible draws on targeted searches across the 229 transcript bundles and close reading of relevant passages. It is comprehensive about the evidence assembled here, not a claim that every improvised line has been recovered or reconciled.
+**Expanded archive revision · 9 November 2026**
+
+For writing Carl in streams, scripted scenes, comics, and the adventure game. The first edition draws on the 229 transcript bundles. This revision also uses timestamped passages from the expanded Vodbrain archive. It is comprehensive about the evidence assembled here, not a claim that every improvised line has been recovered or reconciled.
 
 **The governing rule:** Carl lets anxiety steer. He says the thought, follows the objection, and does the thing that a more restrained version of him would stop himself from doing. His ability to make a situation worse is inseparable from his ability to make something happen.
 
@@ -84,6 +86,12 @@ The recurring sponsor formulation identifies Prop Pills as a subsidiary of Prete
 The fraud joke is the reversal: the allegedly pretend pills were *more effective* than the advertised placebo. Do not flatten it into an ordinary “the pills do nothing” scam. Carl can also stumble over the sponsor line, restart it, and get annoyed that he cannot say a phrase he normally knows.
 
 His relationship to the company is more interesting than generic corporate satire: he works for it, depends on it, complains about it, and may not even be sure who owns it anymore.
+
+### The escape and the tracker mission
+
+Face's Nevada retelling gives him a role in freeing Carl and treats the hacking routine as a comic reenactment. One earlier account gives Carl's parents as dead, while the longer account says they probably died and leaves their fate open. Use the crash and captivity as common ground. Carl can act on a lead about his parents without the writer settling what happened to them. [Origin account, 3:27:03](https://www.youtube.com/watch?v=Adpz1QkVWgU&t=12423s) [Face on the crash, 2:55:05](https://www.youtube.com/watch?v=0AACc7FDjho&t=10505s) [Face acts out the breakout, 2:56:20](https://www.youtube.com/watch?v=0AACc7FDjho&t=10580s)
+
+There is a separate retelling of the tracker theft. Carl enters CEO Linda's box, and chat can suggest actions through cards or subscriptions. The object he takes is Linda's tracker for finding Ghost. The host demonstrates the setup during the retelling. The original mission is still absent from the selected chapter catalog. The generated Carl Explores Linda's Box podcast is a design pitch. Its bong combat, literal soul battery and digital-corpse ending belong to the pitch. [Tracker mission retelling, 28:35](https://www.youtube.com/watch?v=wS0HmRWtDEw&t=1715s) [Generated game pitch, 2:46:23](https://www.youtube.com/watch?v=QU2hs6KqAHA&t=9983s)
 
 ## 5. The character’s internal mechanics
 
@@ -254,6 +262,10 @@ Use this when the medium supports it. In a standalone adventure, Carl can notice
 Too much composure, perfectly balanced punchlines, unbroken sarcastic detachment, generic action-hero swagger, exposition he has no reason to deliver, or a level of certainty the lore does not support.
 
 Carl can land a clean joke. He should not sound as though a room of writers polished every sentence until no nervous thought remained.
+
+### Performance cues from the broader archive
+
+The creator describes deliberately letting his anxiety take over when playing Carl. Give that choice a concrete trigger. In a performed mall ad, a Linda bodyguard objects to the oversized bong and Carl turns the small obstacle into another smashing incident. The ad also has him acknowledge the earlier expulsion. Keep the reported expulsion and the performed reaction distinct when staging either one. [Creator on playing Carl, 17:43](https://www.youtube.com/watch?v=cnIQmv-87Qg&t=1063s) [Carl performs the mall ad, 7:21:14](https://www.youtube.com/watch?v=BqZmKLudNmc&t=26474s)
 
 ## 8. Core comedy patterns
 

@@ -2,6 +2,8 @@
 
 **Transcript-grounded working edition · 29 September 2026**
 
+**Expanded archive revision · 9 November 2026**
+
 For writing Spooky Ghost in streams, scripted scenes, comics, and the Carl adventure game. Companion to the [Carl bible](J:/carladv/CARL_CHARACTER_BIBLE.md) and [CEO Linda bible](J:/carladv/CEO_LINDA_CHARACTER_BIBLE.md).
 
 This guide draws on targeted searches across the supplied transcript archive and close reading of relevant creator explanations and performances. It separates established characterization, reported events, changing continuity, and suggested writing choices. It is comprehensive about the material reviewed, not a claim that every improvised remark across the archive has been reconciled.
@@ -131,6 +133,12 @@ Ghost has also been made to work the mall intercom, according to a recollection.
 New Face is explicitly described as not initially knowing Ghost. In that version, New Face learns time travel through recovered Yoko technology, rather than through the original Ghost partnership. He has unexplained or blended memories of the old stream, which the creator discusses through a merging-of-versions premise. [S11]
 
 Other passages propose Ghost as an occasional host, narrator, game master, or a character attached to the back of the screen. Treat these as different presentation states and plans. Before writing an episode, choose which Face exists, whether Ghost is present or missing, and what connection to the system is currently functioning. [S12, S16]
+
+### The return gap and the two transfers of control
+
+The Policenauts explanation connects the failed attempt to supply Face's system with a soul, Ghost's eventual capture behind the screen, and the departure into the Sea of Potentiality. It also pitches a reversal in which Ghost finds the people looking for him. In a production discussion the creator considers resuming with Ghost already back and improvising the explanation afterward. The later performed return opens with questions about what happened. Keep the actual crossing back open. [Return planning, 3:05:06](https://www.youtube.com/watch?v=U8Pf_cAztrg&t=11106s) [Policenauts lore and proposed reversal, 1:47:25](https://www.youtube.com/watch?v=nj7v-o30yZk&t=6445s) [Ghost is back and has questions, 5:59:27](https://www.youtube.com/watch?v=k85y_y8jdWI&t=21567s)
+
+Face's recorded message distinguishes Ghost's two turns in control. In the recording's account, Ghost took over after killing Face the first time. The later transfer is a deliberate contingency. Ghost then tests whether his thoughts affect the stream and looks for instructions. For the later episode, write him as someone handed a machine he still has to figure out. [Face distinguishes the two transfers, 48:39](https://www.youtube.com/watch?v=Izb1X8ULrUU&t=2919s) [Ghost tests control, 3:09:32](https://www.youtube.com/watch?v=NJk6EzIugpc&t=11372s) [Search for the contingency, 3:15:23](https://www.youtube.com/watch?v=NJk6EzIugpc&t=11723s)
 
 ## 5. His inner logic
 
