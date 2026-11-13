@@ -28,6 +28,7 @@ Lost games from a studio that never existed.
 | ROMANCING STREAM: The Ten Cartridges | https://crackytests.github.io/cursed/rsopus/ |
 | CARL DENTON: Deus Ex Nevada | https://crackytests.github.io/cursed/dx/ |
 | VISITOR: The Normalcy | https://crackytests.github.io/cursed/vn/ |
+| CHROME FORCE: Requiem of the Wardragon | https://crackytests.github.io/cursed/cf/ |
 
 **Generation 0 — home computer (HOME-8, 1983, 4 colors per scene)**
 - `orig/` — FACE: BEFORE THE STREAM (the prequel: an illustrated adventure in three acts. Two old versions of the same man build a machine to escape a future that loves its people too much to let them leave. Act I: the house that cares. Act II: two routes, and the Curse. Act III: a piece of each, and the first broadcast. Three endings; design in ORIGIN_DESIGN.md)
@@ -46,6 +47,7 @@ Lost games from a studio that never existed.
 - `c2x/` — CARL 2 EXTREME: The No-Reading Edition (the console port: a side-scrolling platformer "simplified for console players and Nintendo fans". The bong is a boomerang, a hookshot and an underwater snorkel; a Bic lighter burns walls of text; rope swings, a water level, seven outfits; rescue CEO Linda from DYSLEXIO, who is sure dyslexics are the superior life form. Beat it for nine BONUS CARTS: SUPER CARL BROS., SUPER CARL WORLD, CARL THE HEDGECARL, HEDGECARL 2, CARL 3 & KNUCKLEHEAD, MEGA CARL, CARLVANIA, CARLBY'S DREAM DESK and MEGA CARL X, each with its own rules, boss and outfits)
 - `stw/` — SAVE THE WORLD: A Pretend Co. Gaiden (16-bit epic RPG: active-time battles, combos, save crystals, an airship on the WORLD-FX scaling chip; out of continuity)
 - `end/` — THE END: A Pretend Co. Gaiden (it plays backwards: from the ending at level 99 back through four shades and plain text to the publisher logo)
+- `cf/` — CHROME FORCE: Requiem of the Wardragon (a Shining Force tactics RPG on the War World long after the War ended everything: chrome centaurs, laser sabers, synthwave cut-in battles; 8 chapters, 32 battles with mid-fight reinforcements, 30 recruits (some hidden indoors), walk-in houses with searchable chests, promotions, an ARCHIVE OF BEFORE where the stream's cast survives only as ruins; design in CF_DESIGN.md)
 
 **Generation 3 — HYPER-32 (320×224, early 3D: polygon people over prerendered backdrops)**
 - `carl3/` — CARL 3: Return to Sender (the first HYPER-32 game: early 3D, chunky polygon people over prerendered backdrops, a road trip across Nevada; his explanations become jobs)
